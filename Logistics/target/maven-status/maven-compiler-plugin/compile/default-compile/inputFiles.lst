@@ -1,0 +1,20 @@
+<<<<<<< HEAD
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/Banana.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/CubicalBanana.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/CubicalFruitFactory.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/CubicalWatermelon.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/Customer.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/Fruit.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/FruitFactory.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/NaturalBanana.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/NaturalFruitFactory.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/NaturalWatermelon.java
+/Users/aarya_suthar/Developer/Customer/src/main/java/com/mycompany/customer/Watermelon.java
+=======
+/Users/aarya_suthar/Developer/Logistics/src/main/java/com/mycompany/logistics/Airplane.java
+/Users/aarya_suthar/Developer/Logistics/src/main/java/com/mycompany/logistics/Logistics.java
+/Users/aarya_suthar/Developer/Logistics/src/main/java/com/mycompany/logistics/LogisticsFactory.java
+/Users/aarya_suthar/Developer/Logistics/src/main/java/com/mycompany/logistics/Ship.java
+/Users/aarya_suthar/Developer/Logistics/src/main/java/com/mycompany/logistics/Transport.java
+/Users/aarya_suthar/Developer/Logistics/src/main/java/com/mycompany/logistics/Truck.java
+>>>>>>> a8fc716 (add Logistics)

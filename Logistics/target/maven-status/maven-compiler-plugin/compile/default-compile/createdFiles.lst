@@ -1,0 +1,20 @@
+<<<<<<< HEAD
+com/mycompany/customer/Fruit.class
+com/mycompany/customer/NaturalBanana.class
+com/mycompany/customer/CubicalFruitFactory.class
+com/mycompany/customer/CubicalWatermelon.class
+com/mycompany/customer/Customer.class
+com/mycompany/customer/Watermelon.class
+com/mycompany/customer/FruitFactory.class
+com/mycompany/customer/NaturalFruitFactory.class
+com/mycompany/customer/CubicalBanana.class
+com/mycompany/customer/NaturalWatermelon.class
+com/mycompany/customer/Banana.class
+=======
+com/mycompany/logistics/Ship.class
+com/mycompany/logistics/LogisticsFactory.class
+com/mycompany/logistics/Logistics.class
+com/mycompany/logistics/Truck.class
+com/mycompany/logistics/Transport.class
+com/mycompany/logistics/Airplane.class
+>>>>>>> a8fc716 (add Logistics)
