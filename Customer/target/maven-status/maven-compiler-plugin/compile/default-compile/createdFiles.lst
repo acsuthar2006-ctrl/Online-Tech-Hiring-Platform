@@ -1,0 +1,11 @@
+com/mycompany/customer/Fruit.class
+com/mycompany/customer/NaturalBanana.class
+com/mycompany/customer/CubicalFruitFactory.class
+com/mycompany/customer/CubicalWatermelon.class
+com/mycompany/customer/Customer.class
+com/mycompany/customer/Watermelon.class
+com/mycompany/customer/FruitFactory.class
+com/mycompany/customer/NaturalFruitFactory.class
+com/mycompany/customer/CubicalBanana.class
+com/mycompany/customer/NaturalWatermelon.class
+com/mycompany/customer/Banana.class
