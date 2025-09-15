@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import static java.lang.System.out;
+//import static java.lang.System.out;
 
 /**
  *
@@ -74,13 +74,15 @@ public class WelcomeServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        HttpSession session = request.getSession(false); // don't create new
-        
+        HttpSession session = request.getSession(false);// don't create new
+        System.out.println(session.getId());
+        System.out.println(request.getAttribute("name"));
+
    
         if (session != null) {
-           String name = (String) session.getAttribute("name");
-           String email = (String) session.getAttribute("email");
-           String city = (String) session.getAttribute("city");
+//           String name = (String) session.getAttribute("name");
+//           String email = (String) session.getAttribute("email");
+//           String city = (String) session.getAttribute("city");
 
 //           out.println("<h2>Welcome, " + name + "</h2>");
 //           out.println("<p>Email: " + email + "</p>");

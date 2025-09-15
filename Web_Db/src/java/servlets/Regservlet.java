@@ -9,11 +9,11 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+//import java.sql.ResultSet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;    
 
 
 /**
@@ -58,6 +58,18 @@ public class Regservlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
+    public void init() throws ServletException {
+        super.init();
+        System.out.println("Regservlet initialized");
+        // Initialization code here
+    }
+    @Override
+    public void destroy() {
+        // Cleanup code here
+        System.out.println("Regservlet destroyed");
+        super.destroy();
+    }
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
@@ -82,7 +94,7 @@ public class Regservlet extends HttpServlet {
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         String city = request.getParameter("city");
-
+        
         try {
             Class.forName("org.apache.derby.client.ClientAutoloadedDriver");
 

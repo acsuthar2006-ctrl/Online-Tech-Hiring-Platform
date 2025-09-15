@@ -58,6 +58,28 @@ public class FetchServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    public FetchServlet() {
+        System.out.println("FetchServlet constructor called");
+    }
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        System.out.println("FetchServlet initialized");
+        // Initialization code here
+    }
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        System.out.println("FetchServlet service method called");
+        super.service(req, res);
+    }
+    @Override
+    public void destroy() {
+        // Cleanup code here
+        System.out.println("FetchServlet destroyed");
+        super.destroy();
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -72,7 +94,7 @@ public class FetchServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-     @Override
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -99,6 +121,10 @@ public class FetchServlet extends HttpServlet {
 
             ResultSet rs = ps.executeQuery();
             HttpSession session = request.getSession();
+            System.out.println(session.getId());
+            System.out.println(session.getClass().getName());
+            
+//            response.encodeURL("details.jsp");
             
             if (rs.next()) {
                 
@@ -106,7 +132,8 @@ public class FetchServlet extends HttpServlet {
                 session.setAttribute("name", rs.getString("name"));
                 session.setAttribute("email", rs.getString("email"));
                 session.setAttribute("city", rs.getString("city"));
-
+                request.setAttribute("name", "Aarya");
+                
                 RequestDispatcher rd = request.getRequestDispatcher("details.jsp");
                 rd.forward(request, response);
 //                out.println("<h2>User Details</h2>");
