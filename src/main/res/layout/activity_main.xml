@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Buttons for tools -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnFreehand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Freehand" />
+
+        <Button
+            android:id="@+id/btnLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Line" />
+
+        <Button
+            android:id="@+id/btnRect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rectangle" />
+
+        <Button
+            android:id="@+id/btnCircle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Circle" />
+    </LinearLayout>
+
+    <!-- New row for color buttons + edit text -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <Button
+            android:id="@+id/btnColorRed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#FF0000"
+            android:text="Red"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btnColorBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#0000FF"
+            android:text="Blue"
+            android:textColor="#FFFFFF" />
+        <Button
+            android:id="@+id/btnThin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thin" />
+
+        <Button
+            android:id="@+id/btnThick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thick" />
+    </LinearLayout>
+
+    <!-- Drawing area -->
+    <com.example.mini_paint.DrawingView
+        android:id="@+id/drawingView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#FFFFFF" />
+</LinearLayout>
