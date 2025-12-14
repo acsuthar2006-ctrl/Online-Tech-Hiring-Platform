@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">  
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeerChat</title>
+  <link rel="stylesheet" href="main.css" />
+  <link rel="icon" href="data:,"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</head>
+
+<body>
+  <div id="videos">
+    <div class="video-card" id="local-user-preview">
+      <video class="video-player" id="local-user" autoplay playsinline></video>
+      <div class="video-controls">
+        <button class="call-btn" id="start-call-btn" onclick="startCall()">Start Call</button>
+        <button id="mic-btn">
+          <i class="fa fa-microphone-slash"></i>
+        </button>
+        <button id="camera-btn">
+          <i class="fa-solid fa-video-slash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="video-card" id="remote-user-preview">
+      <video class="video-player" id="remote-user" autoplay playsinline></video>
+      <button class="call-btn" id="join-call-btn" onclick="joinCall()">Join Call</button>
+    </div>
+  </div>
+
+  <p id="status-text">Idle</p>
+
+  <script src="main.js"></script>
+</body>
+</html>

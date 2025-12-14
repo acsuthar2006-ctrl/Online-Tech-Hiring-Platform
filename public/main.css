@@ -1,0 +1,132 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: #0f172a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+#videos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 2em;
+  width: 90%;
+  max-width: 900px;
+}
+
+.video-card {
+  background: rgba(14, 251, 255, 0.06);
+  padding: 1em;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.video-player {
+  width: 100%;
+  height: 260px;
+  background: black;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+#remote-user {
+  display: none;
+}
+
+.call-btn {
+  width: 100%;
+  padding: 0.7em;
+  border: none;
+  border-radius: 10px;
+  background: #38bdf8;
+  color: #020617;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.call-btn:hover {
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.4);
+}
+
+.video-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 75%;
+}
+
+#start-call-btn {
+  padding: 12px 20px;
+  width: 120px;
+}
+
+#camera-btn,
+#mic-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+}
+
+
+#camera-btn,
+#mic-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#mic-btn i,
+#camera-btn i {
+  color: #38bdf8;
+  font-size: 24px;
+}
+
+/* active background */
+#mic-btn.active,
+#camera-btn.active {
+  background-color: #ef4444;
+}
+
+/* active icon color */
+#mic-btn.active i,
+#camera-btn.active i {
+  color: white;
+}
+
+#temp-div {
+  background-color: rgba(15, 23, 42, 0.85);
+  width: 100%;
+  height: 100%;
+  color: rgb(229, 231, 235);
+  font-size: 20px;
+  font-weight: 600;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#status-text {
+  margin-top: 2em;
+  opacity: 0.8;
+}
