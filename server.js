@@ -3,7 +3,6 @@ const path = require("path"); // ✅ FIX
 const http = require("http");
 const WebSocket = require("ws");
 
-/* -------------------- HTTPS Server -------------------- */
 
 const server = http.createServer(
   (req, res) => {

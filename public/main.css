@@ -102,14 +102,14 @@ body {
 }
 
 /* active background */
-#mic-btn.active,
-#camera-btn.active {
+#mic-btn.off,
+#camera-btn.off {
   background-color: #ef4444;
 }
 
 /* active icon color */
-#mic-btn.active i,
-#camera-btn.active i {
+#mic-btn.off i,
+#camera-btn.off i {
   color: white;
 }
 

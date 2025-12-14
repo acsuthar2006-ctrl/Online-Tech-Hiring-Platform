@@ -19,7 +19,6 @@ const servers = {
   ]
 };
 
-/* ---------------- START ---------------- */
 async function init() {
   tempDiv.id = 'temp-div';
   tempDiv.textContent = "User is joining!!";
@@ -33,8 +32,8 @@ async function init() {
   turnOffCamera(localStream);
   muteMicrophone(localStream);
 
-  micBtn.classList.add("active");
-  cameraBtn.classList.add("active");
+  micBtn.classList.add("off");
+  cameraBtn.classList.add("off");
 
   localVideo.srcObject = localStream;
 
@@ -42,7 +41,6 @@ async function init() {
 
 init();
 
-/* ---------------- PEER CONNECTION ---------------- */
 let createPeerConnection = async () => {
 
   pc = new RTCPeerConnection(servers);
@@ -64,7 +62,9 @@ let createPeerConnection = async () => {
 
   pc.ontrack = evt => {
     evt.streams[0].getTracks().forEach(track => {
-      remoteStream.addTrack(track);
+      if (!remoteStream.getTracks().includes(track)) {
+        remoteStream.addTrack(track);
+      }
     });
     remoteVideo.style.display = 'inline-block';
   };
@@ -95,7 +95,7 @@ let createPeerConnection = async () => {
   };
 }
 
-/* ---------------- SIGNALING ---------------- */
+
 socket.onopen = () => {
   console.log("WebSocket connected to signaling server");
   socket.send(JSON.stringify({
@@ -119,7 +119,7 @@ socket.onmessage = async message => {
     setStatus("Incoming call — sending answer");
 
     if (!pc) {
-      createPeerConnection()
+      await createPeerConnection()
     };
 
     await pc.setRemoteDescription(receivedData.offer);
@@ -150,34 +150,42 @@ socket.onmessage = async message => {
   }
 };
 
-/* ---------------- START CALL ---------------- */
+
+
 async function startCall() {
-  tempDiv.remove();
-  console.log("📞 Start Call clicked");
+  if (tempDiv.isConnected) {
+      tempDiv.remove();
+  }
+
+  console.log("Start Call clicked");
   setStatus("Calling… waiting for answer");
 
   if (!pc){
-    createPeerConnection();
+   await createPeerConnection();
   }
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
   console.log("Sending OFFER");
-  socket.send(JSON.stringify({
+  socket.send(JSON.stringifyd ({
     type: "offer",
+    from : uid ,
     offer
   }));
 }
 
-/* ---------------- JOIN CALL ---------------- */
+
+
 async function joinCall() {
   console.log("Join Call clicked");
-  tempDiv.remove();
+  if (tempDiv.isConnected) {
+      tempDiv.remove();
+  }
   // Only prepare peer connection and media
   // DO NOT create or send an offer
   if (!pc){
-    createPeerConnection();
+    await createPeerConnection();
   }
-  setStatus("Calling… waiting for answer");
+  setStatus("Waiting for caller…");
   console.log("Waiting for OFFER from caller...");
 
 }
@@ -188,11 +196,10 @@ function setStatus(text) {
   }  
 }
 
-/* ---------------- MIC BTN ---------------- */
 
 
 micBtn.addEventListener("click", () => {
-  const isMuted = micBtn.classList.toggle("active");
+  const isMuted = micBtn.classList.toggle("off");
 
   if (isMuted) {
     muteMicrophone(localStream);
@@ -218,15 +225,13 @@ function muteMicrophone(stream) {
         stream.getAudioTracks().forEach(track => {
             track.enabled = false;
         });
-        console.log('Microphone muted');
+        console.log('Microphone unmuted');
     }
 }
 
-/* ---------------- Video BTN ---------------- */
-
 
 cameraBtn.addEventListener("click", () => {
-  const isOff = cameraBtn.classList.toggle("active");
+  const isOff = cameraBtn.classList.toggle("off");
 
   if (isOff) {
     turnOffCamera(localStream);
