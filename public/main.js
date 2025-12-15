@@ -117,7 +117,9 @@ socket.onmessage = async message => {
 
   if (receivedData.type === "offer") {
     setStatus("Incoming call — sending answer");
-
+    if (tempDiv.isConnected) {
+      tempDiv.remove();
+    } 
     if (!pc) {
       await createPeerConnection()
     };
@@ -166,7 +168,7 @@ async function startCall() {
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
   console.log("Sending OFFER");
-  socket.send(JSON.stringifyd ({
+  socket.send(JSON.stringify ({
     type: "offer",
     from : uid ,
     offer
@@ -189,14 +191,13 @@ async function joinCall() {
   console.log("Waiting for OFFER from caller...");
 
 }
+
 function setStatus(text) {
   const status = document.getElementById("status-text");
   if (status) {
     status.textContent = text;
   }  
 }
-
-
 
 micBtn.addEventListener("click", () => {
   const isMuted = micBtn.classList.toggle("off");
@@ -258,4 +259,3 @@ function turnOnCamera(stream) {
     track.enabled = true;
   });
 }
-

@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = require("path"); // ✅ FIX
+const path = require("path");
 const http = require("http");
 const WebSocket = require("ws");
 
@@ -37,7 +37,7 @@ const server = http.createServer(
 const wss = new WebSocket.Server({ server });
 
 server.listen(3000,() => {
-  console.log("✅ HTTPS + WSS server running on port 3000");
+  console.log("HTTP + WSS server running on port 3000");
 });
 
 /* -------------------- Helper Functions -------------------- */
@@ -62,7 +62,7 @@ function handleMessageFromPeer(socket, rawMessage) {
   try {
     data = JSON.parse(rawMessage.toString());
   } catch {
-    console.error("❌ Invalid JSON");
+    console.error("Invalid JSON");
     return;
   }
 
@@ -80,9 +80,9 @@ function handleMessageFromPeer(socket, rawMessage) {
 
 function handleSocketClose(socket) {
   if (socket.uid) {
-    console.log(`❌ User disconnected: ${socket.uid}`);
+    console.log(`User disconnected: ${socket.uid}`);
   } else {
-    console.log("❌ Socket disconnected before join");
+    console.log("Socket disconnected before join");
   }
 
   console.log(`👥 Total users: ${wss.clients.size}`);
