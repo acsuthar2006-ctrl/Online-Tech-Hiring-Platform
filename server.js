@@ -32,7 +32,6 @@ const server = http.createServer(
   }
 );
 
-/* -------------------- WebSocket Server -------------------- */
 
 const wss = new WebSocket.Server({ server });
 
@@ -40,12 +39,11 @@ server.listen(3000,() => {
   console.log("HTTP + WSS server running on port 3000");
 });
 
-/* -------------------- Helper Functions -------------------- */
 
 function handleUserJoined(socket, data) {
   socket.uid = data.from;
-  console.log(`👤 User joined: ${socket.uid}`);
-  console.log(`👥 Total users: ${wss.clients.size}`);
+  console.log(`User joined: ${socket.uid}`);
+  console.log(`Total users: ${wss.clients.size}`);
 }
 
 function broadcastToPeers(senderSocket, data) {
@@ -85,13 +83,12 @@ function handleSocketClose(socket) {
     console.log("Socket disconnected before join");
   }
 
-  console.log(`👥 Total users: ${wss.clients.size}`);
+  console.log(`Total users: ${wss.clients.size}`);
 }
 
-/* -------------------- WebSocket Events -------------------- */
 
 wss.on("connection", (socket) => {
-  console.log("🔗 Socket connected");
+  console.log("Socket connected");
 
   socket.on("message", (message) => {
     handleMessageFromPeer(socket, message);
