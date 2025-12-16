@@ -15,17 +15,22 @@
       <video class="video-player" id="local-user" autoplay playsinline></video>
       <div class="video-controls">
         <button class="call-btn" id="start-call-btn" onclick="startCall()">Start Call</button>
-        <button id="mic-btn">
-          <i class="fa fa-microphone-slash"></i>
-        </button>
-        <button id="camera-btn">
-          <i class="fa-solid fa-video-slash"></i>
-        </button>
+        <div class="media-controls">
+          <button id="mic-btn">
+            <i class="fa fa-microphone-slash"></i>
+          </button>
+          <button id="camera-btn">
+            <i class="fa-solid fa-video-slash"></i>
+          </button>
+        </div>
       </div>
     </div>
     <div class="video-card" id="remote-user-preview">
       <video class="video-player" id="remote-user" autoplay playsinline></video>
-      <button class="call-btn" id="join-call-btn" onclick="joinCall()">Join Call</button>
+      <div class="btn-container">
+        <button class="call-btn" id="join-call-btn" onclick="joinCall()">Join Call</button>
+        <button class="exit-btn" id="exit-call-btn" onclick="exitCall()">Exit Call</button>
+      </div>
     </div>
   </div>
 
