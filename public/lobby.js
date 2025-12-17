@@ -1,4 +1,4 @@
-const BASE_URL = "https://gushy-etha-bushily.ngrok-free.dev";
+const BASE_URL = window.location.origin;
 
 const joinForm = document.getElementById("joinForm");
 const roomInput = document.getElementById("roomInput");

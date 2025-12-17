@@ -1,4 +1,6 @@
-const socket = new WebSocket("wss://gushy-etha-bushily.ngrok-free.dev");
+const socket = new WebSocket(
+  `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}`
+);
 
 const params = new URLSearchParams(window.location.search);
 const roomId = params.get("room");
