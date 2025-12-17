@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Call Lobby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+  <link rel="stylesheet" href="lobby.css">
+</head>
+<body>
+  <div class="lobby-card">
+    <div class="lobby-title">Call Lobby</div>
+    <div class="lobby-sub">
+      Join an existing room or create a new one
+    </div>
+    <form class="lobby-form" id="joinForm">
+      <input type="text" id="roomInput" placeholder="Enter room ID" autocomplete="off"/>
+      <button type="submit">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Join Room
+      </button>
+    </form>
+    <div class="divider">or</div>
+    <button class="create-btn" id="createRoomBtn">
+      <i class="fa-solid fa-plus"></i> Create New Room
+    </button>
+  </div>
+  <script src="lobby.js"></script>
+</body>
+</html>

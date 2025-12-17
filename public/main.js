@@ -1,10 +1,24 @@
 const socket = new WebSocket("wss://gushy-etha-bushily.ngrok-free.dev");
 
+const params = new URLSearchParams(window.location.search);
+const roomId = params.get("room");
+
+if (!roomId) {
+  alert("No room ID found. Go back to lobby.");
+  window.location.href = "/lobby.html";
+}
+
 let localStream;
 let remoteStream;
 let pc;
 let pendingOffer = null;
 let isCaller = false;
+
+const uid = Math.floor(Math.random() * 10000);
+
+const servers = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+};
 
 const micBtn = document.getElementById("mic-btn");
 const cameraBtn = document.getElementById("camera-btn");
@@ -16,16 +30,13 @@ const tempDiv = document.createElement("div");
 tempDiv.id = "temp-div";
 tempDiv.textContent = "Waiting for user…";
 
-const uid = String(Math.floor(Math.random() * 10000));
-
-const servers = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-};
-
 async function init() {
   preview.prepend(tempDiv);
 
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  localStream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true
+  });
 
   turnOffCamera(localStream);
   muteMicrophone(localStream);
@@ -45,45 +56,76 @@ async function createPeerConnection() {
   remoteVideo.srcObject = remoteStream;
   remoteVideo.classList.add("active");
 
-  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+  localStream.getTracks().forEach(track =>
+    pc.addTrack(track, localStream)
+  );
 
-  pc.ontrack = e => {
-    e.streams[0].getTracks().forEach(t => {
-      if (!remoteStream.getTracks().includes(t)) remoteStream.addTrack(t);
+  pc.ontrack = evt => {
+    evt.streams[0].getTracks().forEach(track => {
+      if (!remoteStream.getTracks().includes(track)) {
+        remoteStream.addTrack(track);
+      }
     });
     tempDiv.remove();
-    remoteVideo.classList.add("active");
   };
 
-  pc.onicecandidate = e => {
-    if (e.candidate) {
-      socket.send(JSON.stringify({ type: "candidate", from: uid, candidate: e.candidate }));
+  pc.onicecandidate = evt => {
+    if (evt.candidate) {
+      socket.send(JSON.stringify({
+        type: "candidate",
+        from: uid,
+        channel: roomId,
+        candidate: evt.candidate
+      }));
     }
   };
 
   pc.oniceconnectionstatechange = () => {
-    if (pc.iceConnectionState === "disconnected" || pc.iceConnectionState === "failed") {
+    if (
+      pc.iceConnectionState === "disconnected" ||
+      pc.iceConnectionState === "failed"
+    ) {
       endCall();
-    } else {
-      
     }
   };
 }
 
 socket.onopen = () => {
-  socket.send(JSON.stringify({ type: "join", from: uid }));
+  socket.send(JSON.stringify({
+    type: "join",
+    from: uid,
+    channel: roomId
+  }));
 };
 
-socket.onmessage = async e => {
-  const data = JSON.parse(e.data);
+socket.onmessage = async evt => {
+  const data = JSON.parse(evt.data);
   if (data.from === uid) return;
+
+  if (data.type === "ready" && isCaller) {
+    if (!pc) await createPeerConnection();
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    socket.send(JSON.stringify({
+      type: "offer",
+      from: uid,
+      channel: roomId,
+      offer
+    }));
+
+    setStatus("Calling…");
+  }
 
   if (data.type === "offer") {
     pendingOffer = data.offer;
+
     if (!confirm("Do you want to join the call?")) {
       pendingOffer = null;
       return;
     }
+
     await acceptCall();
   }
 
@@ -94,14 +136,6 @@ socket.onmessage = async e => {
 
   if (data.type === "candidate") {
     await pc.addIceCandidate(data.candidate);
-  }
-
-  if (data.type === "ready" && isCaller) {
-    if (!pc) await createPeerConnection();
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    socket.send(JSON.stringify({ type: "offer", from: uid, offer }));
-    setStatus("Calling…");
   }
 };
 
@@ -115,7 +149,13 @@ async function acceptCall() {
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
 
-  socket.send(JSON.stringify({ type: "answer", from: uid, answer }));
+  socket.send(JSON.stringify({
+    type: "answer",
+    from: uid,
+    channel: roomId,
+    answer
+  }));
+
   setStatus("Call connected");
 }
 
@@ -127,7 +167,13 @@ function startCall() {
 async function joinCall() {
   tempDiv.remove();
   if (!pc) await createPeerConnection();
-  socket.send(JSON.stringify({ type: "ready", from: uid }));
+
+  socket.send(JSON.stringify({
+    type: "ready",
+    from: uid,
+    channel: roomId
+  }));
+
   setStatus("Joined — waiting for call");
 }
 
@@ -147,28 +193,29 @@ function endCall() {
   setStatus("Call ended");
 }
 
-window.addEventListener("pagehide", () => {
-  pc?.close();
-});
+window.addEventListener("pagehide", () => pc?.close());
 
-function exitCall () {
-  pc?.close();
+function exitCall() {
   endCall();
 }
 
 function setStatus(text) {
-  const el = document.getElementById("status-text");
-  if (el) el.textContent = text;
+  const ele = document.getElementById("status-text");
+  if (ele) ele.textContent = text;
 }
 
 micBtn.addEventListener("click", () => {
   micBtn.classList.toggle("off");
-  micBtn.classList.contains("off") ? muteMicrophone(localStream) : unmuteMicrophone(localStream);
+  micBtn.classList.contains("off")
+    ? muteMicrophone(localStream)
+    : unmuteMicrophone(localStream);
 });
 
 cameraBtn.addEventListener("click", () => {
   cameraBtn.classList.toggle("off");
-  cameraBtn.classList.contains("off") ? turnOffCamera(localStream) : turnOnCamera(localStream);
+  cameraBtn.classList.contains("off")
+    ? turnOffCamera(localStream)
+    : turnOnCamera(localStream);
 });
 
 function muteMicrophone(stream) {

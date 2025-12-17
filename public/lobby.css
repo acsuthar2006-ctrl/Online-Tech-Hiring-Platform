@@ -1,0 +1,112 @@
+:root {
+    --bg-main: #0f172a;
+    --bg-card: rgba(14, 251, 255, 0.06);
+    --accent: #38bdf8;
+    --danger: #ef4444;
+    --text-main: #ffffff;
+    --text-muted: rgb(229, 231, 235);
+    --overlay-bg: rgba(15, 23, 42, 0.85);
+    --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 6px 18px rgba(56, 189, 248, 0.4);
+    --radius-sm: 10px;
+    --radius-md: 12px;
+    --radius-lg: 14px;
+    --font-main: system-ui, -apple-system, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-main);
+}
+
+body {
+    min-height: 100vh;
+    background: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+}
+
+.lobby-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: var(--bg-card);
+    padding: 2.5em;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 1.8em;
+}
+
+.lobby-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.lobby-sub {
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-muted);
+    opacity: 0.85;
+}
+
+.lobby-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.lobby-form input {
+    padding: 1em;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    background-color: rgba(2, 6, 23, 0.75);
+    color: var(--text-main);
+    font-size: 16px;
+    outline: none;
+}
+
+.lobby-form input::placeholder {
+    color: var(--text-muted);
+}
+
+.lobby-form button,
+.create-btn {
+    padding: 1em;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.lobby-form button {
+    background-color: var(--accent);
+    color: #020617;
+}
+
+.create-btn {
+    background: transparent;
+    border: 1px dotted rgba(56, 189, 248, 0.5);
+    color: var(--accent);
+}
+
+.lobby-form button:hover,
+.create-btn:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+}
+
+.divider {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
