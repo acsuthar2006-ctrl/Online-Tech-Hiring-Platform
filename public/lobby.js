@@ -17,22 +17,36 @@ joinForm.addEventListener("submit", async evt => {
 
   if (!exists) {
     alert("Room does not exist!");
-    return;
+    return;    
   }
 
   window.location.href = `${BASE_URL}/?room=${room}`;
 });
 
-createBtn.addEventListener("click", () => {
+createBtn.addEventListener("click", async () => {
   const room = roomInput.value.trim();
   if (!room) {
     alert('Plz!! Enter the room id');
     return;
   }
+
+  const exists = await roomExists(room);
+
+  if (exists) {
+    alert("Room already exist!");
+    return;
+  }
+
   window.location.href = `${BASE_URL}/?room=${room}`;
 });
 async function roomExists(room) {
-  const res = await fetch(`/check-room?room=${room}`);
-  const data = await res.json();
-  return data.exists;
+  try {
+    const res = await fetch(`/check-room?room=${encodeURIComponent(room)}`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.exists;
+  } catch (err) {
+    alert("Unable to connect to server");
+    return false;
+  }
 }

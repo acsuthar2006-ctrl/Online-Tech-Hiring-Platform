@@ -1,38 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">  
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PeerChat</title>
-  <link rel="icon" href="data:,"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="main.css" />
 </head>
 
 <body>
   <div id="video-wrapper">
-    <div class="video-card" id="local-user-preview">
-      <video class="video-player" id="local-user" autoplay playsinline></video>
+    <div class="video-card">
+      <video class="video-player" id="local-user" autoplay playsinline muted></video>
       <div class="video-controls">
         <button class="call-btn" id="start-call-btn" onclick="startCall()">Start Call</button>
         <div class="media-controls">
-          <button id="mic-btn">
+          <button id="mic-btn" aria-label="Toggle microphone">
             <i class="fa fa-microphone-slash"></i>
           </button>
-          <button id="camera-btn">
+          <button id="camera-btn" aria-label="Toggle camera">
             <i class="fa-solid fa-video-slash"></i>
           </button>
         </div>
       </div>
     </div>
+
     <div class="video-card" id="remote-user-preview">
-      <video class="video-player" id="remote-user" autoplay playsinline></video>
+      <video class="video-player" id="remote-user" autoplay playsinline muted></video>
       <div class="btn-container">
         <button class="call-btn" id="join-call-btn" onclick="joinCall()">Join Call</button>
         <button class="exit-btn" id="exit-call-btn" onclick="exitCall()">Exit Call</button>
       </div>
     </div>
   </div>
+
   <p id="status-text">Idle</p>
   <script src="main.js"></script>
 </body>

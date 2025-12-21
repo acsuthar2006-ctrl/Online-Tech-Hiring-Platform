@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const WebSocket = require("ws");
+const MAX_USERS_PER_ROOM = 2;
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -57,28 +58,44 @@ const wss = new WebSocket.Server({ server });
 const channels = new Map();
 
 function joinChannel(socket, channel) {
-  socket.channel = channel;
-
   if (!channels.has(channel)) {
     channels.set(channel, new Set());
   }
 
-  channels.get(channel).add(socket);
+  const room = channels.get(channel);
+
+  if (room.size >= MAX_USERS_PER_ROOM) {
+    socket.send(JSON.stringify({
+      type: "room-full"
+    }));
+    socket.close();
+    return;
+  }
+
+  socket.channel = channel;
+  room.add(socket);
 
   console.log(`User ${socket.uid} joined room ${channel}`);
   console.log(`Users in room: ${channels.get(channel).size}`);
+  console.log("Active rooms:", [...channels.keys()]);
 }
 
 function leaveChannel(socket) {
-  if (!socket.channel) return;
+  const channel = socket.channel;
+  if (!channel) return;
 
-  const room = channels.get(socket.channel);
+  const room = channels.get(channel);
   if (!room) return;
 
   room.delete(socket);
-  if (room.size === 0) channels.delete(socket.channel);
 
-  console.log(`User ${socket.uid} left room ${socket.channel}`);
+  if (room.size === 0) {
+    channels.delete(channel);
+  }
+
+  socket.channel = null; // reset at the end
+
+  console.log(`User ${socket.uid} left room ${channel}`);
 }
 
 function broadcastToRoom(sender, data) {
@@ -117,12 +134,17 @@ wss.on("connection", socket => {
       return;
     }
 
+    if (data.type === "leave") {
+    broadcastToRoom(socket, { type: "leave" });
+    leaveChannel(socket);
+    return;
+  }
+
     // forward signaling messages only to room
     broadcastToRoom(socket, data);
   });
 
   socket.on("close", () => {
-    leaveChannel(socket);
-    console.log("Socket disconnected");
+    if (socket.channel) leaveChannel(socket);
   });
 });

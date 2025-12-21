@@ -10,17 +10,27 @@ if (!roomId) {
   window.location.href = "/lobby.html";
 }
 
+/* ================= STATE ================= */
+
 let localStream;
 let remoteStream;
-let pc;
+let pc = null;
+
 let pendingOffer = null;
 let isCaller = false;
+let peerReady = false;
+let isLeaving = false;
 
-const uid = Math.floor(Math.random() * 10000);
+const pendingCandidates = [];
+const uid = crypto.randomUUID();
+
+/* ================= ICE ================= */
 
 const servers = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
 };
+
+/* ================= UI ================= */
 
 const micBtn = document.getElementById("mic-btn");
 const cameraBtn = document.getElementById("camera-btn");
@@ -31,6 +41,8 @@ const preview = document.getElementById("remote-user-preview");
 const tempDiv = document.createElement("div");
 tempDiv.id = "temp-div";
 tempDiv.textContent = "Waiting for user…";
+
+/* ================= INIT ================= */
 
 async function init() {
   preview.prepend(tempDiv);
@@ -51,7 +63,11 @@ async function init() {
 
 init();
 
+/* ================= PEER CONNECTION ================= */
+
 async function createPeerConnection() {
+  if (pc) return;
+
   pc = new RTCPeerConnection(servers);
 
   remoteStream = new MediaStream();
@@ -64,7 +80,7 @@ async function createPeerConnection() {
 
   pc.ontrack = evt => {
     evt.streams[0].getTracks().forEach(track => {
-      if (!remoteStream.getTracks().includes(track)) {
+      if (!remoteStream.getTracks().some(t => t.id === track.id)) {
         remoteStream.addTrack(track);
       }
     });
@@ -83,14 +99,13 @@ async function createPeerConnection() {
   };
 
   pc.oniceconnectionstatechange = () => {
-    if (
-      pc.iceConnectionState === "disconnected" ||
-      pc.iceConnectionState === "failed"
-    ) {
-      endCall();
+    if (pc.iceConnectionState === "failed") {
+      exitCall(); // notify peer
     }
   };
 }
+
+/* ================= SIGNALING ================= */
 
 socket.onopen = () => {
   socket.send(JSON.stringify({
@@ -104,23 +119,17 @@ socket.onmessage = async evt => {
   const data = JSON.parse(evt.data);
   if (data.from === uid) return;
 
-  if (data.type === "ready" && isCaller) {
-    if (!pc) await createPeerConnection();
-
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-
-    socket.send(JSON.stringify({
-      type: "offer",
-      from: uid,
-      channel: roomId,
-      offer
-    }));
-
-    setStatus("Calling…");
+  if (data.type === "room-full") {
+    alert("Room is full");
+    window.location.href = "/lobby.html";
   }
 
-  if (data.type === "offer") {
+  if (data.type === "ready") {
+    peerReady = true;
+    startOffer();
+  }
+
+  if (data.type === "offer" && !pendingOffer) {
     pendingOffer = data.offer;
 
     if (!confirm("Do you want to join the call?")) {
@@ -133,13 +142,48 @@ socket.onmessage = async evt => {
 
   if (data.type === "answer") {
     await pc.setRemoteDescription(data.answer);
+
+    for (const c of pendingCandidates) {
+      await pc.addIceCandidate(c);
+    }
+    pendingCandidates.length = 0;
+
     setStatus("Call connected");
   }
 
   if (data.type === "candidate") {
-    await pc.addIceCandidate(data.candidate);
+    if (pc?.remoteDescription) {
+      await pc.addIceCandidate(data.candidate);
+    } else {
+      pendingCandidates.push(data.candidate);
+    }
+  }
+
+  if (data.type === "leave") {
+    endCall();
+    setStatus("Peer left");
   }
 };
+
+/* ================= CALL FLOW ================= */
+
+async function startOffer() {
+  if (!isCaller || !peerReady) return;
+
+  if (!pc) await createPeerConnection();
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  socket.send(JSON.stringify({
+    type: "offer",
+    from: uid,
+    channel: roomId,
+    offer
+  }));
+
+  setStatus("Calling…");
+}
 
 async function acceptCall() {
   tempDiv.remove();
@@ -147,6 +191,11 @@ async function acceptCall() {
 
   await pc.setRemoteDescription(pendingOffer);
   pendingOffer = null;
+
+  for (const c of pendingCandidates) {
+    await pc.addIceCandidate(c);
+  }
+  pendingCandidates.length = 0;
 
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
@@ -164,6 +213,7 @@ async function acceptCall() {
 function startCall() {
   isCaller = true;
   setStatus("Waiting for user to join…");
+  startOffer();
 }
 
 async function joinCall() {
@@ -179,27 +229,59 @@ async function joinCall() {
   setStatus("Joined — waiting for call");
 }
 
+/* ================= CLEANUP ================= */
+
+function exitCall() {
+  if (isLeaving) return;
+  isLeaving = true;
+
+  socket.send(JSON.stringify({
+    type: "leave",
+    from: uid,
+    channel: roomId
+  }));
+
+  endCall();
+  window.location.href = "/lobby.html";
+}
+
 function endCall() {
   pc?.close();
   pc = null;
 
+  isLeaving = false;
   remoteStream = null;
   remoteVideo.srcObject = null;
   remoteVideo.classList.remove("active");
 
   isCaller = false;
+  peerReady = false;
   pendingOffer = null;
+  pendingCandidates.length = 0;
 
   if (!tempDiv.isConnected) preview.prepend(tempDiv);
 
   setStatus("Call ended");
 }
 
-window.addEventListener("pagehide", () => pc?.close());
+/* ================= LIFECYCLE ================= */
 
-function exitCall() {
-  endCall();
-}
+window.addEventListener("beforeunload", () => {
+  if (!isLeaving && pc) {
+    isLeaving = true;
+    socket.send(JSON.stringify({
+      type: "leave",
+      from: uid,
+      channel: roomId
+    }));
+  }
+});
+
+socket.onclose = () => {
+  setStatus("Disconnected from server");
+};
+
+/* ================= UI HELPERS ================= */
 
 function setStatus(text) {
   const ele = document.getElementById("status-text");
