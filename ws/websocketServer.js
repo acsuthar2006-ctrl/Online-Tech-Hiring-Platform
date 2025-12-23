@@ -16,6 +16,7 @@ function initWebSocket(server) {
 
       try {
         data = JSON.parse(msg.toString());
+        console.log(data);
       } catch {
         console.error("Invalid JSON");
         return;
