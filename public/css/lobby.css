@@ -110,3 +110,20 @@ body {
     color: var(--text-muted);
     opacity: 0.7;
 }
+
+.download-btn {
+    padding: 1em;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    background: transparent;
+    color: var(--danger);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.download-btn:hover {
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+}

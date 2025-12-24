@@ -3,6 +3,12 @@ const BASE_URL = window.location.origin;
 const joinForm = document.getElementById("joinForm");
 const roomInput = document.getElementById("roomInput");
 const createBtn = document.getElementById("createRoomBtn");
+const downloadBtn = document.getElementById("downloadRecordingBtn");
+
+// show button only if recording exists
+if (downloadBtn && localStorage.getItem("hasRecording") === "true") {
+  downloadBtn.style.display = "block";
+}
 
 joinForm.addEventListener("submit", async evt => {
   evt.preventDefault();
@@ -14,10 +20,9 @@ joinForm.addEventListener("submit", async evt => {
   }
 
   const exists = await roomExists(room);
-
   if (!exists) {
     alert("Room does not exist!");
-    return;    
+    return;
   }
 
   window.location.href = `${BASE_URL}/?room=${room}`;
@@ -26,12 +31,11 @@ joinForm.addEventListener("submit", async evt => {
 createBtn.addEventListener("click", async () => {
   const room = roomInput.value.trim();
   if (!room) {
-    alert('Plz!! Enter the room id');
+    alert("Plz!! Enter the room id");
     return;
   }
 
   const exists = await roomExists(room);
-
   if (exists) {
     alert("Room already exist!");
     return;
@@ -39,6 +43,23 @@ createBtn.addEventListener("click", async () => {
 
   window.location.href = `${BASE_URL}/?room=${room}`;
 });
+
+// ✅ SERVER DOWNLOAD
+if (downloadBtn) {
+  downloadBtn.addEventListener("click", () => {
+    const roomId = roomInput.value.trim();
+
+    if (!roomId) {
+      alert("Enter room id to download recording");
+      return;
+    }
+
+    window.location.href = `/download-recording/${roomId}`;
+    localStorage.removeItem("hasRecording");
+    downloadBtn.style.display = "none";
+  });
+}
+
 async function roomExists(room) {
   try {
     const res = await fetch(`/check-room?room=${encodeURIComponent(room)}`);

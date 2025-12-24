@@ -2,60 +2,49 @@ let mediaRecorder = null;
 let recordedChunks = [];
 let screenStream = null;
 
-async function startScreenRecording() {
+export async function startScreenRecording() {
   screenStream = await navigator.mediaDevices.getDisplayMedia({
-    video: true,
+    video: { frameRate: 30 },
     audio: true
   });
 
   mediaRecorder = new MediaRecorder(screenStream, {
-    mimeType: "video/webm; codecs=vp9"
+    mimeType: "video/webm; codecs=vp8,opus"
   });
 
   recordedChunks = [];
 
-  mediaRecorder.ondataavailable = (event) => {
-    if (event.data.size > 0) {
-      recordedChunks.push(event.data);
-    }
+  mediaRecorder.ondataavailable = e => {
+    if (e.data.size > 0) recordedChunks.push(e.data);
   };
 
-  mediaRecorder.start();
-  console.log("[Recorder] Recording started");
+  mediaRecorder.start(); // ❗ NO timeslice
 }
 
-function stopScreenRecording() {
-  if (!mediaRecorder) return;
+export function stopScreenRecording() {
+  return new Promise(resolve => {
+    if (!mediaRecorder) return resolve();
 
-  mediaRecorder.stop();
+    mediaRecorder.onstop = () => {
+      // stop tracks ONLY after recorder finishes
+      screenStream.getTracks().forEach(t => t.stop());
+      resolve();
+    };
 
-  // stop screen capture
-  screenStream.getTracks().forEach(track => track.stop());
-
-  console.log("[Recorder] Recording stopped");
+    mediaRecorder.stop();
+  });
 }
 
-function downloadRecording(filename = "screen-recording.webm") {
+export async function uploadRecording(roomId) {
   if (!recordedChunks.length) return;
 
   const blob = new Blob(recordedChunks, { type: "video/webm" });
-  const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
+  const formData = new FormData();
+  formData.append("recording", blob, `${roomId}.webm`);
 
-  URL.revokeObjectURL(url);
+  await fetch("/upload-recording", {
+    method: "POST",
+    body: formData
+  });
 }
-
-function isRecording() {
-  return mediaRecorder && mediaRecorder.state === "recording";
-}
-
-export {
-  startScreenRecording,
-  stopScreenRecording,
-  downloadRecording,
-  isRecording
-};

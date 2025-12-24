@@ -3,3 +3,4 @@ package-lock.json
 key.pem
 target
 .vscode
+node_modules

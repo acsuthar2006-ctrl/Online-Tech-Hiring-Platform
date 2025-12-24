@@ -3,10 +3,22 @@ import { state } from "./state.js";
 import { createPeerConnection } from "./webrtc.js";
 import { sendSignal } from "./socket.js";
 import { setStatus, preview, tempDiv } from "./ui.js";
+import {
+  startScreenRecording,
+  stopScreenRecording,
+  uploadRecording
+} from "./screenRecorder.js";
 
 export async function startCall() {
   state.isCaller = true;
   setStatus("Waiting for user to join…");
+
+  try {
+    await startScreenRecording();
+  } catch (err) {
+    console.warn("Screen recording not started:", err);
+  }
+
   await tryStartOffer();
 }
 
@@ -49,13 +61,17 @@ export async function acceptCall() {
   setStatus("Call connected");
 }
 
-export function exitCall() {
+export async function exitCall() {
   if (state.isLeaving) return;
   state.isLeaving = true;
 
   sendSignal("leave");
-  endCall();
 
+  stopScreenRecording();
+  await uploadRecording(state.roomId);
+  localStorage.setItem("hasRecording", "true");
+
+  endCall();
   window.location.href = "/lobby.html";
 }
 
