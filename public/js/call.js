@@ -13,19 +13,17 @@ export async function startCall() {
   state.isCaller = true;
   setStatus("Waiting for user to join…");
 
-  try {
-    await startScreenRecording();
-  } catch (err) {
-    console.warn("Screen recording not started:", err);
-  }
-
   await tryStartOffer();
 }
 
 export async function joinCall() {
   tempDiv.remove();
   await createPeerConnection(sendSignal);
-
+  try {
+    await startScreenRecording();
+  } catch (err) {
+    console.warn("Screen recording not started:", err);
+  }
   sendSignal("ready");
   setStatus("Joined — waiting for call");
 }
