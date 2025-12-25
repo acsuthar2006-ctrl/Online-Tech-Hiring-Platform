@@ -18,7 +18,7 @@ if (!state.roomId) {
 async function init() {
   preview.prepend(tempDiv);
 
-  // 🎥 Get camera + mic (echo-safe)
+  //  Get camera + mic (echo-safe)
   state.localStream = await navigator.mediaDevices.getUserMedia({
     video: true,
     audio: {
@@ -28,16 +28,16 @@ async function init() {
     }
   });
 
-  // 🎙️ Start muted (but track still alive)
+  //  Start muted (but track still alive)
   muteMicrophone(state.localStream, micBtn);
   micBtn.classList.add("off");
 
-  // 📹 Camera ON by default
-  cameraBtn.classList.remove("off");
+  //  Camera ON by default
+  cameraBtn.classList.add("off");
 
-  // 👀 Local preview (NO echo)
+  //  Local preview (NO echo)
   localVideo.srcObject = state.localStream;
-  localVideo.muted = true;        // 🔥 prevents hearing yourself
+  localVideo.muted = true;        //  prevents hearing yourself
   localVideo.autoplay = true;
   localVideo.playsInline = true;
 
@@ -54,7 +54,7 @@ window.startCall = startCall;
 window.joinCall = joinCall;
 window.exitCall = exitCall;
 
-// 🎙️ Mic toggle
+//  Mic toggle
 micBtn.addEventListener("click", () => {
   if (!state.localStream) return;
 
