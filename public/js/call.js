@@ -20,6 +20,7 @@ export async function joinCall() {
   tempDiv.remove();
   await createPeerConnection(sendSignal);
   try {
+    console.log('start recording...');
     await startScreenRecording();
   } catch (err) {
     console.warn("Screen recording not started:", err);
@@ -64,8 +65,8 @@ export async function exitCall() {
   state.isLeaving = true;
 
   sendSignal("leave");
-
-  stopScreenRecording();
+  console.log('stopRecording...');
+  await stopScreenRecording();
   await uploadRecording(state.roomId);
   localStorage.setItem("hasRecording", "true");
 

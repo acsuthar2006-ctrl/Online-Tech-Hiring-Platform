@@ -4,3 +4,5 @@ key.pem
 target
 .vscode
 node_modules
+sfu
+recordings
