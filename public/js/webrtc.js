@@ -1,6 +1,7 @@
 // webrtc.js
 import { state } from "./state.js";
 import { remoteVideo, tempDiv } from "./ui.js";
+import { attachIncomingAudio } from "./screenRecorder.js";
 
 const servers = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
@@ -23,6 +24,7 @@ export async function createPeerConnection(sendSignal) {
     evt.streams[0].getTracks().forEach(track => {
       if (!state.remoteStream.getTracks().some(t => t.id === track.id)) {
         state.remoteStream.addTrack(track);
+        attachIncomingAudio(state.remoteStream);
       }
     });
     tempDiv.remove();
