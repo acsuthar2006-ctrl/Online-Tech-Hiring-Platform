@@ -2,7 +2,9 @@
   --bg-main: #0f172a;
   --bg-card: rgba(14, 251, 255, 0.06);
   --accent: #38bdf8;
+  --accent-soft: rgba(56, 189, 248, 0.18);
   --danger: #ef4444;
+  --danger-dark: #dc2626;
   --text-main: #ffffff;
   --text-muted: rgb(229, 231, 235);
   --overlay-bg: rgba(15, 23, 42, 0.85);
@@ -23,13 +25,17 @@
 
 body {
   min-height: 100vh;
-  background: var(--bg-main);
+  background: radial-gradient(circle at top, #111827, var(--bg-main));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: var(--text-main);
 }
+
+/* =======================
+   LAYOUT
+======================= */
 
 #video-wrapper {
   display: grid;
@@ -49,7 +55,12 @@ body {
   align-items: center;
   gap: 1em;
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
 }
+
+/* =======================
+   VIDEO
+======================= */
 
 .video-player {
   width: 100%;
@@ -67,46 +78,62 @@ body {
   visibility: visible;
 }
 
+/* =======================
+   BUTTONS
+======================= */
+
 .btn-container {
   display: flex;
   gap: 10px;
 }
 
-.exit-btn,
-.call-btn {
-  padding: 1em 2em;
+.call-btn,
+.exit-btn {
+  padding: 0.9em 2em;
   border: none;
   border-radius: var(--radius-sm);
   background: var(--accent);
   color: #020617;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.exit-btn:hover,
-.call-btn:hover {
+.call-btn:hover,
+.exit-btn:hover {
   box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
 
+.call-btn:active,
+.exit-btn:active {
+  transform: scale(0.97);
+}
+
+/* =======================
+   CONTROLS BAR
+======================= */
+
 .video-controls {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  align-items: center;
   width: 75%;
+  gap: 12px;
 }
 
 .media-controls {
   display: flex;
-  align-items: center;
-  justify-content: end;
-  gap: 8px;
+  gap: 10px;
 }
 
-#camera-btn,
-#mic-btn {
+/* =======================
+   MIC & CAMERA BUTTONS
+======================= */
+
+#mic-btn,
+#camera-btn {
   background: transparent;
   border: none;
   width: 44px;
@@ -116,14 +143,30 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
 }
 
 #mic-btn i,
 #camera-btn i {
   color: var(--accent);
-  font-size: 24px;
+  font-size: 22px;
 }
 
+/* Hover (ON state) */
+#mic-btn:hover,
+#camera-btn:hover {
+  background-color: var(--accent-soft);
+}
+
+/* Active press */
+#mic-btn:active,
+#camera-btn:active {
+  transform: scale(0.92);
+}
+
+/* OFF state */
 #mic-btn.off,
 #camera-btn.off {
   background-color: var(--danger);
@@ -133,6 +176,15 @@ body {
 #camera-btn.off i {
   color: var(--text-main);
 }
+
+#mic-btn.off:hover,
+#camera-btn.off:hover {
+  background-color: var(--danger-dark);
+}
+
+/* =======================
+   OVERLAY
+======================= */
 
 #temp-div {
   position: absolute;
@@ -148,10 +200,13 @@ body {
   pointer-events: none;
 }
 
+/* =======================
+   STATUS
+======================= */
+
 #status-text {
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  font-size: 24px;
+  font-size: 22px;
   color: var(--accent);
   margin-top: 2em;
-  opacity: 0.8;
+  opacity: 0.85;
 }

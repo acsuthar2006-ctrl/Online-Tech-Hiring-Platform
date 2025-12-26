@@ -33,7 +33,7 @@ async function init() {
   micBtn.classList.add("off");
 
   //  Camera ON by default
-  cameraBtn.classList.add("off");
+  // cameraBtn.classList.add("off");
 
   //  Local preview (NO echo)
   localVideo.srcObject = state.localStream;
@@ -58,20 +58,35 @@ window.exitCall = exitCall;
 micBtn.addEventListener("click", () => {
   if (!state.localStream) return;
 
-  micBtn.classList.toggle("off");
+  const audioTrack = state.localStream.getAudioTracks()[0];
+  const icon = micBtn.querySelector("i");
 
-  micBtn.classList.contains("off")
-    ? muteMicrophone(state.localStream, micBtn)
-    : unmuteMicrophone(state.localStream, micBtn);
+  const isMuted = !audioTrack.enabled;
+
+  audioTrack.enabled = isMuted;
+
+  micBtn.classList.toggle("off", !isMuted);
+
+  icon.className = isMuted
+    ? "fa fa-microphone"
+    : "fa fa-microphone-slash";
 });
+
 
 // 📹 Camera toggle
 cameraBtn.addEventListener("click", () => {
   if (!state.localStream) return;
 
-  cameraBtn.classList.toggle("off");
+  const videoTrack = state.localStream.getVideoTracks()[0];
+  const icon = cameraBtn.querySelector("i");
 
-  cameraBtn.classList.contains("off")
-    ? turnOffCamera(state.localStream, cameraBtn)
-    : turnOnCamera(state.localStream, cameraBtn);
+  const isOff = !videoTrack.enabled;
+
+  videoTrack.enabled = isOff;
+
+  cameraBtn.classList.toggle("off", !isOff);
+
+  icon.className = isOff
+    ? "fa-solid fa-video"
+    : "fa-solid fa-video-slash";
 });
