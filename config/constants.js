@@ -1,3 +1,2 @@
-module.exports = {
-  MAX_USERS_PER_ROOM: 2
-};
+// constants.js
+export const MAX_USERS_PER_ROOM = 2;

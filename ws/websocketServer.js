@@ -1,13 +1,12 @@
-const WebSocket = require("ws");
-const {
+import {WebSocketServer} from "ws";
+import {
   joinChannel,
   leaveChannel,
   broadcastToRoom
-} = require("./channels");
+} from "./channels.js"
 
 function initWebSocket(server) {
-  const wss = new WebSocket.Server({ server });
-
+  const wss = new WebSocketServer({ server });
   wss.on("connection", socket => {
     console.log("Socket connected");
 
@@ -43,4 +42,4 @@ function initWebSocket(server) {
   });
 }
 
-module.exports = initWebSocket;
+export default initWebSocket;

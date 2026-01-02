@@ -1,11 +1,16 @@
-const fs = require("fs");
-const path = require("path");
-const Busboy = require("busboy");
-const { roomExists } = require("../ws/channels");
+import fs from "fs";
+import path from "path";
+import Busboy from "busboy";
+import { fileURLToPath } from "url";
+import { roomExists } from "../ws/channels.js";
+
+/* ===== ES MODULE __dirname FIX ===== */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const RECORDINGS_DIR = path.join(__dirname, "..", "recordings");
 
-function handleHttp(req, res) {
+export default function handleHttp(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = url.pathname;
 
@@ -93,5 +98,3 @@ function handleHttp(req, res) {
     res.end(content);
   });
 }
-
-module.exports = handleHttp;

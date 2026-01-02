@@ -1,4 +1,5 @@
 {
+  "type" : "module",
   "dependencies": {
     "busboy": "^1.6.0",
     "mediasoup": "^3.19.14",

@@ -1,6 +1,5 @@
-const WebSocket = require("ws");
-const { MAX_USERS_PER_ROOM } = require("../config/constants");
-
+import WebSocket from "ws";
+import { MAX_USERS_PER_ROOM } from "../config/constants.js";
 const channels = new Map();
 
 function joinChannel(socket, channel) {
@@ -54,7 +53,7 @@ function roomExists(room) {
   return channels.has(room);
 }
 
-module.exports = {
+export {
   joinChannel,
   leaveChannel,
   broadcastToRoom,
