@@ -19,6 +19,7 @@ function joinChannel(socket, channel) {
   room.add(socket);
 
   console.log(`User ${socket.uid} joined room ${channel}`);
+  return true;
 }
 
 function leaveChannel(socket) {

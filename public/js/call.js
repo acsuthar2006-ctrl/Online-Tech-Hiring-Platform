@@ -2,89 +2,61 @@
 import { state } from "./state.js";
 import { createPeerConnection } from "./webrtc.js";
 import { sendSignal } from "./socket.js";
-import { setStatus, preview, tempDiv } from "./ui.js";
-import {
-  startScreenRecording,
-  stopScreenRecording,
-  uploadRecording
-} from "./screenRecorder.js";
+import { setStatus, preview, tempDiv, hideWaitingOverlay } from "./ui.js";
 
 export async function startCall() {
-  state.isCaller = true;
-  setStatus("Waiting for user to join…");
+  console.log("[Call] Starting/Joining call...");
+  setStatus("Connecting to room...");
 
-  await tryStartOffer();
+  // Reuse createPeerConnection which now handles Mediasoup device load & produce
+  await createPeerConnection(sendSignal);
+
+  setStatus("Connected");
+  hideWaitingOverlay();
 }
 
 export async function joinCall() {
-  tempDiv.remove();
-  await createPeerConnection(sendSignal);
-  try {
-    console.log('start recording...');
-    await startScreenRecording();
-  } catch (err) {
-    console.warn("Screen recording not started:", err);
-  }
-  sendSignal("ready");
-  setStatus("Joined — waiting for call");
-}
-
-async function tryStartOffer() {
-  if (!state.isCaller || !state.peerReady) return;
-
-  await createPeerConnection(sendSignal);
-
-  const offer = await state.pc.createOffer();
-  await state.pc.setLocalDescription(offer);
-
-  sendSignal("offer", { offer });
-  setStatus("Calling…");
+  // Same logic for both roles in SFU
+  return startCall();
 }
 
 export async function acceptCall() {
-  tempDiv.remove();
-  await createPeerConnection(sendSignal);
-
-  await state.pc.setRemoteDescription(state.pendingOffer);
-  state.pendingOffer = null;
-
-  for (const c of state.pendingCandidates) {
-    await state.pc.addIceCandidate(c);
-  }
-  state.pendingCandidates.length = 0;
-
-  const answer = await state.pc.createAnswer();
-  await state.pc.setLocalDescription(answer);
-
-  sendSignal("answer", { answer });
-  setStatus("Call connected");
+  // Not needed in SFU typically unless we implement a "ring" feature.
+  // unlikely to be triggered as "offer" event is removed.
+  console.warn("acceptCall called but not implemented for SFU");
 }
 
 export async function exitCall() {
   if (state.isLeaving) return;
   state.isLeaving = true;
 
-  sendSignal("leave");
-  console.log('stopRecording...');
-  await stopScreenRecording();
-  await uploadRecording(state.roomId);
-  localStorage.setItem("hasRecording", "true");
+  try {
+    // Notify peer first
+    sendSignal("leave");
 
-  endCall();
-  window.location.href = "/lobby.html";
+    // Server handles recording stop
+    localStorage.removeItem("hasRecording"); // No client recording to download
+
+  } catch (err) {
+    console.error("[Exit] Error during cleanup:", err);
+  } finally {
+    endCall();
+
+    setTimeout(() => {
+      window.location.href = "/lobby.html";
+    }, 50);
+  }
 }
 
 export function endCall() {
-  state.pc?.close();
-  state.pc = null;
+  // Refresh page is the easiest way to cleanup mediasoup client fully
+  // But we can just close transports if we had access to them.
+  // Since we reload page on exit, this is fine.
 
-  state.remoteStream = null;
   state.isCaller = false;
   state.peerReady = false;
   state.pendingOffer = null;
   state.pendingCandidates.length = 0;
-
-  if (!tempDiv.isConnected) preview.prepend(tempDiv);
 
   setStatus("Call ended");
 }

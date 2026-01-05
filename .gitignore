@@ -1,8 +1,9 @@
 cert.pem
-package-lock.json
 key.pem
 target
 .vscode
 node_modules
-sfu
 recordings
+.DS_Store
+.env
+*.log

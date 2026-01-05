@@ -1,19 +1,24 @@
 :root {
-  --bg-main: #0f172a;
-  --bg-card: rgba(14, 251, 255, 0.06);
-  --accent: #38bdf8;
-  --accent-soft: rgba(56, 189, 248, 0.18);
+  --bg-main: #0a0e1a;
+  --bg-gradient-start: #0f1729;
+  --bg-gradient-end: #050812;
+  --bg-card: rgba(20, 28, 45, 0.7);
+  --accent: #06b6d4;
+  --accent-glow: rgba(6, 182, 212, 0.25);
+  --accent-soft: rgba(6, 182, 212, 0.15);
   --danger: #ef4444;
   --danger-dark: #dc2626;
-  --text-main: #ffffff;
-  --text-muted: rgb(229, 231, 235);
-  --overlay-bg: rgba(15, 23, 42, 0.85);
-  --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.35);
-  --shadow-hover: 0 6px 18px rgba(56, 189, 248, 0.4);
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --font-main: system-ui, -apple-system, sans-serif;
+  --success: #10b981;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --overlay-bg: rgba(10, 14, 26, 0.92);
+  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 8px 30px rgba(6, 182, 212, 0.5);
+  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.2);
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -25,12 +30,32 @@
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #111827, var(--bg-main));
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: var(--text-main);
+  padding: 2em;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
 }
 
 /* =======================
@@ -39,23 +64,44 @@ body {
 
 #video-wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2em;
-  width: 90%;
-  max-width: 900px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5em;
+  width: 100%;
+  max-width: 1100px;
+  z-index: 1;
 }
 
 .video-card {
   position: relative;
   background: var(--bg-card);
-  padding: 1em;
+  padding: 1.5em;
   border-radius: var(--radius-lg);
+  border: 1px solid rgba(6, 182, 212, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1em;
+  gap: 1.2em;
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* =======================
@@ -65,17 +111,28 @@ body {
 .video-player {
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: black;
+  background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
   object-fit: cover;
   border-radius: var(--radius-md);
+  border: 2px solid rgba(6, 182, 212, 0.15);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.video-player:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px var(--accent-glow);
 }
 
 #remote-user {
   visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 #remote-user.active {
   visibility: visible;
+  opacity: 1;
 }
 
 /* =======================
@@ -84,31 +141,67 @@ body {
 
 .btn-container {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
 }
 
 .call-btn,
 .exit-btn {
-  padding: 0.9em 2em;
+  flex: 1;
+  padding: 1em 2em;
   border: none;
   border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: #020617;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.call-btn:hover,
-.exit-btn:hover {
+.call-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, #0891b2 100%);
+  color: #020617;
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+}
+
+.call-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.call-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.call-btn:hover {
   box-shadow: var(--shadow-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+.exit-btn {
+  background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+  color: var(--text-main);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.exit-btn:hover {
+  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.5);
+  transform: translateY(-2px);
 }
 
 .call-btn:active,
 .exit-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 /* =======================
@@ -119,13 +212,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 75%;
+  width: 100%;
   gap: 12px;
+  padding: 0.5em;
+  background: rgba(10, 14, 26, 0.5);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(10px);
 }
 
 .media-controls {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* =======================
@@ -134,42 +231,79 @@ body {
 
 #mic-btn,
 #camera-btn {
-  background: transparent;
-  border: none;
-  width: 44px;
-  height: 44px;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    transform 0.1s ease;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+#mic-btn::after,
+#camera-btn::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#mic-btn:hover::after,
+#camera-btn:hover::after {
+  opacity: 0.3;
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(1.3);
+    opacity: 0;
+  }
 }
 
 #mic-btn i,
 #camera-btn i {
   color: var(--accent);
-  font-size: 22px;
+  font-size: 20px;
+  transition: transform 0.2s ease;
 }
 
-/* Hover (ON state) */
 #mic-btn:hover,
 #camera-btn:hover {
-  background-color: var(--accent-soft);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: scale(1.05);
 }
 
-/* Active press */
+#mic-btn:hover i,
+#camera-btn:hover i {
+  transform: scale(1.1);
+}
+
 #mic-btn:active,
 #camera-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
 /* OFF state */
 #mic-btn.off,
 #camera-btn.off {
-  background-color: var(--danger);
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+  border-color: var(--danger);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 #mic-btn.off i,
@@ -179,7 +313,8 @@ body {
 
 #mic-btn.off:hover,
 #camera-btn.off:hover {
-  background-color: var(--danger-dark);
+  background: var(--danger-dark);
+  transform: scale(1.05);
 }
 
 /* =======================
@@ -189,7 +324,7 @@ body {
 #temp-div {
   position: absolute;
   inset: 0;
-  background-color: var(--overlay-bg);
+  background: var(--overlay-bg);
   color: var(--text-muted);
   font-size: 20px;
   font-weight: 600;
@@ -198,6 +333,7 @@ body {
   align-items: center;
   border-radius: var(--radius-lg);
   pointer-events: none;
+  backdrop-filter: blur(10px);
 }
 
 /* =======================
@@ -205,8 +341,124 @@ body {
 ======================= */
 
 #status-text {
-  font-size: 22px;
+  font-size: 18px;
   color: var(--accent);
   margin-top: 2em;
-  opacity: 0.85;
+  padding: 0.8em 1.5em;
+  background: rgba(6, 182, 212, 0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  opacity: 0.9;
+  z-index: 1;
+  animation: fadeIn 0.5s ease;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.9; }
+}
+
+/* =======================
+   RESPONSIVE
+======================= */
+
+@media (max-width: 768px) {
+  #video-wrapper {
+    grid-template-columns: 1fr;
+    gap: 1.5em;
+  }
+
+  .video-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-container {
+    flex-direction: column;
+  }
+}
+
+/* =======================
+   VIDEO CONTAINER & OVERLAY FIX
+======================= */
+
+.video-container {
+  position: relative;
+  width: 100%;
+}
+
+#temp-div {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay-bg);
+  color: var(--text-muted);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+/* Hidden state */
+#temp-div[style*="display: none"],
+#temp-div.hidden {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.waiting-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.waiting-content i {
+  font-size: 48px;
+  color: var(--accent);
+  animation: spin 2s linear infinite;
+}
+
+.waiting-content p {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Ensure video overlay is positioned correctly */
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.user-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(10, 14, 26, 0.8);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  backdrop-filter: blur(10px);
 }
