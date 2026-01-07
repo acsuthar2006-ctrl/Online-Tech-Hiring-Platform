@@ -8,9 +8,9 @@ import { sendSignal } from "./socket.js";
 let device;
 let producerTransport;
 let consumerTransport;
-let audioProducer;
-let videoProducer;
-let consumer;
+// let audioProducer;
+// let videoProducer;
+// let consumer;
 
 export async function createPeerConnection(signalFunc) {
   // This function is called by joinCall/startCall
@@ -171,37 +171,48 @@ export async function consumeProducer(producerId, kind) {
 window.consumeProducer = consumeProducer;
 
 // --- Helper for request/response pattern via WebSocket ---
+// Refactored to use a single listener map instead of creating new listeners per request
+const pendingRequests = new Map();
+
+function setupResponseHandler() {
+  state.socket.addEventListener('message', (evt) => {
+    try {
+      const msg = JSON.parse(evt.data);
+      if (msg.id && pendingRequests.has(msg.id)) {
+        const { resolve, reject, timer } = pendingRequests.get(msg.id);
+        clearTimeout(timer);
+        pendingRequests.delete(msg.id);
+
+        if (msg.error) {
+          reject(msg.error);
+        } else {
+          resolve(msg.routerRtpCapabilities || msg.params || msg);
+        }
+      }
+    } catch (e) {
+      console.error('[Mediasoup] Error handling message:', e);
+    }
+  });
+}
+
 function request(type, data = {}) {
   return new Promise((resolve, reject) => {
+    // Initialize handler once
+    if (pendingRequests.size === 0 && !state.socket._hasResponseHandler) {
+      setupResponseHandler();
+      state.socket._hasResponseHandler = true;
+    }
+
     const id = Math.random().toString(36).substring(7);
 
-    const handler = (evt) => {
-      try {
-        const msg = JSON.parse(evt.data);
-        // console.log("WEBRTC REQ CHECK:", msg.id, id, msg.type); // Verbose
-        if (msg.id === id) {
-          console.log(`[Mediasoup] Request resolved: ${type} `);
-          state.socket.removeEventListener('message', handler);
-          if (msg.error) reject(msg.error);
-          else resolve(msg.routerRtpCapabilities || msg.params || msg);
-        }
-      } catch (e) { }
-    };
+    const timer = setTimeout(() => {
+      if (pendingRequests.has(id)) {
+        pendingRequests.delete(id);
+        reject('Timeout');
+      }
+    }, 10000); // 10s timeout
 
-    // Add temp listener
-    // Note: This is hacky because we have a global onmessage in socket.js 
-    // Ideally we should dispatch events in socket.js.
-    // Let's rely on socket.js to dispatch? 
-    // For now, let's just listen directly on the socket instance if possible, 
-    // OR we modify socket.js to handle responses.
-
-    // Implementation Plan: 
-    // We'll update socket.js to emit custom events or use a callback map.
-    // For simplicity here, let's assume we update socket.js to delegate 'response' types to us.
-    // But since we can't easily modify socket.js state from here without export,
-    // let's add a temporary listener on the socket itself.
-
-    state.socket.addEventListener('message', handler);
+    pendingRequests.set(id, { resolve, reject, timer });
 
     state.socket.send(JSON.stringify({
       type,
@@ -209,10 +220,5 @@ function request(type, data = {}) {
       channel: state.roomId,
       ...data
     }));
-
-    setTimeout(() => {
-      state.socket.removeEventListener('message', handler);
-      reject('Timeout');
-    }, 5000);
   });
 }

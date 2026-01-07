@@ -123,17 +123,21 @@ a=rtcp-mux
 
         const args = [
             '-protocol_whitelist', 'file,pipe,udp,rtp',
-            '-analyzeduration', '100M',
-            '-probesize', '100M',
+            '-analyzeduration', '50M',
+            '-probesize', '50M',
             '-f', 'sdp',
             '-i', 'pipe:0',
+            // Simplified filter: scale to 480p height, audio mix, hstack
             '-filter_complex', '[0:0][0:2]amix=inputs=2[aout];[0:1]scale=-2:720[v1];[0:3]scale=-2:720[v2];[v1][v2]hstack[vout]',
             '-map', '[aout]',
             '-map', '[vout]',
             '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-r', '30', // Force 30 fps
+            '-preset', 'veryfast', // Faster preset = less CPU
+            '-tune', 'zerolatency',
+            '-crf', '28', // Lower quality slightly to save bitrate/CPU
+            '-r', '30', // Reduce from 30 to 20 fps
             '-c:a', 'aac',
+            '-b:a', '96k',
             '-y', filepath
         ];
 

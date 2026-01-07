@@ -186,24 +186,30 @@ async function initWebSocket(server) {
           const roomSockets = [...wss.clients].filter(c => c.channel === socket.channel && c.producers && c.producers.audio && c.producers.video);
 
           if (roomSockets.length === 2) {
-            const existingRecorder = recorders.get(socket.channel);
+            const enableRecording = process.env.ENABLE_RECORDING === 'true';
 
-            // Check if already recording
-            if (existingRecorder && existingRecorder.process === null && existingRecorder.consumers.length === 0) {
-              const producersList = [];
-              // Order: User 1 Audio, User 1 Video, User 2 Audio, User 2 Video
-              roomSockets.forEach(s => {
-                producersList.push({ producerId: s.producers.audio, kind: 'audio' });
-                producersList.push({ producerId: s.producers.video, kind: 'video' });
-              });
+            if (enableRecording) {
+              const existingRecorder = recorders.get(socket.channel);
 
-              console.log(`[WebSocket] Triggering merged recording for room ${socket.channel} with ${producersList.length} streams`);
+              // Check if already recording
+              if (existingRecorder && existingRecorder.process === null && existingRecorder.consumers.length === 0) {
+                const producersList = [];
+                // Order: User 1 Audio, User 1 Video, User 2 Audio, User 2 Video
+                roomSockets.forEach(s => {
+                  producersList.push({ producerId: s.producers.audio, kind: 'audio' });
+                  producersList.push({ producerId: s.producers.video, kind: 'video' });
+                });
 
-              try {
-                existingRecorder.start(producersList);
-              } catch (e) {
-                console.error('[WebSocket] Error starting recorder:', e);
+                console.log(`[WebSocket] Triggering merged recording for room ${socket.channel} with ${producersList.length} streams`);
+
+                try {
+                  existingRecorder.start(producersList);
+                } catch (e) {
+                  console.error('[WebSocket] Error starting recorder:', e);
+                }
               }
+            } else {
+              console.log(`[WebSocket] Recording disabled by config.`);
             }
           }
 
