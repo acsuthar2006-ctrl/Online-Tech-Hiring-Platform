@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import ffmpegPath from 'ffmpeg-static';
 
-const RECORD_DIR = './recordings';
+const RECORD_DIR = process.env.RECORDING_DIR || './recordings';
 
 if (!fs.existsSync(RECORD_DIR)) {
     fs.mkdirSync(RECORD_DIR);
@@ -61,7 +61,10 @@ export class Recorder extends EventEmitter {
             this.transports.push(transport);
 
             // Assign a random port
-            const port = 50000 + Math.floor(Math.random() * 10000); // Expanded range
+            // Assign a random port within configured range
+            const minPort = parseInt(process.env.RECORDER_MIN_PORT || 50000);
+            const maxPort = parseInt(process.env.RECORDER_MAX_PORT || 59999);
+            const port = minPort + Math.floor(Math.random() * (maxPort - minPort));
             ports.push(port);
 
             await transport.connect({ ip: '127.0.0.1', port });

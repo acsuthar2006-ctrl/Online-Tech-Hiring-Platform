@@ -19,8 +19,8 @@ function getLocalIp() {
 export const config = {
     // Worker settings
     worker: {
-        rtcMinPort: 40000,
-        rtcMaxPort: 49999,
+        rtcMinPort: parseInt(process.env.MEDIASOUP_MIN_PORT || 40000),
+        rtcMaxPort: parseInt(process.env.MEDIASOUP_MAX_PORT || 49999),
         logLevel: 'warn',
         logTags: [
             'info',

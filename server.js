@@ -1,3 +1,4 @@
+import "dotenv/config";
 import http from "http";
 import fs from "fs";
 import path from "path";
@@ -41,7 +42,7 @@ const shutdown = () => {
 
   // Cleanup recordings
   try {
-    const recordingsDir = './recordings';
+    const recordingsDir = process.env.RECORDING_DIR || './recordings';
     if (fs.existsSync(recordingsDir)) {
       console.log(" Cleaning up recordings...");
       const files = fs.readdirSync(recordingsDir);

@@ -8,9 +8,9 @@ import { sendSignal } from "./socket.js";
 let device;
 let producerTransport;
 let consumerTransport;
-// let audioProducer;
-// let videoProducer;
-// let consumer;
+let audioProducer;
+let videoProducer;
+let consumer;
 
 export async function createPeerConnection(signalFunc) {
   // This function is called by joinCall/startCall
