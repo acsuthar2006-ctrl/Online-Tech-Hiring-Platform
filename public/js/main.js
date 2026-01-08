@@ -22,16 +22,19 @@ async function init() {
 
     console.log("[Init] Requesting media permissions...");
 
-    // Set UI labels based on role
+    // Set UI labels and waiting message based on role
     const localLabel = document.querySelector(".local-card .user-label");
     const remoteLabel = document.querySelector(".remote-card .user-label");
+    const waitingText = document.querySelector(".waiting-content p");
 
     if (state.role === "interviewer") {
       localLabel.innerHTML = '<i class="fas fa-user-tie"></i> You (Interviewer)';
       remoteLabel.innerHTML = '<i class="fas fa-user"></i> Candidate';
+      if (waitingText) waitingText.innerText = "The Candidate will join shortly...";
     } else {
       localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
       remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
+      if (waitingText) waitingText.innerText = "The Interviewer will join shortly...";
     }
 
     // Get camera + mic (echo-safe)

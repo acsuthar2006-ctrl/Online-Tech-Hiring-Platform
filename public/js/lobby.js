@@ -107,37 +107,66 @@ if (downloadBtn) {
       showLoading(false);
 
       if (data.recordings && data.recordings.length > 0) {
-        // Create list with updated styling
+        // Create container
         let listHtml = `
-                <div class="recordings-list">
-                    <h3>Available Recordings</h3>
-                    <ul>
-            `;
+            <div class="recordings-list">
+                <div class="recordings-header">
+                    <i class="fas fa-history"></i>
+                    <h3>Session Archives</h3>
+                </div>
+                <div class="recordings-content">
+        `;
 
+        // Add items
         data.recordings.forEach(rec => {
+          // Check file type for icon (default video)
+          const icon = rec.filename.endsWith('.mp4') ? 'fa-file-video' : 'fa-file';
+
           listHtml += `
-                    <li>
-                        <span>${rec.date}</span>
-                        <a href="${rec.url}" class="download-link-btn" download target="_blank">
-                            <i class="fas fa-download"></i> Download MP4
-                        </a>
-                    </li>
-                `;
+            <div class="recording-item">
+                <div class="recording-info">
+                    <span class="recording-name">Session Recording</span>
+                    <span class="recording-date">
+                        <i class="far fa-clock"></i> ${rec.date}
+                    </span>
+                </div>
+                <div class="recording-actions">
+                    <a href="${rec.url}" class="action-btn" target="_blank" title="Play Video">
+                        <i class="fas fa-play"></i>
+                    </a>
+                    <a href="${rec.url}" class="action-btn download-action" download title="Download">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            </div>
+            `;
         });
-        listHtml += `</ul></div>`;
 
-        // Remove existing list if any
+        listHtml += `</div></div>`; // Close content and list divs
+
+        // Insert
         const existingList = document.querySelector('.recordings-list');
         if (existingList) existingList.remove();
 
-        // Insert after button
         downloadBtn.insertAdjacentHTML('afterend', listHtml);
-
         showToast(`Found ${data.recordings.length} recordings!`, "success");
+
       } else {
-        showToast("No recordings found for this room", "info");
+        // Empty state
+        const emptyHtml = `
+            <div class="recordings-list">
+                 <div class="empty-state">
+                    <i class="fas fa-box-open"></i>
+                    <p>No recordings found for this Session ID.</p>
+                 </div>
+            </div>
+        `;
+
         const existingList = document.querySelector('.recordings-list');
         if (existingList) existingList.remove();
+
+        downloadBtn.insertAdjacentHTML('afterend', emptyHtml);
+        showToast("No recordings found", "info");
       }
 
     } catch (err) {

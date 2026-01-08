@@ -2,8 +2,23 @@
 import os from 'os';
 
 // Helper to get Local LAN IP
+// Helper to get Local LAN IP
 function getLocalIp() {
     const interfaces = os.networkInterfaces();
+    const priority = ['en0', 'en1', 'eth0', 'wlan0', 'wi-fi'];
+
+    // Try priority interfaces first
+    for (const name of priority) {
+        if (interfaces[name]) {
+            for (const iface of interfaces[name]) {
+                if ('IPv4' === iface.family && !iface.internal) {
+                    return iface.address;
+                }
+            }
+        }
+    }
+
+    // Fallback to any non-internal IPv4
     for (const name of Object.keys(interfaces)) {
         for (const iface of interfaces[name]) {
             // Skip internal (non-127.0.0.1) and non-ipv4
@@ -20,7 +35,7 @@ export const config = {
     // Worker settings
     worker: {
         rtcMinPort: parseInt(process.env.MEDIASOUP_MIN_PORT || 40000),
-        rtcMaxPort: parseInt(process.env.MEDIASOUP_MAX_PORT || 49999),
+        rtcMaxPort: parseInt(process.env.MEDIASOUP_MAX_PORT || 40050), // Reduced range for easier port forwarding
         logLevel: 'warn',
         logTags: [
             'info',

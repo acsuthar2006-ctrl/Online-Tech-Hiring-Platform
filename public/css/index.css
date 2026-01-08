@@ -154,10 +154,10 @@ body::before {
 
 #video-wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   gap: 24px;
-  width: 100%;
-  max-width: 1100px;
+  width: 95%;
+  max-width: 1600px;
   z-index: 1;
   padding-top: 60px;
   /* Space for header */
@@ -406,6 +406,33 @@ body::before {
   border-radius: var(--radius-lg);
   pointer-events: none;
   backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.waiting-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  text-align: center;
+}
+
+.waiting-content i {
+  font-size: 48px;
+  color: var(--accent);
+  margin-bottom: 0.5em;
+  filter: drop-shadow(0 0 15px var(--accent-glow));
+}
+
+.waiting-content p {
+  font-size: 20px;
+  color: var(--text-main);
+  font-weight: 600;
+  margin: 0;
+  max-width: 80%;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* =======================
@@ -472,4 +499,120 @@ body::before {
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* =======================
+   RESPONSIVE DESIGN
+======================= */
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 1em;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .logo span {
+    display: none;
+    /* Hide text on smaller tablets/mobile if needed, or keep it */
+  }
+
+  /* Show text again if space permits or just adjust font size */
+  @media (min-width: 480px) {
+    .logo span {
+      display: inline;
+    }
+  }
+
+  #video-wrapper {
+    grid-template-columns: 1fr;
+    /* Single column on mobile */
+    gap: 16px;
+    padding-top: 80px;
+    /* More space for header */
+  }
+
+  .video-card {
+    padding: 1em;
+  }
+
+  .video-controls {
+    flex-wrap: wrap;
+    /* Allow wrapping */
+    justify-content: center;
+  }
+
+  .main-actions {
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .media-controls {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 1em;
+  }
+
+  .app-header {
+    padding: 0.8em;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .logo i {
+    font-size: 24px;
+  }
+
+  /* Ensure header items don't overlap */
+  .connection-status {
+    padding: 6px 10px;
+  }
+
+  .status-text {
+    display: none;
+    /* Hide 'Connected' text on very small screens, keep dot */
+  }
+
+  #video-wrapper {
+    padding-top: 70px;
+  }
+
+  .call-btn,
+  .exit-btn {
+    padding: 0.8em 1em;
+    font-size: 13px;
+  }
+
+  .call-btn span,
+  .exit-btn span {
+    display: none;
+    /* Hide button text, show only icons on mobile */
+  }
+
+  .main-actions {
+    gap: 8px;
+  }
+
+  /* Make icons bigger when text is hidden */
+  .call-btn i,
+  .exit-btn i {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  #status-text {
+    font-size: 13px;
+    padding: 0.5em 1em;
+    width: max-content;
+  }
 }

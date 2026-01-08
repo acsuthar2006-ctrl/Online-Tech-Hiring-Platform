@@ -38,7 +38,16 @@ export async function createPeerConnection(signalFunc) {
       rtpCapabilities: device.rtpCapabilities
     });
 
-    producerTransport = device.createSendTransport(transportInfo);
+    // Add STUN servers for NAT traversal
+    const transportOptions = {
+      ...transportInfo,
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    };
+
+    producerTransport = device.createSendTransport(transportOptions);
 
     producerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
       try {
@@ -89,7 +98,15 @@ export async function createPeerConnection(signalFunc) {
     rtpCapabilities: device.rtpCapabilities
   });
 
-  consumerTransport = device.createRecvTransport(transportInfo);
+  const transportOptions = {
+    ...transportInfo,
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" }
+    ]
+  };
+
+  consumerTransport = device.createRecvTransport(transportOptions);
 
   consumerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
     try {

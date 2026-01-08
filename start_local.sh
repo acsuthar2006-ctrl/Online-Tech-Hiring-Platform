@@ -11,8 +11,12 @@ else
     echo "✅ Local IP Detected: $MEDIASOUP_ANNOUNCED_IP"
 fi
 
+
+# Enable Public IP Detection for Ngrok/External Support
+export DETECT_PUBLIC_IP=true
+
 echo "🚀 Starting Server..."
-echo "📱 On Mobile (Same WiFi): Open the Ngrok URL (for HTTPS) or http://$MEDIASOUP_ANNOUNCED_IP:3000"
+echo "📱 On Mobile (4G/External): Ensure UDP Ports 40000-40050 are forwarded on your router!"
 echo "ℹ️  If using Ngrok, keep this running and start 'ngrok http 3000' in another tab."
 
 node server.js
