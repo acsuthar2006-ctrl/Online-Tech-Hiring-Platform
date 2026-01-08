@@ -2,7 +2,10 @@
 import { state } from "./state.js";
 import { initSocket } from "./socket.js";
 import { startCall, joinCall, exitCall } from "./call.js";
-import { micBtn, cameraBtn, localVideo, preview, tempDiv, showWaitingOverlay } from "./ui.js";
+import { micBtn, cameraBtn, localVideo, preview, tempDiv, showWaitingOverlay, updateCallButtonState } from "./ui.js";
+
+// Initialize UI state
+updateCallButtonState(false);
 
 // Validate room ID
 if (!state.roomId) {
@@ -18,6 +21,18 @@ async function init() {
     }
 
     console.log("[Init] Requesting media permissions...");
+
+    // Set UI labels based on role
+    const localLabel = document.querySelector(".local-card .user-label");
+    const remoteLabel = document.querySelector(".remote-card .user-label");
+
+    if (state.role === "interviewer") {
+      localLabel.innerHTML = '<i class="fas fa-user-tie"></i> You (Interviewer)';
+      remoteLabel.innerHTML = '<i class="fas fa-user"></i> Candidate';
+    } else {
+      localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
+      remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
+    }
 
     // Get camera + mic (echo-safe)
     state.localStream = await navigator.mediaDevices.getUserMedia({
@@ -65,12 +80,12 @@ async function init() {
     }
 
     console.log("[Init] Initialization complete");
-    
+
   } catch (err) {
     console.error("[Init] Failed to get media:", err);
-    
+
     let errorMessage = "Failed to access camera/microphone. ";
-    
+
     if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
       errorMessage += "Please allow camera and microphone permissions and refresh the page.";
     } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
@@ -80,7 +95,7 @@ async function init() {
     } else {
       errorMessage += err.message;
     }
-    
+
     alert(errorMessage);
     window.location.href = "/lobby.html";
   }

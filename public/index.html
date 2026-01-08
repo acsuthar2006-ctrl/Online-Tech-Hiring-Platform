@@ -31,12 +31,12 @@
     <!-- Header -->
     <header class="app-header">
       <div class="logo">
-        <i class="fas fa-video"></i>
-        <span>PeerChat</span>
+        <i class="fas fa-code"></i>
+        <span>TechInterview Platform</span>
       </div>
       <div class="connection-status" id="connection-status">
         <span class="status-dot"></span>
-        <span class="status-text">Connecting...</span>
+        <span class="status-text">Connected</span>
       </div>
     </header>
 
@@ -48,16 +48,26 @@
           <video class="video-player" id="local-user" autoplay playsinline muted></video>
           <div class="video-overlay">
             <span class="user-label">
-              <i class="fas fa-user"></i> You
+              <i class="fas fa-user-tie"></i> You (Interviewer)
             </span>
           </div>
         </div>
 
         <div class="video-controls">
-          <button class="call-btn" id="start-call-btn" onclick="startCall()">
-            <i class="fas fa-phone"></i>
-            <span>Start Call</span>
-          </button>
+          <div class="main-actions">
+            <button class="call-btn" id="start-call-btn" onclick="startCall()">
+              <i class="fas fa-phone"></i>
+              <span>Connect to Session</span>
+            </button>
+            <button class="call-btn join-btn" id="join-call-btn" onclick="joinCall()">
+              <i class="fas fa-phone-volume"></i>
+              <span>Join Session</span>
+            </button>
+            <button class="exit-btn" id="exit-call-btn" onclick="exitCall()">
+              <i class="fas fa-phone-slash"></i>
+              <span>End Session</span>
+            </button>
+          </div>
 
           <div class="media-controls">
             <button id="mic-btn" aria-label="Toggle microphone" title="Toggle Microphone">
@@ -76,27 +86,16 @@
           <video class="video-player" id="remote-user" autoplay playsinline></video>
           <div class="video-overlay">
             <span class="user-label">
-              <i class="fas fa-user-friends"></i> Remote User
+              <i class="fas fa-user"></i> Candidate / Remote
             </span>
           </div>
           <!-- Waiting overlay - will be shown/hidden dynamically -->
           <div id="temp-div">
             <div class="waiting-content">
               <i class="fas fa-hourglass-half fa-spin"></i>
-              <p>Waiting for connection...</p>
+              <p>Waiting for participant...</p>
             </div>
           </div>
-        </div>
-
-        <div class="btn-container">
-          <button class="call-btn join-btn" id="join-call-btn" onclick="joinCall()">
-            <i class="fas fa-phone-volume"></i>
-            <span>Join Call</span>
-          </button>
-          <button class="exit-btn" id="exit-call-btn" onclick="exitCall()">
-            <i class="fas fa-phone-slash"></i>
-            <span>Exit Call</span>
-          </button>
         </div>
       </article>
     </div>

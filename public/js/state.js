@@ -11,5 +11,6 @@ export const state = {
 
   pendingCandidates: [],
   uid: crypto.randomUUID(),
-  roomId: new URLSearchParams(window.location.search).get("room")
+  roomId: new URLSearchParams(window.location.search).get("room"),
+  role: new URLSearchParams(window.location.search).get("role") || "candidate" // default to candidate only if missing
 };

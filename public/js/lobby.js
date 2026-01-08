@@ -43,7 +43,7 @@ joinForm.addEventListener("submit", async evt => {
     }
 
     console.log(`[Lobby] Joining room: ${room}`);
-    window.location.href = `${BASE_URL}/?room=${room}`;
+    window.location.href = `${BASE_URL}/?room=${room}&role=candidate`;
   } catch (err) {
     showLoading(false);
     console.error("[Lobby] Error checking room:", err);
@@ -79,7 +79,7 @@ createBtn.addEventListener("click", async () => {
     }
 
     console.log(`[Lobby] Creating room: ${room}`);
-    window.location.href = `${BASE_URL}/?room=${room}`;
+    window.location.href = `${BASE_URL}/?room=${room}&role=interviewer`;
   } catch (err) {
     showLoading(false);
     console.error("[Lobby] Error checking room:", err);

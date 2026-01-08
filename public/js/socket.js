@@ -1,6 +1,6 @@
 // socket.js
 import { state } from "./state.js";
-import { setStatus } from "./ui.js";
+import { setStatus, resetRemoteVideoUI, updateCallButtonState } from "./ui.js";
 import { acceptCall, endCall, startCall } from "./call.js";
 
 export function initSocket() {
@@ -66,7 +66,8 @@ export function initSocket() {
         case "leave":
           console.log("[Socket] Peer left");
           setStatus("Peer left");
-          // Handle cleanup if needed
+          resetRemoteVideoUI();
+          updateCallButtonState(false);
           break;
 
         default:

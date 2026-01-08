@@ -24,7 +24,7 @@
 
 <body>
   <!-- Background Effects -->
-  <div class="bg-particles"></div>
+  <!-- Particles removed for professional look -->
 
   <!-- Main Content -->
   <main class="lobby-container">
@@ -32,20 +32,20 @@
       <!-- Logo/Header -->
       <div class="lobby-header">
         <div class="logo-icon">
-          <i class="fas fa-video"></i>
+          <i class="fas fa-code"></i>
         </div>
-        <h1 class="lobby-title">PeerChat</h1>
-        <p class="lobby-sub">Secure peer-to-peer video calling</p>
+        <h1 class="lobby-title">TechInterview Platform</h1>
+        <p class="lobby-sub">Professional Technical Interview Environment</p>
       </div>
 
       <!-- Room Input Section -->
       <section class="lobby-section">
         <form class="lobby-form" id="joinForm">
           <div class="input-group">
-            <label for="roomInput" class="input-label">Room ID</label>
+            <label for="roomInput" class="input-label">Interview Room ID</label>
             <div class="input-wrapper">
               <i class="fas fa-hashtag input-icon"></i>
-              <input type="text" id="roomInput" placeholder="Enter or create room ID" autocomplete="off" required
+              <input type="text" id="roomInput" placeholder="Enter Room ID" autocomplete="off" required
                 pattern="[A-Za-z0-9-_]+" title="Letters, numbers, hyphens and underscores only" />
             </div>
           </div>
@@ -54,17 +54,17 @@
           <div class="button-group">
             <button type="submit" class="primary-btn">
               <i class="fa-solid fa-arrow-right-to-bracket"></i>
-              <span>Join Room</span>
+              <span>Join Interview</span>
             </button>
 
             <button type="button" class="create-btn" id="createRoomBtn">
               <i class="fa-solid fa-plus"></i>
-              <span>Create Room</span>
+              <span>Start New Session</span>
             </button>
 
             <button type="button" class="secondary-btn" id="randomRoomBtn">
               <i class="fa-solid fa-dice"></i>
-              <span>Random ID</span>
+              <span>Generate Room ID</span>
             </button>
           </div>
         </form>
@@ -73,11 +73,11 @@
       <!-- Download Recording Section -->
       <section class="lobby-section recording-section" id="recordingSection">
         <div class="divider">
-          <span>recordings</span>
+          <span>Session Archives</span>
         </div>
         <button class="download-btn" id="downloadRecordingBtn">
           <i class="fa-solid fa-file-video"></i>
-          <span>Check / Download Recordings</span>
+          <span>Access Interview Recordings</span>
         </button>
       </section>
     </div>

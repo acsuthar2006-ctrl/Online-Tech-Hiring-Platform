@@ -2,7 +2,7 @@
 import { state } from "./state.js";
 import { createPeerConnection } from "./webrtc.js";
 import { sendSignal } from "./socket.js";
-import { setStatus, preview, tempDiv, hideWaitingOverlay } from "./ui.js";
+import { setStatus, preview, tempDiv, hideWaitingOverlay, updateCallButtonState } from "./ui.js";
 
 export async function startCall() {
   console.log("[Call] Starting/Joining call...");
@@ -13,6 +13,7 @@ export async function startCall() {
 
   setStatus("Connected");
   hideWaitingOverlay();
+  updateCallButtonState(true);
 }
 
 export async function joinCall() {
