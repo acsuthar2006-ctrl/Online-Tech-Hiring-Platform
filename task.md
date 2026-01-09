@@ -1,11 +1,8 @@
-# Task: Migrate to P2P Architecture
+# Task: Deploy to AWS
 
-- [ ] Create Implementation Plan <!-- id: 0 -->
-- [ ] **Cleanup**: Remove Mediasoup dependencies and `sfu/` directory <!-- id: 1 -->
-- [ ] **Server**: Refactor `server.js` to be a lightweight Signaling Server (Socket Relay) <!-- id: 2 -->
-- [ ] **Server**: Ensure `http/staticServer.js` handles file uploads correctly <!-- id: 3 -->
-- [ ] **Client**: Update `public/js/socket.js` to handle Signal messages (Offer/Answer/ICE) <!-- id: 4 -->
-- [ ] **Client**: Rewrite `public/js/webrtc.js` to use `RTCPeerConnection` (P2P Mesh) <!-- id: 5 -->
-- [ ] **Recording**: Update `public/js/screenRecorder.js` for Auto-Upload on Exit (Non-blocking) <!-- id: 6 -->
-- [ ] **Cleanup**: Remove `mediasoup` from `package.json` <!-- id: 7 -->
-- [ ] **Verification**: Test P2P connection and Recording Upload <!-- id: 8 -->
+- [x] **Preparation**: Create AWS Deployment Guide <!-- id: 0 -->
+- [x] **Config**: Verify UDP port range (40000-40050) <!-- id: 1 -->
+- [ ] **Deployment**: User launches EC2 instance <!-- id: 2 -->
+- [ ] **Deployment**: User configures Security Groups (UDP 40000-40050) <!-- id: 3 -->
+- [ ] **Deployment**: User sets up server (Node, FFmpeg) and runs code <!-- id: 4 -->
+- [ ] **Verification**: Verify public access and video recording <!-- id: 5 -->

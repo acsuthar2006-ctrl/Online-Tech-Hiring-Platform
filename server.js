@@ -67,7 +67,7 @@ server.listen(PORT, HOST, () => {
   const announcedIp = process.env.MEDIASOUP_ANNOUNCED_IP || "Local LAN IP";
   console.log(`
 ╔═══════════════════════════════════════╗
-║    PeerChat Server Running          ║
+║    PeerChat Server Running            ║
 ╠═══════════════════════════════════════╣
 ║   HTTP:      http://localhost:${PORT} ║
 ║   WebSocket: ws://localhost:${PORT}   ║
@@ -76,7 +76,7 @@ server.listen(PORT, HOST, () => {
 ║   Announced IP: ${announcedIp}        ║
 ║   UDP Ports:    40000 - 40050         ║
 ║                                       ║
-║   ⚠️  YOU MUST FORWARD UDP PORTS       ║
+║   ⚠️  YOU MUST FORWARD UDP PORTS      ║ 
 ║      40000-40050 ON YOUR ROUTER       ║
 ║      TO THIS MACHINE'S LOCAL IP       ║
 ╚═══════════════════════════════════════╝

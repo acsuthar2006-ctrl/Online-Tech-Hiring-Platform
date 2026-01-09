@@ -41,9 +41,16 @@ export async function createRouter(worker) {
 export async function createWebRtcTransport(router) {
     const {
         maxSctpMessageSize,
-        listenIps,
+        listenIps: staticListenIps,
         initialAvailableOutgoingBitrate
     } = config.webRtcTransport;
+
+    // Dynamic override: Ensure we use the latest MEDIASOUP_ANNOUNCED_IP
+    // This is critical because server.js might detect the IP *after* config.js is imported.
+    const listenIps = staticListenIps.map(ipConfig => ({
+        ...ipConfig,
+        announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || ipConfig.announcedIp
+    }));
 
     const transport = await router.createWebRtcTransport({
         listenIps,
