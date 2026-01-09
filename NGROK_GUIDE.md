@@ -42,7 +42,7 @@ You can test with your mobile phone if it is connected to the **same WiFi networ
    - Open the Ngrok URL (e.g., `https://abcd.ngrok.io`) on your mobile.
    - **Crucial**: Since your phone is on the same WiFi, the "Announced IP" (`10.140.100.77`) sent by the server *is* reachable by your phone. The video should works.
 
-### Summary Checklist
+###    Checklist
 - [ ] Connect computer and phone to the **Same WiFi**.
 - [ ] Run `./start_local.sh` (confirms the detected IP).
 - [ ] Run `ngrok http 3000` in a separate terminal.
