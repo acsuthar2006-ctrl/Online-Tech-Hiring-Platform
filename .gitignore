@@ -1,9 +1,8 @@
-cert.pem
-key.pem
+*.pem
 target
 .vscode
 node_modules
 recordings
 .DS_Store
 .env
-*.log
+*.log*.zip

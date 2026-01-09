@@ -145,6 +145,40 @@ export default function handleHttp(req, res) {
     return;
   }
 
+  /* ================= API: DELETE RECORDING ================= */
+  if (req.method === "DELETE" && pathname.startsWith("/api/recordings/")) {
+    const filename = pathname.split("/").pop();
+    console.log(`[API] Deleting recording: ${filename}`);
+
+    // Security: Prevent directory traversal
+    if (filename.includes("..") || filename.includes("/") || !filename.endsWith(".mp4")) {
+      console.warn(`[Security] Invalid delete attempt: ${filename}`);
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Forbidden" }));
+      return;
+    }
+
+    const filePath = path.join(RECORDINGS_DIR, filename);
+
+    if (!fs.existsSync(filePath)) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "File not found" }));
+      return;
+    }
+
+    try {
+      fs.unlinkSync(filePath);
+      console.log(`[API] Deleted: ${filename}`);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true }));
+    } catch (err) {
+      console.error("[API] Error deleting file:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Server error deleting file" }));
+    }
+    return;
+  }
+
   /* ================= CHECK ROOM ================= */
   if (pathname === "/check-room") {
     const room = url.searchParams.get("room");

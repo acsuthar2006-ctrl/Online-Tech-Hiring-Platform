@@ -137,6 +137,9 @@ if (downloadBtn) {
                     <a href="${rec.url}" class="action-btn download-action" download title="Download">
                         <i class="fas fa-download"></i>
                     </a>
+                    <button class="action-btn delete-action" onclick="deleteRecording('${rec.filename}')" title="Delete (Interviewer Only)">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
             `;
@@ -270,3 +273,42 @@ window.addEventListener("load", () => {
   roomInput.focus();
   console.log("[Lobby] Ready");
 });
+
+// Delete recording handler
+window.deleteRecording = async (filename) => {
+  // 1. Security Check (Client-side only)
+  const isInterviewer = confirm("⚠️ SECURITY CHECK ⚠️\n\nOnly the INTERVIEWER is allowed to delete recordings.\n\nAre you the Interviewer?");
+
+  if (!isInterviewer) {
+    showToast("Action cancelled. You must be the Interviewer.", "info");
+    return;
+  }
+
+  // 2. Final Confirmation
+  if (!confirm("Are you sure? This recording will be PERMANENTLY deleted.")) {
+    return;
+  }
+
+  // 3. Send Delete Request
+  showLoading(true);
+  try {
+    const res = await fetch(`/api/recordings/${filename}`, {
+      method: 'DELETE'
+    });
+
+    const data = await res.json();
+    showLoading(false);
+
+    if (res.ok) {
+      showToast("Recording deleted successfully", "success");
+      // Refresh list
+      document.getElementById("downloadRecordingBtn").click();
+    } else {
+      showToast(data.error || "Failed to delete", "error");
+    }
+  } catch (err) {
+    showLoading(false);
+    console.error("Delete error:", err);
+    showToast("Error connecting to server", "error");
+  }
+};

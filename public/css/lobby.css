@@ -681,6 +681,13 @@ button i {
     color: var(--text-main);
 }
 
+.action-btn.delete-action:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 /* =======================
    RESPONSIVE DESIGN
 ======================= */
