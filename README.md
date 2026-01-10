@@ -41,6 +41,7 @@ Changes pushed to the `main` branch are automatically deployed to the AWS server
 Go to **Settings** > **Secrets and variables** > **Actions** and add:
 
 -   `AWS_HOST`: Private or Public IP of your server (e.g., `13.233.139.200`).
+    > **Important**: If you stop/start your AWS instance, this IP will change. To avoid updating this secret constantly, **allocate an Elastic IP (Static IP)** in the AWS Console and associate it with your instance. This gives you a permanent IP address.
 -   `AWS_USERNAME`: `ubuntu`
 -   `AWS_SSH_KEY`: Content of your `.pem` key file.
 -   `TARGET_DIR`: Path to project on server (e.g., `/home/ubuntu/Peer-Chat-App`).
