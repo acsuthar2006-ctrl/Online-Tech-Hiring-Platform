@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import handleHttp from "./http/staticServer.js";
-import initWebSocket from "./ws/websocketServer.js";
+
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -60,7 +60,15 @@ server.on("error", (err) => {
 });
 
 // Initialize WebSocket
-const wss = await initWebSocket(server);
+let wss;
+try {
+  // Dynamic import ensures config.js reads the UPDATED process.env.MEDIASOUP_ANNOUNCED_IP
+  const { default: initWebSocket } = await import("./ws/websocketServer.js");
+  wss = await initWebSocket(server);
+} catch (err) {
+  console.error("Failed to initialize WebSocket server:", err);
+  process.exit(1);
+}
 
 // Start server
 server.listen(PORT, HOST, () => {
@@ -72,12 +80,12 @@ server.listen(PORT, HOST, () => {
 ║   HTTP:      http://localhost:${PORT} ║
 ║   WebSocket: ws://localhost:${PORT}   ║
 ╠═══════════════════════════════════════╣
-║   External Access (Ngrok/4G) Info     ║
+║   Public / External Access Info       ║
 ║   Announced IP: ${announcedIp}        ║
 ║   UDP Ports:    40000 - 40050         ║
 ║                                       ║
 ║   ⚠️  YOU MUST FORWARD UDP PORTS      ║ 
-║      40000-40050 ON YOUR ROUTER       ║
+║      40000-40050 ON YOUR ROUTER/ACL   ║
 ║      TO THIS MACHINE'S LOCAL IP       ║
 ╚═══════════════════════════════════════╝
   `);

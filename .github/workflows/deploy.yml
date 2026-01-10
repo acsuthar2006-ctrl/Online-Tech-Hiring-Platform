@@ -1,0 +1,43 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (test)
+        run: npm ci
+
+      - name: Deploy to AWS via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            # Navigate to project directory
+            cd ${{ secrets.TARGET_DIR }} || exit 1
+            
+            # Pull latest changes (Using git pull if it's a git repo, but user deployed via copy/clone earlier)
+            # Assuming it IS a git repo since user is asking for CI/CD
+            git pull origin main
+            
+            # Install dependencies
+            npm install --production
+            
+            # Restart application
+            pm2 restart Online-Tech-Hiring-Platform

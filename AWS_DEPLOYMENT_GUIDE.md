@@ -1,4 +1,4 @@
-# Deploying PeerChat to AWS EC2
+# Deploying Online-Tech-Hiring-Platform to AWS EC2
 
 This guide explains how to deploy the application to an AWS EC2 instance. Deploying to public cloud server solves "Not in same WiFi" connectivity issues by providing a public IP address reachable from any network (4G/5G, different WiFi).
 
@@ -10,7 +10,7 @@ This guide explains how to deploy the application to an AWS EC2 instance. Deploy
 ## Step 1: Launch EC2 Instance
 
 1.  **Go to AWS Console** > **EC2** > **Launch Instance**.
-2.  **Name**: `PeerChat-Server`
+2.  **Name**: `Online-Tech-Hiring-Platform-Server`
 3.  **OS Image**: `Ubuntu Server 24.04 LTS` (or 22.04 LTS).
 4.  **Instance Type**: `t3.small` or `t3.medium` (t2.micro is likely too weak for video encoding/transcoding).
 5.  **Storage (IMPORTANT)**: The default is 8GB. Since you are recording video, **increase this to 50GB or 100GB**.
@@ -36,7 +36,7 @@ Create a new Security Group with the following **Inbound Rules**:
 1.  In EC2 Dashboard, go to **Network & Security** > **Elastic IPs**.
 2.  Click **Allocate Elastic IP address**.
 3.  Select the new IP and click **Actions** > **Associate Elastic IP address**.
-4.  Select your running instance (`PeerChat-Server`).
+4.  Select your running instance (`Online-Tech-Hiring-Platform-Server`).
 5.  **Copy this IP address**. We will refer to it as `YOUR_PUBLIC_IP`.
 
 ## Step 4: Server Setup
@@ -102,7 +102,7 @@ Use `pm2` to keep the app running even if you close the terminal.
 sudo npm install -g pm2
 
 # Start the app with the environment variable
-MEDIASOUP_ANNOUNCED_IP=YOUR_PUBLIC_IP pm2 start server.js --name peerchat
+MEDIASOUP_ANNOUNCED_IP=YOUR_PUBLIC_IP pm2 start server.js --name Online-Tech-Hiring-Platform
 
 # Save the process list to restart on reboot
 pm2 save
@@ -114,7 +114,7 @@ pm2 startup
 ### "Video is connecting..." forever?
 1.  Check **Security Groups**: Are UDP ports 40000-40050 open to `0.0.0.0/0`?
 2.  Check **Announced IP**: Did you set `MEDIASOUP_ANNOUNCED_IP` correctly?
-    - Check logs: `pm2 logs peerchat`
+    - Check logs: `pm2 logs Online-Tech-Hiring-Platform`
     - It should say: `Announced IP: 54.x.x.x`
 
 ### "Socket connection failed"?
