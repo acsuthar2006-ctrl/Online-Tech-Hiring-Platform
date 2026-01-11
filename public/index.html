@@ -35,8 +35,8 @@
         <span>TechInterview Platform</span>
       </div>
       <div class="connection-status" id="connection-status">
-        <span class="status-dot"></span>
-        <span class="status-text">Connected</span>
+        <!-- Status indicator will be handled by JS -->
+
       </div>
     </header>
 
@@ -55,13 +55,11 @@
 
         <div class="video-controls">
           <div class="main-actions">
-            <button class="call-btn" id="start-call-btn" onclick="startCall()">
+            <!-- Connect/Join Merged -->
+
+            <button class="call-btn join-btn" id="join-call-btn" onclick="joinCall()">
               <i class="fas fa-phone"></i>
               <span>Connect to Session</span>
-            </button>
-            <button class="call-btn join-btn" id="join-call-btn" onclick="joinCall()">
-              <i class="fas fa-phone-volume"></i>
-              <span>Join Session</span>
             </button>
             <button class="exit-btn" id="exit-call-btn" onclick="exitCall()">
               <i class="fas fa-phone-slash"></i>

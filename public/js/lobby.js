@@ -55,10 +55,15 @@ createBtn.addEventListener("click", async () => {
   showLoading(true);
   const room = roomInput.value.trim();
 
+  // Auto-generate if empty (Instant Meeting)
   if (!room) {
-    showLoading(false);
-    showToast("Please enter a room ID to create", "error");
-    roomInput.focus();
+    const randomId = generateRandomRoomId();
+    roomInput.value = randomId;
+    // Recurse or just proceed
+    // Check if exists
+    // actually, we should just proceed with the generated ID
+    console.log(`[Lobby] Instant meeting generated: ${randomId}`);
+    window.location.href = `${BASE_URL}/?room=${randomId}&role=interviewer`;
     return;
   }
 

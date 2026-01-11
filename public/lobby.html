@@ -45,26 +45,27 @@
             <label for="roomInput" class="input-label">Interview Room ID</label>
             <div class="input-wrapper">
               <i class="fas fa-hashtag input-icon"></i>
-              <input type="text" id="roomInput" placeholder="Enter Room ID" autocomplete="off" required
-                pattern="[A-Za-z0-9-_]+" title="Letters, numbers, hyphens and underscores only" />
+              <input type="text" id="roomInput" placeholder="Enter Room ID" autocomplete="off" pattern="[A-Za-z0-9-_]+"
+                title="Letters, numbers, hyphens and underscores only" />
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="button-group">
-            <button type="submit" class="primary-btn">
+            <button type="button" class="create-btn primary-btn" id="createRoomBtn">
+              <i class="fa-solid fa-video"></i>
+              <span>Start Instant Meeting</span>
+            </button>
+
+            <button type="submit" class="join-btn create-btn">
               <i class="fa-solid fa-arrow-right-to-bracket"></i>
               <span>Join Interview</span>
             </button>
 
-            <button type="button" class="create-btn" id="createRoomBtn">
-              <i class="fa-solid fa-plus"></i>
-              <span>Start New Session</span>
-            </button>
-
-            <button type="button" class="secondary-btn" id="randomRoomBtn">
-              <i class="fa-solid fa-dice"></i>
-              <span>Generate Room ID</span>
+            <!-- Hidden Generate for manual use if needed -->
+            <button type="button" class="text-btn" id="randomRoomBtn"
+              style="font-size: 0.9rem; margin-top: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+              <i class="fa-solid fa-dice"></i> Generate ID
             </button>
           </div>
         </form>

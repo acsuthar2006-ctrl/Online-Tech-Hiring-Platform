@@ -12,7 +12,7 @@ export async function startCall() {
   await createPeerConnection(sendSignal);
 
   setStatus("Connected");
-  hideWaitingOverlay();
+  // hideWaitingOverlay(); // Don't hide yet! Wait for remote video.
   updateCallButtonState(true);
 }
 
