@@ -29,15 +29,27 @@ jobs:
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            # Navigate to project directory
-            cd ${{ secrets.TARGET_DIR }} || exit 1
-            
-            # Pull latest changes (Using git pull if it's a git repo, but user deployed via copy/clone earlier)
-            # Assuming it IS a git repo since user is asking for CI/CD
-            git pull origin main
+            # Check if directory exists
+            if [ -d "${{ secrets.TARGET_DIR }}" ]; then
+              echo "Directory exists. Pulling latest changes..."
+              cd ${{ secrets.TARGET_DIR }}
+              git pull origin main
+            else
+              echo "Directory does not exist. Cloning repository..."
+              git clone https://github.com/acsuthar2006-ctrl/Online-Tech-Hiring-Platform.git ${{ secrets.TARGET_DIR }}
+              cd ${{ secrets.TARGET_DIR }}
+            fi
             
             # Install dependencies
             npm install --production
             
             # Restart application
-            pm2 restart Online-Tech-Hiring-Platform
+            # Check if pm2 process exists, if not start it, else restart
+            if pm2 list | grep -q "Online-Tech-Hiring-Platform"; then
+              pm2 restart Online-Tech-Hiring-Platform
+            else
+              # Start with announced IP from secret if available, or just default
+              # Note: We don't have the IP secret here easily without passing it. 
+              # For now, just start. User might need to configure IP manually once.
+              pm2 start server.js --name Online-Tech-Hiring-Platform
+            fi
