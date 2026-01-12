@@ -126,8 +126,9 @@ a=rtcp-mux
 
         const args = [
             '-protocol_whitelist', 'file,pipe,udp,rtp',
-            '-analyzeduration', '50M',
-            '-probesize', '50M',
+            '-analyzeduration', '100M', // 100s
+            '-probesize', '100M',       // 100MB
+            '-thread_queue_size', '4096',
             '-f', 'sdp',
             '-i', 'pipe:0',
         ];
@@ -135,22 +136,19 @@ a=rtcp-mux
         // Dynamic Filter Complex
         let filterComplex = '';
 
-        // Case 1: Standard 2-way toggle (4 streams: A1, V1, A2, V2)
         if (this.consumers.length === 4) {
-            filterComplex = '[0:0][0:2]amix=inputs=2[aout];[0:1]scale=-2:720[v1];[0:3]scale=-2:720[v2];[v1][v2]hstack[vout]';
+            filterComplex = '[0:0][0:2]amix= inputs=2[aout];[0:1]scale=-2:480[v1];[0:3]scale=-2:480[v2];[v1][v2]hstack[vout]';
         }
-        // Case 2: Screen Share (5 streams: A1, V1, A2, V2, Screen)
         else if (this.consumers.length === 5) {
-            // Layout: Screen Left (1280x720), Cams Stacked Right (640x360 each) -> Total 1920x720
-            // Mapping: 0:A1, 1:V1, 2:A2, 3:V2, 4:Screen
+            // Reduced resolution for t3.small
             filterComplex = `
                 [0:0][0:2]amix=inputs=2[aout];
-                [0:1]scale=640:360[v1];
-                [0:3]scale=640:360[v2];
-                [0:4]scale=1280:720[scr];
+                [0:1]scale=480:270[v1];
+                [0:3]scale=480:270[v2];
+                [0:4]scale=960:540[scr];
                 [v1][v2]vstack[cams];
                 [scr][cams]hstack[vout]
-            `.replace(/\s+/g, ''); // Remove newlines/spaces
+            `.replace(/\s+/g, '');
         }
 
         args.push('-filter_complex', filterComplex);
@@ -161,10 +159,10 @@ a=rtcp-mux
             '-c:v', 'libx264',
             '-preset', 'ultrafast',
             '-tune', 'zerolatency',
-            '-crf', '28',
-            '-r', '30',
+            '-crf', '30',
+            '-r', '15',
             '-c:a', 'aac',
-            '-b:a', '96k',
+            '-b:a', '64k',
             '-y', filepath
         );
 
@@ -184,19 +182,19 @@ a=rtcp-mux
             this.emit('stop');
         });
 
-        // Wait briefly for FFmpeg to start up
-        // Was 1000ms, reduced to 200ms to avoid FFmpeg timing out/failing init with 0x0 resolution
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Wait for FFmpeg to initialize and bind ports
+        // Increased to 1500ms to allow FFmpeg to be ready to receive packets
+        console.log('[Recorder] Waiting for FFmpeg to initialize...');
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Resume consumers and request keyframes immediately
+        // Resume consumers and request keyframes
         console.log('[Recorder] Resuming consumers and requesting keyframes...');
         for (const consumer of this.consumers) {
             await consumer.resume();
             if (consumer.kind === 'video') {
-                // Request IDR frame so FFmpeg picks up resolution (SPS/PPS)
                 await consumer.requestKeyFrame();
-                // Repeat request again shortly to ensure receipt
-                setTimeout(() => consumer.requestKeyFrame().catch(() => { }), 500);
+                // Repeat keyframe request to ensure I-frame arrival
+                setTimeout(() => consumer.requestKeyFrame().catch(() => { }), 1000);
             }
         }
     }
