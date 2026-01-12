@@ -159,7 +159,7 @@ a=rtcp-mux
 
         args.push(
             '-c:v', 'libx264',
-            '-preset', 'veryfast',
+            '-preset', 'ultrafast',
             '-tune', 'zerolatency',
             '-crf', '28',
             '-r', '30',
