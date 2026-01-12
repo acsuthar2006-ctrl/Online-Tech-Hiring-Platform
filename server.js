@@ -97,17 +97,13 @@ const shutdown = () => {
 
   // Cleanup recordings
   try {
-    const recordingsDir = process.env.RECORDING_DIR || './recordings';
-    if (fs.existsSync(recordingsDir)) {
-      console.log(" Cleaning up recordings...");
-      const files = fs.readdirSync(recordingsDir);
-      for (const file of files) {
-        fs.unlinkSync(path.join(recordingsDir, file));
-      }
-      console.log(` Deleted ${files.length} recording files`);
-    }
+    // Clean up recordings directory logic REMOVED for production persistence
+    // const recordingsDir = process.env.RECORDING_DIR || './recordings';
+    // if (fs.existsSync(recordingsDir)) {
+    //   console.log(" Cleaning up recordings... (SKIPPED for persistence)");
+    // }
   } catch (err) {
-    console.error(" Error cleaning up recordings:", err);
+    console.error(" Error initializing:", err);
   }
 
   server.close(() => {
