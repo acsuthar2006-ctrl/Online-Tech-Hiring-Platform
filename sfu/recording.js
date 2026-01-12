@@ -184,16 +184,19 @@ a=rtcp-mux
             this.emit('stop');
         });
 
-        // Wait for FFmpeg to initialize and bind ports
-        console.log('[Recorder] Waiting for FFmpeg to initialize...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait briefly for FFmpeg to start up
+        // Was 1000ms, reduced to 200ms to avoid FFmpeg timing out/failing init with 0x0 resolution
+        await new Promise(resolve => setTimeout(resolve, 200));
 
-        // Resume consumers and request keyframes
+        // Resume consumers and request keyframes immediately
         console.log('[Recorder] Resuming consumers and requesting keyframes...');
         for (const consumer of this.consumers) {
             await consumer.resume();
             if (consumer.kind === 'video') {
+                // Request IDR frame so FFmpeg picks up resolution (SPS/PPS)
                 await consumer.requestKeyFrame();
+                // Repeat request again shortly to ensure receipt
+                setTimeout(() => consumer.requestKeyFrame().catch(() => { }), 500);
             }
         }
     }
