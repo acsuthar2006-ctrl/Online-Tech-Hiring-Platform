@@ -10,3 +10,10 @@
     window.location.href = "../login/login.html"
   }
 })()
+
+function logout() {
+  sessionStorage.removeItem("isLoggedIn")
+  sessionStorage.removeItem("username")
+  sessionStorage.removeItem("userRole")
+  window.location.href = "../login/login.html"
+}
