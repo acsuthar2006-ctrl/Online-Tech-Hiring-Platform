@@ -238,12 +238,32 @@ function showToast(message, type = 'info') {
 }
 
 // Loading spinner helper
+let loadingTimeout;
 function showLoading(show = true) {
   const spinner = document.getElementById('loading-spinner');
   if (spinner) {
     spinner.style.display = show ? 'flex' : 'none';
+
+    // Clear existing timeout
+    if (loadingTimeout) clearTimeout(loadingTimeout);
+
+    // Safety: Auto-hide after 15 seconds if something hangs
+    if (show) {
+      loadingTimeout = setTimeout(() => {
+        spinner.style.display = 'none';
+        showToast("Request timed out or took too long", "warning");
+      }, 15000);
+    }
   }
 }
+
+// BFCache Fix: Hide spinner when user navigates "Back" to this page
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted || performance.navigation.type === 2) {
+    showLoading(false);
+  }
+});
+
 
 // Random room ID generator
 function generateRandomRoomId() {
@@ -261,9 +281,21 @@ if (randomBtn) {
   randomBtn.addEventListener("click", () => {
     const randomId = generateRandomRoomId();
     roomInput.value = randomId;
+    // Trigger input event to update button text
+    roomInput.dispatchEvent(new Event('input'));
     showToast(`Generated room ID: ${randomId}`, "success");
   });
 }
+
+// UX: Switch button text based on input
+roomInput.addEventListener("input", () => {
+  const hasText = roomInput.value.trim().length > 0;
+  const btnSpan = createBtn.querySelector("span");
+  if (btnSpan) {
+    btnSpan.textContent = hasText ? "Start Meeting" : "Start Instant Meeting";
+  }
+});
+
 
 // Handle enter key in room input
 roomInput.addEventListener("keypress", (e) => {
