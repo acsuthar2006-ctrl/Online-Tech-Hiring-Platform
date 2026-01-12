@@ -4,9 +4,14 @@ export const cameraBtn = document.getElementById("camera-btn");
 export const localVideo = document.getElementById("local-user");
 export const remoteVideo = document.getElementById("remote-user");
 export const preview = document.getElementById("remote-user-preview");
+export const remoteScreenVideo = document.getElementById("remote-screen-video");
+export const screenCard = document.getElementById("screen-card");
+export const screenShareBtn = document.getElementById("screen-share-btn");
 export const startCallBtn = document.getElementById("start-call-btn");
 export const joinCallBtn = document.getElementById("join-call-btn");
 export const exitCallBtn = document.getElementById("exit-call-btn");
+
+
 
 export function updateCallButtonState(isConnected) {
   console.log("[UI] Updating button state, isConnected:", isConnected);
@@ -14,6 +19,11 @@ export function updateCallButtonState(isConnected) {
   if (startCallBtn) startCallBtn.style.display = isConnected ? 'none' : 'flex';
   if (joinCallBtn) joinCallBtn.style.display = isConnected ? 'none' : 'flex';
   if (exitCallBtn) exitCallBtn.style.display = isConnected ? 'flex' : 'none';
+
+  // If disconnected, ensure screen share mode is reset
+  if (!isConnected) {
+    setScreenShareMode(false);
+  }
 }
 
 // Get the existing tempDiv from HTML or create it
@@ -75,14 +85,34 @@ export function resetRemoteVideoUI() {
     remoteVideo.srcObject = null;
     remoteVideo.classList.remove('active');
   }
+  if (remoteScreenVideo) {
+    remoteScreenVideo.srcObject = null;
+    screenCard.style.display = 'none'; // Hide card
+  }
   showWaitingOverlay();
+  setScreenShareMode(false);
+}
+
+export function setScreenShareMode(active) {
+  if (screenCard) {
+    screenCard.style.display = active ? 'flex' : 'none';
+  }
+
+  // Also toggle wrapper class for background effect if needed (optional, keeping for safety)
+  const wrapper = document.getElementById("video-wrapper");
+  if (active) {
+    wrapper.classList.add("screen-share-active");
+  } else {
+    wrapper.classList.remove("screen-share-active");
+  }
+  console.log(`[UI] Screen Share Mode: ${active}`);
 }
 
 export function setStatus(text) {
   const ele = document.getElementById("status-text");
   if (ele) {
     ele.textContent = text;
-    console.log(`[Status] ${text}`);
+    console.log(`[Status] ${text} `);
   }
 }
 

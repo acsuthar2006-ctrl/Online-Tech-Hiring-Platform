@@ -82,6 +82,9 @@
       <article class="video-card remote-card" id="remote-user-preview">
         <div class="video-container">
           <video class="video-player" id="remote-user" autoplay playsinline></video>
+          <!-- Additional video for screen share -->
+          <!-- Screen share video moved to overlay -->
+
           <div class="video-overlay">
             <span class="user-label">
               <i class="fas fa-user"></i> Candidate / Remote
@@ -96,6 +99,18 @@
           </div>
         </div>
       </article>
+
+      <!-- Screen Share Card (3rd Window) -->
+      <article class="video-card screen-card" id="screen-card" style="display: none;">
+        <div class="video-container">
+          <video class="video-player" id="remote-screen-video" autoplay playsinline></video>
+          <div class="video-overlay">
+            <span class="user-label">
+              <i class="fas fa-desktop"></i> Shared Screen
+            </span>
+          </div>
+        </div>
+      </article>
     </div>
 
     <!-- Status Bar -->
@@ -104,6 +119,14 @@
         <i class="fas fa-circle-info"></i>
         <p id="status-text">Ready to connect</p>
       </div>
+
+      <!-- New Screen Share Button (Hidden by default, shown for Candidate) -->
+      <div class="extra-controls">
+        <button class="screen-btn" id="screen-share-btn" title="Share Screen" style="display: none;">
+          <i class="fas fa-desktop"></i>
+        </button>
+      </div>
+
       <button class="help-btn" id="help-btn" title="Help">
         <i class="fas fa-question-circle"></i>
       </button>

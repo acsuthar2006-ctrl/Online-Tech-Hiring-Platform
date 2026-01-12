@@ -130,19 +130,43 @@ a=rtcp-mux
             '-probesize', '50M',
             '-f', 'sdp',
             '-i', 'pipe:0',
-            // Simplified filter: scale to 480p height, audio mix, hstack
-            '-filter_complex', '[0:0][0:2]amix=inputs=2[aout];[0:1]scale=-2:720[v1];[0:3]scale=-2:720[v2];[v1][v2]hstack[vout]',
-            '-map', '[aout]',
-            '-map', '[vout]',
+        ];
+
+        // Dynamic Filter Complex
+        let filterComplex = '';
+
+        // Case 1: Standard 2-way toggle (4 streams: A1, V1, A2, V2)
+        if (this.consumers.length === 4) {
+            filterComplex = '[0:0][0:2]amix=inputs=2[aout];[0:1]scale=-2:720[v1];[0:3]scale=-2:720[v2];[v1][v2]hstack[vout]';
+        }
+        // Case 2: Screen Share (5 streams: A1, V1, A2, V2, Screen)
+        else if (this.consumers.length === 5) {
+            // Layout: Screen Left (1280x720), Cams Stacked Right (640x360 each) -> Total 1920x720
+            // Mapping: 0:A1, 1:V1, 2:A2, 3:V2, 4:Screen
+            filterComplex = `
+                [0:0][0:2]amix=inputs=2[aout];
+                [0:1]scale=640:360[v1];
+                [0:3]scale=640:360[v2];
+                [0:4]scale=1280:720[scr];
+                [v1][v2]vstack[cams];
+                [scr][cams]hstack[vout]
+            `.replace(/\s+/g, ''); // Remove newlines/spaces
+        }
+
+        args.push('-filter_complex', filterComplex);
+        args.push('-map', '[aout]');
+        args.push('-map', '[vout]');
+
+        args.push(
             '-c:v', 'libx264',
-            '-preset', 'veryfast', // Faster preset = less CPU
+            '-preset', 'veryfast',
             '-tune', 'zerolatency',
-            '-crf', '28', // Lower quality slightly to save bitrate/CPU
-            '-r', '30', // Reduce from 30 to 20 fps
+            '-crf', '28',
+            '-r', '30',
             '-c:a', 'aac',
             '-b:a', '96k',
             '-y', filepath
-        ];
+        );
 
         console.log(`[Recorder] Spawning FFmpeg: ${args.join(' ')}`);
 

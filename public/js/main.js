@@ -2,7 +2,16 @@
 import { state } from "./state.js";
 import { initSocket } from "./socket.js";
 import { startCall, joinCall, exitCall } from "./call.js";
-import { micBtn, cameraBtn, localVideo, preview, tempDiv, showWaitingOverlay, updateCallButtonState } from "./ui.js";
+import {
+  micBtn,
+  cameraBtn,
+  localVideo,
+  preview,
+  tempDiv,
+  showWaitingOverlay,
+  updateCallButtonState,
+  screenShareBtn
+} from "./ui.js";
 
 // Initialize UI state
 updateCallButtonState(false);
@@ -35,6 +44,42 @@ async function init() {
       localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
       remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
       if (waitingText) waitingText.innerText = "The Interviewer will join shortly...";
+
+      // Candidate only features
+      if (screenShareBtn) {
+        screenShareBtn.style.display = 'flex';
+
+        // Dynamic import
+        const { startScreenShare, stopScreenShare } = await import("./webrtc.js");
+        let isSharing = false;
+
+        screenShareBtn.addEventListener('click', async () => {
+          if (isSharing) {
+            stopScreenShare();
+            isSharing = false;
+            screenShareBtn.classList.remove('active');
+            return;
+          }
+
+          try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+            const producer = await startScreenShare(stream);
+
+            if (producer) {
+              isSharing = true;
+              screenShareBtn.classList.add('active');
+
+              stream.getVideoTracks()[0].onended = () => {
+                stopScreenShare();
+                isSharing = false;
+                screenShareBtn.classList.remove('active');
+              };
+            }
+          } catch (err) {
+            console.error("Screen share cancelled:", err);
+          }
+        });
+      }
     }
 
     // Get camera + mic (echo-safe)

@@ -176,40 +176,56 @@ async function initWebSocket(server) {
             producerId: producer.id
           }));
 
-          // Store producer id on socket to know who owns it
+          // Store producer id on socket
           if (!socket.producers) socket.producers = {};
-          socket.producers[data.kind] = producer.id;
 
-          // Check if we can start recording
-          // Logic: Wait for 2 participants with Audio+Video
+          if (data.appData.source === 'screen') {
+            socket.producers.screen = producer.id;
+          } else {
+            socket.producers[data.kind] = producer.id;
+          }
 
-          const roomSockets = [...wss.clients].filter(c => c.channel === socket.channel && c.producers && c.producers.audio && c.producers.video);
+          // Check/Update Recording
+          const roomSockets = [...wss.clients].filter(c => c.channel === socket.channel);
+          const activeParticipants = roomSockets.filter(c => c.producers && c.producers.audio && c.producers.video);
 
-          if (roomSockets.length === 2) {
+          if (activeParticipants.length >= 2) {
             const enableRecording = process.env.ENABLE_RECORDING === 'true';
 
             if (enableRecording) {
-              const existingRecorder = recorders.get(socket.channel);
-
-              // Check if already recording
-              if (existingRecorder && existingRecorder.process === null && existingRecorder.consumers.length === 0) {
-                const producersList = [];
-                // Order: User 1 Audio, User 1 Video, User 2 Audio, User 2 Video
-                roomSockets.forEach(s => {
-                  producersList.push({ producerId: s.producers.audio, kind: 'audio' });
-                  producersList.push({ producerId: s.producers.video, kind: 'video' });
-                });
-
-                console.log(`[WebSocket] Triggering merged recording for room ${socket.channel} with ${producersList.length} streams`);
-
-                try {
-                  existingRecorder.start(producersList);
-                } catch (e) {
-                  console.error('[WebSocket] Error starting recorder:', e);
-                }
+              let recorder = recorders.get(socket.channel);
+              if (!recorder) {
+                recorder = new Recorder(router, socket.channel);
+                recorders.set(socket.channel, recorder);
               }
-            } else {
-              console.log(`[WebSocket] Recording disabled by config.`);
+
+              // Build list
+              const producersList = [];
+              // Add AV for first 2 participants
+              activeParticipants.slice(0, 2).forEach(s => {
+                producersList.push({ producerId: s.producers.audio, kind: 'audio' });
+                producersList.push({ producerId: s.producers.video, kind: 'video' });
+              });
+
+              // Add Screen Share if any
+              const screenSharer = roomSockets.find(s => s.producers && s.producers.screen);
+              if (screenSharer) {
+                producersList.push({ producerId: screenSharer.producers.screen, kind: 'video' });
+              }
+
+              // Start or Restart
+              if (recorder.process) {
+                // specific check: if number of inputs changed, restart
+                if (recorder.consumers.length !== producersList.length) {
+                  console.log(`[Recorder] Restarting recording for room ${socket.channel} (Streams: ${recorder.consumers.length} -> ${producersList.length})`);
+                  recorder.stop();
+                  setTimeout(() => {
+                    if (recorders.has(socket.channel)) recorder.start(producersList).catch(e => console.error(e));
+                  }, 500);
+                }
+              } else if (recorder.consumers.length === 0) {
+                recorder.start(producersList).catch(e => console.error(e));
+              }
             }
           }
 
@@ -218,8 +234,54 @@ async function initWebSocket(server) {
             type: 'newProducer',
             producerId: producer.id,
             kind: data.kind,
-            uid: socket.uid
+            uid: socket.uid,
+            appData: producer.appData
           });
+        }
+        return;
+      }
+
+      // 4.2 Close Producer
+      if (data.type === 'closeProducer') {
+        const producer = producers.get(data.producerId);
+        if (producer) {
+          producer.close();
+          producers.delete(data.producerId);
+
+          // Update socket.producers
+          if (socket.producers) {
+            Object.keys(socket.producers).forEach(key => {
+              if (socket.producers[key] === data.producerId) delete socket.producers[key];
+            });
+          }
+
+          // Trigger recording update
+          const roomSockets = [...wss.clients].filter(c => c.channel === socket.channel);
+          const activeParticipants = roomSockets.filter(c => c.producers && c.producers.audio && c.producers.video);
+
+          if (activeParticipants.length >= 2 && recorders.has(socket.channel)) {
+            const recorder = recorders.get(socket.channel);
+
+            // Rebuild target list
+            const producersList = [];
+            activeParticipants.slice(0, 2).forEach(s => {
+              producersList.push({ producerId: s.producers.audio, kind: 'audio' });
+              producersList.push({ producerId: s.producers.video, kind: 'video' });
+            });
+            const screenSharer = roomSockets.find(s => s.producers && s.producers.screen);
+            if (screenSharer) {
+              producersList.push({ producerId: screenSharer.producers.screen, kind: 'video' });
+            }
+
+            // Restart check
+            if (recorder.process && recorder.consumers.length !== producersList.length) {
+              console.log(`[Recorder] Restarting recording (Stream removed)`);
+              recorder.stop();
+              setTimeout(() => {
+                if (recorders.has(socket.channel)) recorder.start(producersList).catch(e => console.error(e));
+              }, 500);
+            }
+          }
         }
         return;
       }
@@ -232,7 +294,8 @@ async function initWebSocket(server) {
           if (producer.appData.channel === socket.channel && producer.appData.uid !== socket.uid) {
             producerList.push({
               id: producer.id,
-              kind: producer.kind
+              kind: producer.kind,
+              appData: producer.appData
             });
           }
         }
@@ -248,11 +311,14 @@ async function initWebSocket(server) {
       // 5. Consume
       if (data.type === 'consume') {
         const transport = transports.get(data.transportId);
-        if (transport && router.canConsume({ producerId: data.producerId, rtpCapabilities: data.rtpCapabilities })) {
+        const producer = producers.get(data.producerId); // Get producer to access appData
+
+        if (transport && producer && router.canConsume({ producerId: data.producerId, rtpCapabilities: data.rtpCapabilities })) {
           const consumer = await transport.consume({
             producerId: data.producerId,
             rtpCapabilities: data.rtpCapabilities,
-            paused: true // Start paused
+            paused: true, // Start paused
+            appData: producer.appData // Pass producer appData to consumer
           });
 
           consumers.set(consumer.id, consumer);
@@ -264,7 +330,8 @@ async function initWebSocket(server) {
               id: consumer.id,
               producerId: data.producerId,
               kind: consumer.kind,
-              rtpParameters: consumer.rtpParameters
+              rtpParameters: consumer.rtpParameters,
+              appData: consumer.appData
             }
           }));
         }

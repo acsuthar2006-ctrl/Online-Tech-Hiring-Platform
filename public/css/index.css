@@ -228,6 +228,9 @@ body::before {
   opacity: 1;
 }
 
+/* Screen Share Layout */
+
+
 /* =======================
    BUTTONS
 ======================= */
@@ -486,6 +489,34 @@ body::before {
   border-color: var(--accent);
 }
 
+.screen-btn {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  /* Flex required because we toggle display: flex/none in JS */
+  align-items: center;
+  justify-content: center;
+}
+
+.screen-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.screen-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 15px var(--accent-glow);
+  animation: pulse 2s infinite;
+}
+
 .user-label {
   display: inline-flex;
   align-items: center;
@@ -614,5 +645,68 @@ body::before {
     font-size: 13px;
     padding: 0.5em 1em;
     width: max-content;
+  }
+}
+
+/* =======================
+   SCREEN SHARE LAYOUT (3 Windows)
+======================= */
+
+/* When screen share is active, we switch to a specific grid layout */
+#video-wrapper.screen-share-active {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  /* Screen row auto (min-height dictates), cams row 1fr */
+  grid-template-areas:
+    "screen screen"
+    "local remote";
+  gap: 20px;
+  align-items: start;
+  /* Align items to top */
+}
+
+/* Scope grid areas to the active state so they don't mess up normal flow */
+#video-wrapper.screen-share-active .local-card {
+  grid-area: local;
+  width: 100%;
+  /* Ensure full width of grid cell */
+  position: static;
+  /* Reset absolute positioning if any */
+  margin: 0;
+}
+
+#video-wrapper.screen-share-active .remote-card {
+  grid-area: remote;
+  width: 100%;
+}
+
+#video-wrapper.screen-share-active .screen-card {
+  grid-area: screen;
+  display: flex !important;
+  /* Override inline display: none */
+  width: 100%;
+  min-height: 55vh;
+  /* Dominant view */
+  max-height: 80vh;
+}
+
+/* Ensure video inside screen card follows suit */
+.screen-card .video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  max-height: 75vh;
+}
+
+@media (max-width: 768px) {
+  #video-wrapper.screen-share-active {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "screen"
+      "local"
+      "remote";
   }
 }

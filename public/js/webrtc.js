@@ -1,6 +1,6 @@
 // webrtc.js - Mediasoup Implementation
 import { state } from "./state.js";
-import { remoteVideo, hideWaitingOverlay } from "./ui.js";
+import { remoteVideo, hideWaitingOverlay, remoteScreenVideo, setScreenShareMode } from "./ui.js";
 import MediasoupClient from "mediasoup-client";
 const { Device } = MediasoupClient;
 import { sendSignal } from "./socket.js";
@@ -10,7 +10,9 @@ let producerTransport;
 let consumerTransport;
 let audioProducer;
 let videoProducer;
+let screenProducer; // New Screen Producer
 let consumer;
+
 
 export async function createPeerConnection(signalFunc) {
   // This function is called by joinCall/startCall
@@ -134,6 +136,56 @@ export async function createPeerConnection(signalFunc) {
   }
 }
 
+
+// 5. Start Screen Share
+export async function startScreenShare(stream) {
+  if (!device || !producerTransport) return;
+
+  const track = stream.getVideoTracks()[0];
+  if (!track) return;
+
+  console.log("[Mediasoup] Starting Screen Share...");
+
+  try {
+    screenProducer = await producerTransport.produce({
+      track,
+      appData: { source: 'screen' } // Tag as screen
+    });
+
+    console.log("[Mediasoup] Screen Producer created:", screenProducer.id);
+
+    screenProducer.on("trackended", () => {
+      console.log("[Mediasoup] Screen track ended");
+      stopScreenShare();
+    });
+
+    // Return producer to caller to handle UI updates if needed
+    return screenProducer;
+
+  } catch (err) {
+    console.error("[Mediasoup] Screen share error:", err);
+  }
+}
+
+export function stopScreenShare() {
+  if (screenProducer) {
+    const id = screenProducer.id;
+    screenProducer.close();
+    screenProducer = null;
+    console.log("[Mediasoup] Screen sharing stopped");
+
+    // Notify server to close producer and update recording
+    if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+      state.socket.send(JSON.stringify({
+        type: 'closeProducer',
+        producerId: id,
+        channel: state.roomId
+      }));
+    }
+  }
+}
+
+
 // Global helper to consume new producers
 export async function consumeProducer(producerId, kind) {
   if (!device) return;
@@ -144,7 +196,8 @@ export async function consumeProducer(producerId, kind) {
     id,
     kind: consumerKind,
     rtpParameters,
-    type
+    type,
+    appData
   } = await request('consume', {
     transportId: consumerTransport.id,
     producerId,
@@ -155,7 +208,8 @@ export async function consumeProducer(producerId, kind) {
     id,
     producerId,
     kind: consumerKind,
-    rtpParameters
+    rtpParameters,
+    appData: { ...appData } // Ensure appData is passed
   });
 
   const stream = new MediaStream();
@@ -165,17 +219,41 @@ export async function consumeProducer(producerId, kind) {
   await request('resume', { consumerId: consumer.id });
 
   if (kind === 'video') {
-    remoteVideo.srcObject = stream;
-    remoteVideo.classList.add('active');
+    const isScreen = consumer.appData && consumer.appData.source === 'screen';
+    // Use screen video element if source is screen
+    const videoEl = isScreen ? document.getElementById("remote-screen-video") : remoteVideo;
+
+    videoEl.srcObject = stream;
+
+    if (isScreen) {
+      videoEl.style.display = 'block';
+      setScreenShareMode(true);
+      // Optional: Make screen share dominant? 
+      // For now, just show it.
+    } else {
+      videoEl.classList.add('active');
+      hideWaitingOverlay();
+    }
 
     // Explicitly play to avoid autoplay policies
-    remoteVideo.play().catch(e => console.error(`[Mediasoup] Video play failed:`, e));
+    videoEl.play().catch(e => console.error(`[Mediasoup] Video play failed:`, e));
 
     console.log(`[Mediasoup] Video track: enabled=${consumer.track.enabled}, state=${consumer.track.readyState}, muted=${consumer.track.muted}`);
 
     // Update UI
-    hideWaitingOverlay();
+    if (!isScreen) hideWaitingOverlay();
+
+    // Handle track ended to reset UI (if needed server-side close event isn't enough)
+    stream.onremovetrack = () => {
+      console.log(`[Mediasoup] Stream track removed (kind: ${kind})`);
+      if (isScreen) {
+        setScreenShareMode(false);
+        videoEl.style.display = 'none';
+      }
+    };
+
   } else {
+
     // play audio
     const audio = new Audio();
     audio.srcObject = stream;
