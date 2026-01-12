@@ -5,4 +5,4 @@ node_modules
 recordings
 .DS_Store
 .env
-*.log*.zip
+*.log*.zipnode_modules/
