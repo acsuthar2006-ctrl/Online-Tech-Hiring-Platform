@@ -236,7 +236,20 @@ export async function consumeProducer(producerId, kind) {
     }
 
     // Explicitly play to avoid autoplay policies
-    videoEl.play().catch(e => console.error(`[Mediasoup] Video play failed:`, e));
+    videoEl.setAttribute('playsinline', 'true'); // Required for iOS/some browsers
+    videoEl.muted = true; // Ensure muted to allow autoplay (especially for local/remote mix issues)
+
+    videoEl.onloadedmetadata = () => {
+      videoEl.play().catch(e => {
+        if (e.name === 'AbortError') {
+          // Ignore abort errors caused by rapid stream switching
+          console.log('[Mediasoup] Play aborted (likely new stream loaded)');
+        } else {
+          console.error(`[Mediasoup] Video play failed:`, e);
+        }
+      });
+    };
+
 
     console.log(`[Mediasoup] Video track: enabled=${consumer.track.enabled}, state=${consumer.track.readyState}, muted=${consumer.track.muted}`);
 
