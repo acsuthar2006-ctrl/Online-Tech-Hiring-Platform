@@ -1,7 +1,7 @@
-// main.js
-import { state } from "./state.js";
-import { initSocket } from "./socket.js";
-import { startCall, joinCall, exitCall } from "./call.js";
+// call.js
+import { state } from "../core/state.js";
+import { initSocket } from "../core/socket.js";
+import { startCall, joinCall, exitCall } from "../modules/callControls.js";
 import {
   micBtn,
   cameraBtn,
@@ -11,7 +11,7 @@ import {
   showWaitingOverlay,
   updateCallButtonState,
   screenShareBtn
-} from "./ui.js";
+} from "../modules/ui.js";
 
 // Initialize UI state
 updateCallButtonState(false);
@@ -50,7 +50,7 @@ async function init() {
         screenShareBtn.style.display = 'flex';
 
         // Dynamic import
-        const { startScreenShare, stopScreenShare } = await import("./webrtc.js");
+        const { startScreenShare, stopScreenShare } = await import("../modules/webrtc.js");
         let isSharing = false;
 
         screenShareBtn.addEventListener('click', async () => {

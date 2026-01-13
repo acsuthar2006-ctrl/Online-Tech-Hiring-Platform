@@ -1,7 +1,6 @@
-// call.js
-import { state } from "./state.js";
+import { state } from "../core/state.js";
 import { createPeerConnection } from "./webrtc.js";
-import { sendSignal } from "./socket.js";
+import { sendSignal } from "../core/socket.js";
 import { setStatus, preview, tempDiv, hideWaitingOverlay, updateCallButtonState } from "./ui.js";
 
 export async function startCall() {

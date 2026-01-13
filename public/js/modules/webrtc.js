@@ -1,9 +1,9 @@
 // webrtc.js - Mediasoup Implementation
-import { state } from "./state.js";
+import { state } from "../core/state.js";
 import { remoteVideo, hideWaitingOverlay, remoteScreenVideo, setScreenShareMode } from "./ui.js";
 import MediasoupClient from "mediasoup-client";
 const { Device } = MediasoupClient;
-import { sendSignal } from "./socket.js";
+import { sendSignal } from "../core/socket.js";
 
 let device;
 let producerTransport;

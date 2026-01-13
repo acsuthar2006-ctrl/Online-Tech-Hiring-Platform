@@ -1,4 +1,4 @@
-fetch("../common/sidebar.html")
+fetch("common/sidebar.html")
   .then(res => res.text())
   .then(html => {
     // Inject sidebar
