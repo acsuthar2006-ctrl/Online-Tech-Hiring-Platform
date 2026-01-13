@@ -60,3 +60,43 @@ Go to **Settings** > **Secrets and variables** > **Actions** and add:
 
 -   **"Video Connecting..."**: Ensure UDP ports `40000-40050` are allowed in AWS Security Groups.
 -   **Deployment Fails**: Check GitHub Actions logs. Verify `AWS_HOST` matches your current IP.
+
+## How PeerChat Works (SFU Architecture)
+
+PeerChat uses **Mediasoup** as a Selective Forwarding Unit (SFU). This means the server acts as a smart router for media packets.
+
+![PeerChat SFU Architecture](public/img/sfu_architecture_detailed.png)
+
+### 1. Forwarding (The "Router")
+Instead of mixing audio/video (which is CPU intensive), the SFU simple **forwards** packets.
+-   **Producer**: A user sends their video stream (RTP packets) to the server.
+-   **Router**: The server's `Router` component receives these packets.
+-   **Consumer**: When another user wants to watch, the Router creates a copy of the stream and sends it to that user.
+-   *Benefit*: The uploader only sends 1 stream, regardless of how many people are watching.
+
+### 2. Recording (FFmpeg Integration)
+Recording is handled by treating the "Recorder" as just another user (Consumer).
+1.  **Transport Creation**: The server creates a special `DirectTransport` (no network delay) for recording.
+2.  **Consumption**: This transport *consumes* the video and audio streams from the Router.
+3.  **Process**: The RTP packets are piped directly into an **FFmpeg** process running on the server.
+4.  **Output**: FFmpeg decodes the packets and muxes them into a single `.mp4` or `.webm` file.
+
+```mermaid
+sequenceDiagram
+    participant U as User (Uploader)
+    participant S as SFU Receiver
+    participant R as SFU Router
+    participant V as Viewer (Downloader)
+    participant Rec as FFmpeg (Recorder)
+
+    Note over U, S: Publishing
+    U->>S: Send RTP Packets (Video/Audio)
+    S->>R: Feed to Router
+
+    par Forwarding
+        R->>V: Forward RTP Packets (to Viewer)
+    and Recording
+        R->>Rec: Pipe RTP Packets (to FFmpeg)
+        Rec->>Rec: Save to Disk (.mp4)
+    end
+```
