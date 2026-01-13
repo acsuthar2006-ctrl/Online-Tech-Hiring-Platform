@@ -1,7 +1,7 @@
 // socket.js
 import { state } from "./state.js";
-import { setStatus, resetRemoteVideoUI, updateCallButtonState } from "./ui.js";
-import { acceptCall, endCall, startCall } from "./call.js";
+import { setStatus, resetRemoteVideoUI, updateCallButtonState } from "../modules/ui.js";
+import { acceptCall, endCall, startCall } from "../modules/callControls.js";
 
 export function initSocket() {
   const protocol = location.protocol === "https:" ? "wss" : "ws";
@@ -60,6 +60,7 @@ export function initSocket() {
         case "consumeResponse":
         case "getProducersResponse":
         case "ack":
+        case "resumeResponse":
           // These are handled by request() logic in webrtc.js via event listener
           break;
 

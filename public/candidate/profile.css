@@ -1,5 +1,5 @@
 /* Profile page specific styles */
-@import url("../common/common.css");
+@import url("common/common.css");
 
 .profile-container {
   max-width: 1200px;

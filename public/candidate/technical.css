@@ -1,5 +1,5 @@
 /* Technical round page specific styles */
-@import url("../common/common.css");
+@import url("common/common.css");
 
 .categories-section {
   display: grid;
