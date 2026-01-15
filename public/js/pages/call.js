@@ -10,8 +10,8 @@ import {
   tempDiv,
   showWaitingOverlay,
   updateCallButtonState,
-  screenShareBtn
-} from "../modules/ui.js";
+  screenShareBtn,
+} from "../modules/call-ui.js";
 
 // Initialize UI state
 updateCallButtonState(false);
@@ -37,27 +37,31 @@ async function init() {
     const waitingText = document.querySelector(".waiting-content p");
 
     if (state.role === "interviewer") {
-      localLabel.innerHTML = '<i class="fas fa-user-tie"></i> You (Interviewer)';
+      localLabel.innerHTML =
+        '<i class="fas fa-user-tie"></i> You (Interviewer)';
       remoteLabel.innerHTML = '<i class="fas fa-user"></i> Candidate';
-      if (waitingText) waitingText.innerText = "The Candidate will join shortly...";
+      if (waitingText)
+        waitingText.innerText = "The Candidate will join shortly...";
     } else {
       localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
       remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
-      if (waitingText) waitingText.innerText = "The Interviewer will join shortly...";
+      if (waitingText)
+        waitingText.innerText = "The Interviewer will join shortly...";
 
       // Candidate only features
       if (screenShareBtn) {
-        screenShareBtn.style.display = 'flex';
+        screenShareBtn.style.display = "flex";
 
         // Dynamic import
-        const { startScreenShare, stopScreenShare } = await import("../modules/webrtc.js");
+        const { startScreenShare, stopScreenShare } =
+          await import("../features/screen-share.js");
         let isSharing = false;
 
-        screenShareBtn.addEventListener('click', async () => {
+        screenShareBtn.addEventListener("click", async () => {
           if (isSharing) {
             stopScreenShare();
             isSharing = false;
-            screenShareBtn.classList.remove('active');
+            screenShareBtn.classList.remove("active");
             return;
           }
 
@@ -66,20 +70,20 @@ async function init() {
               video: {
                 width: { ideal: 1920 },
                 height: { ideal: 1080 },
-                frameRate: { ideal: 30 }
+                frameRate: { ideal: 30 },
               },
-              audio: false
+              audio: false,
             });
             const producer = await startScreenShare(stream);
 
             if (producer) {
               isSharing = true;
-              screenShareBtn.classList.add('active');
+              screenShareBtn.classList.add("active");
 
               stream.getVideoTracks()[0].onended = () => {
                 stopScreenShare();
                 isSharing = false;
-                screenShareBtn.classList.remove('active');
+                screenShareBtn.classList.remove("active");
               };
             }
           } catch (err) {
@@ -94,13 +98,13 @@ async function init() {
       video: {
         width: { ideal: 1280 },
         height: { ideal: 720 },
-        frameRate: { ideal: 60 }
+        frameRate: { ideal: 60 },
       },
       audio: {
         echoCancellation: true,
         noiseSuppression: true,
-        autoGainControl: true
-      }
+        autoGainControl: true,
+      },
     });
 
     console.log("[Init] Media permissions granted");
@@ -135,18 +139,29 @@ async function init() {
     }
 
     console.log("[Init] Initialization complete");
-
   } catch (err) {
     console.error("[Init] Failed to get media:", err);
 
     let errorMessage = "Failed to access camera/microphone. ";
 
-    if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-      errorMessage += "Please allow camera and microphone permissions and refresh the page.";
-    } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
-      errorMessage += "No camera or microphone found. Please connect a device and refresh.";
-    } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
-      errorMessage += "Camera/microphone is already in use by another application.";
+    if (
+      err.name === "NotAllowedError" ||
+      err.name === "PermissionDeniedError"
+    ) {
+      errorMessage +=
+        "Please allow camera and microphone permissions and refresh the page.";
+    } else if (
+      err.name === "NotFoundError" ||
+      err.name === "DevicesNotFoundError"
+    ) {
+      errorMessage +=
+        "No camera or microphone found. Please connect a device and refresh.";
+    } else if (
+      err.name === "NotReadableError" ||
+      err.name === "TrackStartError"
+    ) {
+      errorMessage +=
+        "Camera/microphone is already in use by another application.";
     } else {
       errorMessage += err.message;
     }
@@ -162,7 +177,7 @@ window.addEventListener("beforeunload", (e) => {
     exitCall();
     // Some browsers require returnValue to show confirmation
     e.preventDefault();
-    e.returnValue = '';
+    e.returnValue = "";
   }
 });
 
@@ -204,11 +219,9 @@ micBtn.addEventListener("click", () => {
   audioTrack.enabled = willEnable;
   micBtn.classList.toggle("off", !willEnable);
 
-  icon.className = willEnable
-    ? "fa fa-microphone"
-    : "fa fa-microphone-slash";
+  icon.className = willEnable ? "fa fa-microphone" : "fa fa-microphone-slash";
 
-  console.log(`[Mic] ${willEnable ? 'Unmuted' : 'Muted'}`);
+  console.log(`[Mic] ${willEnable ? "Unmuted" : "Muted"}`);
 });
 
 // 📹 Camera toggle
@@ -230,9 +243,7 @@ cameraBtn.addEventListener("click", () => {
   videoTrack.enabled = willEnable;
   cameraBtn.classList.toggle("off", !willEnable);
 
-  icon.className = willEnable
-    ? "fa-solid fa-video"
-    : "fa-solid fa-video-slash";
+  icon.className = willEnable ? "fa-solid fa-video" : "fa-solid fa-video-slash";
 
-  console.log(`[Camera] ${willEnable ? 'Enabled' : 'Disabled'}`);
+  console.log(`[Camera] ${willEnable ? "Enabled" : "Disabled"}`);
 });

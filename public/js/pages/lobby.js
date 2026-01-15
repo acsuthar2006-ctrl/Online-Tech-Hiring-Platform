@@ -1,3 +1,5 @@
+import { showToast, showLoading } from "../common/ui-utils.js";
+
 const BASE_URL = window.location.origin;
 
 const joinForm = document.getElementById("joinForm");
@@ -13,7 +15,7 @@ if (downloadBtn && recordingSection) {
 }
 
 // Join existing room
-joinForm.addEventListener("submit", async evt => {
+joinForm.addEventListener("submit", async (evt) => {
   evt.preventDefault();
 
   showLoading(true);
@@ -29,7 +31,10 @@ joinForm.addEventListener("submit", async evt => {
   // Validate room ID format (alphanumeric, hyphens, underscores)
   if (!/^[A-Za-z0-9-_]+$/.test(room)) {
     showLoading(false);
-    showToast("Room ID can only contain letters, numbers, hyphens and underscores", "error");
+    showToast(
+      "Room ID can only contain letters, numbers, hyphens and underscores",
+      "error",
+    );
     return;
   }
 
@@ -70,7 +75,10 @@ createBtn.addEventListener("click", async () => {
   // Validate room ID format
   if (!/^[A-Za-z0-9-_]+$/.test(room)) {
     showLoading(false);
-    showToast("Room ID can only contain letters, numbers, hyphens and underscores", "error");
+    showToast(
+      "Room ID can only contain letters, numbers, hyphens and underscores",
+      "error",
+    );
     return;
   }
 
@@ -79,7 +87,10 @@ createBtn.addEventListener("click", async () => {
 
     if (exists) {
       showLoading(false);
-      showToast("Room already exists! Join it or choose a different ID.", "error");
+      showToast(
+        "Room already exists! Join it or choose a different ID.",
+        "error",
+      );
       return;
     }
 
@@ -123,9 +134,11 @@ if (downloadBtn) {
         `;
 
         // Add items
-        data.recordings.forEach(rec => {
+        data.recordings.forEach((rec) => {
           // Check file type for icon (default video)
-          const icon = rec.filename.endsWith('.mp4') ? 'fa-file-video' : 'fa-file';
+          const icon = rec.filename.endsWith(".mp4")
+            ? "fa-file-video"
+            : "fa-file";
 
           listHtml += `
             <div class="recording-item">
@@ -153,12 +166,11 @@ if (downloadBtn) {
         listHtml += `</div></div>`; // Close content and list divs
 
         // Insert
-        const existingList = document.querySelector('.recordings-list');
+        const existingList = document.querySelector(".recordings-list");
         if (existingList) existingList.remove();
 
-        downloadBtn.insertAdjacentHTML('afterend', listHtml);
+        downloadBtn.insertAdjacentHTML("afterend", listHtml);
         showToast(`Found ${data.recordings.length} recordings!`, "success");
-
       } else {
         // Empty state
         const emptyHtml = `
@@ -170,13 +182,12 @@ if (downloadBtn) {
             </div>
         `;
 
-        const existingList = document.querySelector('.recordings-list');
+        const existingList = document.querySelector(".recordings-list");
         if (existingList) existingList.remove();
 
-        downloadBtn.insertAdjacentHTML('afterend', emptyHtml);
+        downloadBtn.insertAdjacentHTML("afterend", emptyHtml);
         showToast("No recordings found", "info");
       }
-
     } catch (err) {
       showLoading(false);
       console.error("Error fetching recordings:", err);
@@ -198,7 +209,6 @@ async function roomExists(room) {
     const data = await res.json();
     console.log(`[Lobby] Room ${room} exists: ${data.exists}`);
     return data.exists;
-
   } catch (err) {
     console.error("[Lobby] Error checking room existence:", err);
     showToast("Unable to connect to server. Please try again.", "error");
@@ -206,69 +216,18 @@ async function roomExists(room) {
   }
 }
 
-// Toast notification helper
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) {
-    // Fallback to alert if toast container doesn't exist
-    alert(message);
-    return;
-  }
-
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-
-  // Add icon based on type
-  const icon = {
-    'error': '<i class="fas fa-exclamation-circle"></i>',
-    'success': '<i class="fas fa-check-circle"></i>',
-    'info': '<i class="fas fa-info-circle"></i>',
-    'warning': '<i class="fas fa-exclamation-triangle"></i>'
-  }[type] || '<i class="fas fa-info-circle"></i>';
-
-  toast.innerHTML = `${icon} <span>${message}</span>`;
-
-  container.appendChild(toast);
-
-  // Auto remove after 4 seconds
-  setTimeout(() => {
-    toast.style.animation = 'slideOutRight 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
-}
-
-// Loading spinner helper
-let loadingTimeout;
-function showLoading(show = true) {
-  const spinner = document.getElementById('loading-spinner');
-  if (spinner) {
-    spinner.style.display = show ? 'flex' : 'none';
-
-    // Clear existing timeout
-    if (loadingTimeout) clearTimeout(loadingTimeout);
-
-    // Safety: Auto-hide after 15 seconds if something hangs
-    if (show) {
-      loadingTimeout = setTimeout(() => {
-        spinner.style.display = 'none';
-        showToast("Request timed out or took too long", "warning");
-      }, 15000);
-    }
-  }
-}
-
 // BFCache Fix: Hide spinner when user navigates "Back" to this page
-window.addEventListener('pageshow', (event) => {
+window.addEventListener("pageshow", (event) => {
   if (event.persisted || performance.navigation.type === 2) {
     showLoading(false);
   }
 });
 
-
 // Random room ID generator
 function generateRandomRoomId() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let i = 0; i < 8; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -282,7 +241,7 @@ if (randomBtn) {
     const randomId = generateRandomRoomId();
     roomInput.value = randomId;
     // Trigger input event to update button text
-    roomInput.dispatchEvent(new Event('input'));
+    roomInput.dispatchEvent(new Event("input"));
     showToast(`Generated room ID: ${randomId}`, "success");
   });
 }
@@ -295,7 +254,6 @@ roomInput.addEventListener("input", () => {
     btnSpan.textContent = hasText ? "Start Meeting" : "Start Instant Meeting";
   }
 });
-
 
 // Handle enter key in room input
 roomInput.addEventListener("keypress", (e) => {
@@ -314,7 +272,9 @@ window.addEventListener("load", () => {
 // Delete recording handler
 window.deleteRecording = async (filename) => {
   // 1. Security Check (Client-side only)
-  const isInterviewer = confirm("⚠️ SECURITY CHECK ⚠️\n\nOnly the INTERVIEWER is allowed to delete recordings.\n\nAre you the Interviewer?");
+  const isInterviewer = confirm(
+    "⚠️ SECURITY CHECK ⚠️\n\nOnly the INTERVIEWER is allowed to delete recordings.\n\nAre you the Interviewer?",
+  );
 
   if (!isInterviewer) {
     showToast("Action cancelled. You must be the Interviewer.", "info");
@@ -330,7 +290,7 @@ window.deleteRecording = async (filename) => {
   showLoading(true);
   try {
     const res = await fetch(`/api/recordings/${filename}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
 
     const data = await res.json();
