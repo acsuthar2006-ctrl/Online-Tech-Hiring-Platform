@@ -62,7 +62,14 @@ async function init() {
           }
 
           try {
-            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+              video: {
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                frameRate: { ideal: 30 }
+              },
+              audio: false
+            });
             const producer = await startScreenShare(stream);
 
             if (producer) {

@@ -248,6 +248,14 @@ async function initWebSocket(server) {
           producer.close();
           producers.delete(data.producerId);
 
+          // Broadcast closure so clients can update lists/UI
+          broadcastToRoom(socket, {
+            type: 'producerClosed',
+            producerId: data.producerId,
+            kind: producer.kind,
+            uid: socket.uid
+          });
+
           // Update socket.producers
           if (socket.producers) {
             Object.keys(socket.producers).forEach(key => {

@@ -1,7 +1,12 @@
 // socket.js
 import { state } from "./state.js";
-import { setStatus, resetRemoteVideoUI, updateCallButtonState } from "../modules/ui.js";
+import {
+  setStatus,
+  resetRemoteVideoUI,
+  updateCallButtonState,
+} from "../modules/call-ui.js";
 import { acceptCall, endCall, startCall } from "../modules/callControls.js";
+import { consumeProducer } from "../features/mediasoup-client.js";
 
 export function initSocket() {
   const protocol = location.protocol === "https:" ? "wss" : "ws";
@@ -17,7 +22,7 @@ export function initSocket() {
     sendSignal("join");
   };
 
-  state.socket.onmessage = async evt => {
+  state.socket.onmessage = async (evt) => {
     try {
       const data = JSON.parse(evt.data);
       console.log("[Socket] Received:", data.type);
@@ -27,26 +32,23 @@ export function initSocket() {
 
       switch (data.type) {
         case "serverInfo":
-          const savedInstance = localStorage.getItem('serverInstance');
+          const savedInstance = localStorage.getItem("serverInstance");
           if (savedInstance && savedInstance !== data.instanceId) {
-            console.log('[Socket] Server instance changed. Clearing localStorage.');
+            console.log(
+              "[Socket] Server instance changed. Clearing localStorage.",
+            );
             localStorage.clear();
-            localStorage.setItem('serverInstance', data.instanceId);
+            localStorage.setItem("serverInstance", data.instanceId);
             // Optional: Notify user
             // setStatus("Session reset (Server restarted)");
           } else {
-            localStorage.setItem('serverInstance', data.instanceId);
+            localStorage.setItem("serverInstance", data.instanceId);
           }
           break;
 
         case "newProducer":
           console.log("[Socket] New Producer available:", data.kind);
-          // Import loop workaround or use window global? 
-          // Ideally: import { consumeProducer } from "./webrtc.js"; (circular dependency risk)
-          // We can attach consumeProducer to state or window.
-          if (window.consumeProducer) {
-            window.consumeProducer(data.producerId, data.kind);
-          }
+          consumeProducer(data.producerId, data.kind);
           break;
 
         case "joined":
@@ -79,12 +81,12 @@ export function initSocket() {
     }
   };
 
-  state.socket.onerror = err => {
+  state.socket.onerror = (err) => {
     console.error("[Socket] Error:", err);
     setStatus("Connection error");
   };
 
-  state.socket.onclose = evt => {
+  state.socket.onclose = (evt) => {
     console.log("[Socket] Disconnected:", evt.code, evt.reason);
     setStatus("Disconnected from server");
 
@@ -105,7 +107,7 @@ export function sendSignal(type, payload = {}) {
     type,
     from: state.uid,
     channel: state.roomId,
-    ...payload
+    ...payload,
   };
 
   console.log("[Socket] Sending:", type);

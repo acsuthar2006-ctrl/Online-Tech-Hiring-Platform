@@ -12,18 +12,18 @@ export async function startScreenRecording(remoteStream) {
     console.log("[Recorder] Starting...");
 
     // Clean up any existing recording
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
     }
 
     // Screen + optional system audio
     screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: { frameRate: 60 },
-      audio: true
+      audio: true,
     });
 
     // Handle user clicking "Stop sharing" button
-    screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+    screenStream.getVideoTracks()[0].addEventListener("ended", () => {
       console.log("[Recorder] Screen sharing stopped by user");
       stopScreenRecording();
     });
@@ -33,8 +33,8 @@ export async function startScreenRecording(remoteStream) {
       audio: {
         echoCancellation: true,
         noiseSuppression: true,
-        autoGainControl: true
-      }
+        autoGainControl: true,
+      },
     });
 
     // Audio mixer
@@ -64,7 +64,7 @@ export async function startScreenRecording(remoteStream) {
     // 🎥 Final stream
     finalStream = new MediaStream([
       ...screenStream.getVideoTracks(),
-      ...destination.stream.getAudioTracks()
+      ...destination.stream.getAudioTracks(),
     ]);
 
     if (finalStream.getAudioTracks().length === 0) {
@@ -73,14 +73,16 @@ export async function startScreenRecording(remoteStream) {
 
     // Check for supported MIME types
     const mimeTypes = [
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
-      'video/webm;codecs=h264,opus',
-      'video/webm'
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm;codecs=h264,opus",
+      "video/webm",
     ];
 
-    let selectedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
-    
+    let selectedMimeType = mimeTypes.find((type) =>
+      MediaRecorder.isTypeSupported(type),
+    );
+
     if (!selectedMimeType) {
       throw new Error("No supported MIME type found for recording");
     }
@@ -90,25 +92,24 @@ export async function startScreenRecording(remoteStream) {
     mediaRecorder = new MediaRecorder(finalStream, {
       mimeType: selectedMimeType,
       audioBitsPerSecond: 128000,
-      videoBitsPerSecond: 2500000
+      videoBitsPerSecond: 2500000,
     });
 
     recordedChunks = [];
 
-    mediaRecorder.ondataavailable = e => {
+    mediaRecorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) {
         recordedChunks.push(e.data);
         console.log(`[Recorder] Chunk recorded: ${e.data.size} bytes`);
       }
     };
 
-    mediaRecorder.onerror = e => {
+    mediaRecorder.onerror = (e) => {
       console.error("[Recorder] Error:", e);
     };
 
     mediaRecorder.start(1000); // Collect data every second
     console.log("[Recorder] Recording started");
-    
   } catch (err) {
     console.error("[Recorder] Failed to start:", err);
     cleanupRecordingResources();
@@ -137,22 +138,22 @@ export function attachIncomingAudio(remoteStream) {
 function cleanupRecordingResources() {
   // Stop all tracks
   if (finalStream) {
-    finalStream.getTracks().forEach(t => t.stop());
+    finalStream.getTracks().forEach((t) => t.stop());
     finalStream = null;
   }
-  
+
   if (screenStream) {
-    screenStream.getTracks().forEach(t => t.stop());
+    screenStream.getTracks().forEach((t) => t.stop());
     screenStream = null;
   }
-  
+
   if (micStream) {
-    micStream.getTracks().forEach(t => t.stop());
+    micStream.getTracks().forEach((t) => t.stop());
     micStream = null;
   }
 
   // Close audio context
-  if (audioContext && audioContext.state !== 'closed') {
+  if (audioContext && audioContext.state !== "closed") {
     audioContext.close();
     audioContext = null;
   }
@@ -163,7 +164,7 @@ function cleanupRecordingResources() {
 }
 
 export function stopScreenRecording() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (!mediaRecorder || mediaRecorder.state === "inactive") {
       cleanupRecordingResources();
       return resolve();
@@ -190,8 +191,6 @@ export function stopScreenRecording() {
   });
 }
 
-
-
 export async function uploadRecording(roomId) {
   if (!recordedChunks || recordedChunks.length === 0) {
     console.warn("[Recorder] No chunks to upload");
@@ -200,7 +199,7 @@ export async function uploadRecording(roomId) {
 
   try {
     // 🔹 Yield so UI can repaint / navigate
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
     console.log("[Recorder] Preparing recording upload...");
 
@@ -221,14 +220,16 @@ export async function uploadRecording(roomId) {
         recordedChunks = [];
         return;
       } else {
-        console.warn("[Recorder] sendBeacon rejected payload, falling back to fetch");
+        console.warn(
+          "[Recorder] sendBeacon rejected payload, falling back to fetch",
+        );
       }
     }
 
     //  Fallback to fetch (background upload)
     const response = await fetch("/upload-recording", {
       method: "POST",
-      body: formData
+      body: formData,
     });
 
     if (!response.ok) {
@@ -237,7 +238,6 @@ export async function uploadRecording(roomId) {
 
     console.log("[Recorder] Upload successful via fetch");
     recordedChunks = [];
-
   } catch (err) {
     console.error("[Recorder] Upload failed:", err);
     // Keep chunks so you can retry later

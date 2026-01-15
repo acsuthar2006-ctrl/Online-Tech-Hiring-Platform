@@ -140,12 +140,14 @@ a=rtcp-mux
             filterComplex = '[0:0][0:2]amix= inputs=2[aout];[0:1]scale=-2:480[v1];[0:3]scale=-2:480[v2];[v1][v2]hstack[vout]';
         }
         else if (this.consumers.length === 5) {
-            // Reduced resolution for t3.small
+            // Enhanced resolution for better quality (Target: 1920x720)
+            // Screen: 1280x720
+            // Cams: 640x360 each (stacked vertically = 640x720)
             filterComplex = `
                 [0:0][0:2]amix=inputs=2[aout];
-                [0:1]scale=480:270[v1];
-                [0:3]scale=480:270[v2];
-                [0:4]scale=960:540[scr];
+                [0:1]scale=640:360[v1];
+                [0:3]scale=640:360[v2];
+                [0:4]scale=1280:720[scr];
                 [v1][v2]vstack[cams];
                 [scr][cams]hstack[vout]
             `.replace(/\s+/g, '');
@@ -157,12 +159,12 @@ a=rtcp-mux
 
         args.push(
             '-c:v', 'libx264',
-            '-preset', 'ultrafast',
+            '-preset', 'superfast', // Better balance than ultrafast
             '-tune', 'zerolatency',
-            '-crf', '30',
-            '-r', '15',
+            '-crf', '24', // Higher quality (was 30)
+            '-r', '25', // Smoother motion (was 15)
             '-c:a', 'aac',
-            '-b:a', '64k',
+            '-b:a', '128k', // Better audio
             '-y', filepath
         );
 

@@ -1,7 +1,13 @@
 import { state } from "../core/state.js";
-import { createPeerConnection } from "./webrtc.js";
+import { createPeerConnection } from "../features/mediasoup-client.js";
 import { sendSignal } from "../core/socket.js";
-import { setStatus, preview, tempDiv, hideWaitingOverlay, updateCallButtonState } from "./ui.js";
+import {
+  setStatus,
+  preview,
+  tempDiv,
+  hideWaitingOverlay,
+  updateCallButtonState,
+} from "./call-ui.js";
 
 export async function startCall() {
   console.log("[Call] Starting/Joining call...");
@@ -36,7 +42,6 @@ export async function exitCall() {
 
     // Server handles recording stop
     localStorage.removeItem("hasRecording"); // No client recording to download
-
   } catch (err) {
     console.error("[Exit] Error during cleanup:", err);
   } finally {

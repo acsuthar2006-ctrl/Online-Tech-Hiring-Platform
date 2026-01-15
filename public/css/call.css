@@ -1,83 +1,4 @@
-:root {
-  --bg-main: #050505;
-  --bg-gradient-start: #0a0e17;
-  --bg-gradient-end: #020204;
-  --bg-card: rgba(18, 20, 32, 0.65);
-
-  --accent: #00d4ff;
-  --accent-secondary: #0055ff;
-  --accent-glow: rgba(0, 212, 255, 0.35);
-  --accent-soft: rgba(0, 212, 255, 0.08);
-
-  --danger: #ff3366;
-  --danger-dark: #cc0044;
-  --success: #00ffaa;
-
-  --text-main: #ffffff;
-  --text-muted: #8899ac;
-
-  --overlay-bg: rgba(5, 5, 8, 0.95);
-
-  --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-  --shadow-hover: 0 0 30px rgba(0, 212, 255, 0.4);
-  --shadow-glow: 0 0 50px rgba(0, 85, 255, 0.3);
-
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
-
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: var(--font-main);
-}
-
-body {
-  min-height: 100vh;
-  background: radial-gradient(circle at 50% -20%, #1a233a 0%, #050505 60%);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-main);
-  padding: 2em;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background:
-    radial-gradient(circle at 10% 20%, rgba(0, 85, 255, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 40%);
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.6;
-    transform: scale(1.1);
-  }
-}
+/* call.css - Specific styles for the video call interface */
 
 /* =======================
    HEADER
@@ -163,76 +84,8 @@ body::before {
   /* Space for header */
 }
 
-.video-card {
-  position: relative;
-  background: var(--bg-card);
-  padding: 1.5em;
-  border-radius: var(--radius-lg);
-  border: var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25em;
-  box-shadow: var(--shadow-card);
-  backdrop-filter: blur(12px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.video-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Remove fancy animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* =======================
-   VIDEO
-======================= */
-
-.video-player {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
-.video-player:hover {
-  border-color: var(--accent-glow);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-}
-
-#remote-user {
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-#remote-user.active {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Screen Share Layout */
-
-
-/* =======================
-   BUTTONS
+   BUTTONS (Moved to components/buttons.css)
 ======================= */
 
 .btn-container {
@@ -241,57 +94,34 @@ body::before {
   width: 100%;
 }
 
-.call-btn,
-.exit-btn {
+/* =======================
+   VIDEO CONTAINER & OVERLAYS
+======================= */
+
+.video-container {
+  position: relative;
+  width: 100%;
   flex: 1;
-  padding: 0.75em 1.5em;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: normal;
-  text-transform: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  /* Take remaining height */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  /* To stretch video-player */
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-height: 300px;
+  /* Minimum height constraint */
+}
+
+.video-overlay {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.call-btn {
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid transparent;
-}
-
-.call-btn:hover {
-  background: var(--accent-secondary);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-/* Remove shine effect */
-.call-btn::before {
-  display: none;
-}
-
-.exit-btn {
-  background: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-.exit-btn:hover {
-  background: var(--danger);
-  color: #fff;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.call-btn:active,
-.exit-btn:active {
-  transform: scale(0.98);
+  transition: all 0.3s ease;
 }
 
 /* =======================
@@ -306,16 +136,47 @@ body::before {
 }
 
 .video-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  gap: 12px;
-  padding: 0.75em;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  width: fit-content;
+  min-width: 300px;
+  /* Ensure enough space */
+  max-width: 90%;
+  gap: 16px;
+  padding: 0.75em 1.5em;
+  /* More padding on sides */
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50px;
+  /* Pill shape */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 20;
+}
+
+.video-card:hover .video-controls {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.video-player {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  object-fit: cover;
+  /* Fill the container */
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
 .media-controls {
@@ -324,73 +185,8 @@ body::before {
 }
 
 /* =======================
-   MIC & CAMERA BUTTONS
+   MIC & CAMERA BUTTONS (Moved to components/buttons.css)
 ======================= */
-
-#mic-btn,
-#camera-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-#mic-btn::after,
-#camera-btn::after {
-  display: none;
-  /* Remove ripple */
-}
-
-#mic-btn i,
-#camera-btn i {
-  color: var(--text-muted);
-  font-size: 18px;
-  transition: transform 0.2s ease;
-}
-
-#mic-btn:hover,
-#camera-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: none;
-}
-
-#mic-btn:hover i,
-#camera-btn:hover i {
-  color: var(--text-main);
-  transform: none;
-}
-
-#mic-btn:active,
-#camera-btn:active {
-  transform: scale(0.96);
-}
-
-/* OFF state */
-#mic-btn.off,
-#camera-btn.off {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: var(--danger);
-  animation: none;
-}
-
-#mic-btn.off i,
-#camera-btn.off i {
-  color: var(--danger);
-}
-
-#mic-btn.off:hover,
-#camera-btn.off:hover {
-  background: rgba(239, 68, 68, 0.25);
-  transform: none;
-}
 
 /* =======================
    OVERLAY
@@ -470,51 +266,6 @@ body::before {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.help-btn {
-  background: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.help-btn:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-.screen-btn {
-  background: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  /* Flex required because we toggle display: flex/none in JS */
-  align-items: center;
-  justify-content: center;
-}
-
-.screen-btn:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-.screen-btn.active {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 15px var(--accent-glow);
-  animation: pulse 2s infinite;
 }
 
 .user-label {
@@ -667,7 +418,10 @@ body::before {
   pointer-events: none;
   z-index: -1;
   transform: scale(0.95);
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.4s;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0.4s;
 }
 
 /* Base transition for all cards */
@@ -756,6 +510,24 @@ body::before {
   height: auto;
   aspect-ratio: 16/9;
   /* Maintain ratio in sidebar */
+}
+
+.video-card {
+  position: relative;
+  background: var(--bg-card);
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+  /* Ensure it fills the grid cell */
 }
 
 #video-wrapper.screen-share-active .local-card {

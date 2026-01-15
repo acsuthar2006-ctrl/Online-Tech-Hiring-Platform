@@ -19,12 +19,18 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/index.css" />
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/cards.css">
+  <link rel="stylesheet" href="css/call.css">
 </head>
 
 <body>
   <!-- Background Effects -->
-  <div class="bg-particles"></div>
+  <!-- Background Effects -->
+  <!-- <div class="bg-particles"></div> -->
 
   <!-- Main Container -->
   <main class="main-container">
@@ -101,7 +107,7 @@
       </article>
 
       <!-- Screen Share Card (3rd Window) -->
-      <article class="video-card screen-card" id="screen-card" style="display: none;">
+      <article class="video-card screen-card" id="screen-card">
         <div class="video-container">
           <video class="video-player" id="remote-screen-video" autoplay playsinline></video>
           <div class="video-overlay">
@@ -126,10 +132,6 @@
           <i class="fas fa-desktop"></i>
         </button>
       </div>
-
-      <button class="help-btn" id="help-btn" title="Help">
-        <i class="fas fa-question-circle"></i>
-      </button>
     </footer>
     <!-- Mediasoup Client -->
     <script type="importmap">
