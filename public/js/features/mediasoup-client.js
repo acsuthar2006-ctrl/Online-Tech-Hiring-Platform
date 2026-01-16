@@ -9,9 +9,33 @@ let consumerTransport;
 let audioProducer;
 let videoProducer;
 
+const consumers = new Map(); // Key: producerId, Value: consumer
+
 // Getters for other modules
 export const getDevice = () => device;
 export const getProducerTransport = () => producerTransport;
+export const getConsumer = (producerId) => consumers.get(producerId);
+
+export function removeConsumer(producerId) {
+  const consumer = consumers.get(producerId);
+  if (consumer) {
+    if (consumer.appData && consumer.appData.source === 'screen') {
+      console.log("[Mediasoup] Screen share consumer closing - resetting UI");
+      import("../modules/call-ui.js").then(ui => {
+        ui.setScreenShareMode(false);
+        const el = document.getElementById("remote-screen-video");
+        if (el) {
+          el.srcObject = null;
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    consumer.close();
+    consumers.delete(producerId);
+    console.log(`[Mediasoup] Removed consumer for producer: ${producerId}`);
+  }
+}
 
 export async function createPeerConnection() {
   if (device) return; // Already initialized
@@ -138,18 +162,22 @@ export async function consumeProducer(producerId, kind) {
     appData: { ...appData }
   });
 
+  consumers.set(producerId, consumer);
+
   consumer.on('producerclose', () => {
     console.log(`[Mediasoup] Consumer closed (producer closed): ${consumer.id}`);
+    consumers.delete(producerId);
 
     if (kind === 'video') {
       if (consumer.appData && consumer.appData.source === 'screen') {
-        import("../features/screen-share.js").then(mod => {
-          // Or handle via UI
-          import("../modules/call-ui.js").then(ui => {
-            ui.setScreenShareMode(false);
-            const el = document.getElementById("remote-screen-video");
-            if (el) el.style.display = 'none';
-          });
+        console.log("[Mediasoup] Screen share stopped by remote");
+        import("../modules/call-ui.js").then(ui => {
+          ui.setScreenShareMode(false);
+          const el = document.getElementById("remote-screen-video");
+          if (el) {
+            el.srcObject = null;
+            el.style.display = 'none';
+          }
         });
       }
     }
@@ -185,9 +213,12 @@ export async function consumeProducer(producerId, kind) {
     if (!isScreen) hideWaitingOverlay();
 
     stream.onremovetrack = () => {
+      console.log("[Mediasoup] Track removed");
       if (isScreen) {
+        console.log("[Mediasoup] Screen share track removed");
         setScreenShareMode(false);
         videoEl.style.display = 'none';
+        videoEl.srcObject = null;
       }
     };
   } else {

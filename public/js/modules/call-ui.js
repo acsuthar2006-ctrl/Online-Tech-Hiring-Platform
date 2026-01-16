@@ -14,7 +14,15 @@ export function updateCallButtonState(isConnected) {
   console.log("[UI] Updating button state, isConnected:", isConnected);
 
   // if (startCallBtn) startCallBtn.style.display = isConnected ? 'none' : 'flex';
-  if (joinCallBtn) joinCallBtn.style.display = isConnected ? "none" : "flex";
+  // Join button is now inside an overlay
+  const joinOverlay = document.getElementById("start-call-overlay");
+  if (joinOverlay) {
+    joinOverlay.style.display = isConnected ? "none" : "flex";
+  } else if (joinCallBtn) {
+    // Fallback if overlay not found
+    joinCallBtn.style.display = isConnected ? "none" : "flex";
+  }
+
   if (exitCallBtn) exitCallBtn.style.display = isConnected ? "flex" : "none";
 
   // If disconnected, ensure screen share mode is reset

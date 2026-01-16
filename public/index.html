@@ -57,31 +57,15 @@
               <i class="fas fa-user-tie"></i> You (Interviewer)
             </span>
           </div>
-        </div>
-
-        <div class="video-controls">
-          <div class="main-actions">
-            <!-- Connect/Join Merged -->
-
+          <div class="start-call-overlay" id="start-call-overlay">
             <button class="call-btn join-btn" id="join-call-btn" onclick="joinCall()">
               <i class="fas fa-phone"></i>
               <span>Connect to Session</span>
             </button>
-            <button class="exit-btn" id="exit-call-btn" onclick="exitCall()">
-              <i class="fas fa-phone-slash"></i>
-              <span>End Session</span>
-            </button>
-          </div>
-
-          <div class="media-controls">
-            <button id="mic-btn" aria-label="Toggle microphone" title="Toggle Microphone">
-              <i class="fa fa-microphone-slash"></i>
-            </button>
-            <button id="camera-btn" aria-label="Toggle camera" title="Toggle Camera">
-              <i class="fa-solid fa-video"></i>
-            </button>
           </div>
         </div>
+
+
       </article>
 
       <!-- Remote User Card -->
@@ -119,17 +103,30 @@
       </article>
     </div>
 
-    <!-- Status Bar -->
-    <footer class="status-bar">
-      <div class="status-content">
+    <!-- Unified Control Bar -->
+    <footer class="call-controls-bar">
+      <div class="status-indicator">
         <i class="fas fa-circle-info"></i>
         <p id="status-text">Ready to connect</p>
       </div>
 
-      <!-- New Screen Share Button (Hidden by default, shown for Candidate) -->
-      <div class="extra-controls">
-        <button class="screen-btn" id="screen-share-btn" title="Share Screen" style="display: none;">
+      <div class="control-actions">
+        <!-- Media Controls -->
+        <button class="control-btn" id="mic-btn" aria-label="Toggle microphone" title="Toggle Microphone">
+          <i class="fa fa-microphone-slash"></i>
+        </button>
+        <button class="control-btn" id="camera-btn" aria-label="Toggle camera" title="Toggle Camera">
+          <i class="fa-solid fa-video"></i>
+        </button>
+
+        <!-- Screen Share (Hidden by default) -->
+        <button class="control-btn" id="screen-share-btn" title="Share Screen" style="display: none;">
           <i class="fas fa-desktop"></i>
+        </button>
+
+        <!-- End Call (Hidden by default) -->
+        <button class="control-btn exit-btn-bar" id="exit-call-btn" onclick="exitCall()" style="display: none;">
+          <i class="fas fa-phone-slash"></i>
         </button>
       </div>
     </footer>

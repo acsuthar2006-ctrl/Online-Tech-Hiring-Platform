@@ -146,10 +146,13 @@
   width: fit-content;
   min-width: 300px;
   /* Ensure enough space */
-  max-width: 90%;
-  gap: 16px;
-  padding: 0.75em 1.5em;
-  /* More padding on sides */
+  /* Ensure enough space */
+  max-width: 95%;
+  /* Increased max-width */
+  gap: 12px;
+  /* Reduced gap slightly */
+  padding: 0.75em 1em;
+  /* Adjusted padding */
   background: rgba(0, 0, 0, 0.6);
   border-radius: 50px;
   /* Pill shape */
@@ -159,6 +162,32 @@
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 20;
+}
+
+.start-call-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  /* Above everything */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  /* Gentle darkening */
+  backdrop-filter: blur(2px);
+  transition: all 0.3s ease;
+}
+
+.join-btn {
+  font-size: 1.2rem;
+  padding: 1em 2em;
+  background: var(--primary);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  /* Highlight effect */
 }
 
 .video-card:hover .video-controls {
@@ -242,30 +271,94 @@
    STATUS BAR
 ======================= */
 
-.status-bar {
+/* =======================
+   UNIFIED CONTROL BAR
+======================= */
+
+.call-controls-bar {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 1em;
+  gap: 20px;
   z-index: 100;
+  background: rgba(10, 14, 26, 0.85);
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
 }
 
-#status-text {
-  font-size: 15px;
-  color: var(--accent);
-  padding: 0.6em 1.2em;
-  background: rgba(10, 14, 26, 0.8);
-  border-radius: 30px;
-  border: 1px solid var(--accent-glow);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  margin: 0;
+.status-indicator {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-right: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-indicator i {
+  color: var(--accent);
+}
+
+.status-indicator p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.control-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+
+
+/* Specific button styles */
+.exit-btn-bar {
+  background: var(--danger) !important;
+  color: white !important;
+  width: auto;
+  padding: 0 20px;
+  border-radius: 25px;
+  gap: 8px;
+}
+
+.exit-btn-bar:hover {
+  background: #ff4757 !important;
+}
+
+.exit-btn-bar::after {
+  content: "End";
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .user-label {
