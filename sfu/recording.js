@@ -137,7 +137,8 @@ a=rtcp-mux
         let filterComplex = '';
 
         if (this.consumers.length === 4) {
-            filterComplex = '[0:0][0:2]amix= inputs=2[aout];[0:1]scale=-2:480[v1];[0:3]scale=-2:480[v2];[v1][v2]hstack[vout]';
+            // 2 Video Streams side-by-side
+            filterComplex = '[0:0][0:2]amix= inputs=2[aout];[0:1]scale=640:480[v1];[0:3]scale=640:480[v2];[v1][v2]hstack[vout]';
         }
         else if (this.consumers.length === 5) {
             // Enhanced resolution for better quality (Target: 1920x720)
@@ -159,12 +160,12 @@ a=rtcp-mux
 
         args.push(
             '-c:v', 'libx264',
-            '-preset', 'superfast', // Better balance than ultrafast
+            '-preset', 'veryfast', // Better quality/size balance than superfast
             '-tune', 'zerolatency',
-            '-crf', '24', // Higher quality (was 30)
-            '-r', '25', // Smoother motion (was 15)
+            '-crf', '21', // High quality (lower is better, was 24)
+            '-r', '30', // Standard 30fps for smoother video
             '-c:a', 'aac',
-            '-b:a', '128k', // Better audio
+            '-b:a', '192k', // High quality audio
             '-y', filepath
         );
 
