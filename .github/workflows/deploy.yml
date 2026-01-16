@@ -33,7 +33,9 @@ jobs:
             if [ -d "${{ secrets.TARGET_DIR }}" ]; then
               echo "Directory exists. Pulling latest changes..."
               cd ${{ secrets.TARGET_DIR }}
-              git pull origin main
+              # Force Reset to ensure clean state (ignore local changes)
+              git fetch --all
+              git reset --hard origin/main
             else
               echo "Directory does not exist. Cloning repository..."
               git clone https://github.com/acsuthar2006-ctrl/Online-Tech-Hiring-Platform.git ${{ secrets.TARGET_DIR }}
