@@ -6,7 +6,10 @@ import {
   updateCallButtonState,
 } from "../modules/call-ui.js";
 import { acceptCall, endCall, startCall } from "../modules/callControls.js";
-import { consumeProducer, removeConsumer } from "../features/mediasoup-client.js";
+import {
+  consumeProducer,
+  removeConsumer,
+} from "../features/mediasoup-client.js";
 
 export function initSocket() {
   const protocol = location.protocol === "https:" ? "wss" : "ws";

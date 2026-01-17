@@ -5,15 +5,16 @@ import path from "path";
 import axios from "axios";
 import handleHttp from "./http/staticServer.js";
 
-
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 
 // Public IP Detection
-if (process.env.DETECT_PUBLIC_IP === 'true') {
+if (process.env.DETECT_PUBLIC_IP === "true") {
   try {
     console.log("🌍 Detecting Public IP...");
-    const res = await axios.get('https://api.ipify.org?format=json', { timeout: 3000 });
+    const res = await axios.get("https://api.ipify.org?format=json", {
+      timeout: 3000,
+    });
     const publicIp = res.data.ip;
     console.log(`✅ Detected Public IP: ${publicIp}`);
     // Set env var so config.js (if re-imported or designed right) picks it up
@@ -30,7 +31,7 @@ if (process.env.DETECT_PUBLIC_IP === 'true') {
     // AND we must ensure that `createWorker`/`createWebRtcTransport` reads from `config` which reads from `env` DYNAMICALLY or we patch `config`.
     // Let's check `config.js` again. It has `announcedIp: process.env... || getLocalIp()`. It is static.
 
-    // To fix this in ES modules without major refactor: 
+    // To fix this in ES modules without major refactor:
     // We cannot change the already-imported `config` object easily.
     // BUT: `initWebSocket` calls `createWorker`. `createWorker` is in `mediasoup.js`.
     // `mediasoup.js` imports `config`.
@@ -39,7 +40,7 @@ if (process.env.DETECT_PUBLIC_IP === 'true') {
     // We will just log the instructions here. Correct usage is: "Please run with correct ENV var".
     // OR: We create a STARTUP wrapper.
 
-    // Let's stick to: Providing the instruction log. AND setting it for future reference if possible. 
+    // Let's stick to: Providing the instruction log. AND setting it for future reference if possible.
     process.env.MEDIASOUP_ANNOUNCED_IP = publicIp;
   } catch (err) {
     console.warn("⚠️ Failed to detect Public IP:", err.message);

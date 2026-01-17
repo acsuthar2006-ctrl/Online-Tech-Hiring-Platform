@@ -43,7 +43,7 @@ function broadcastToRoom(sender, data) {
   const room = channels.get(sender.channel);
   if (!room) return;
 
-  room.forEach(client => {
+  room.forEach((client) => {
     if (client !== sender && client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(data));
     }
@@ -54,9 +54,4 @@ function roomExists(room) {
   return channels.has(room);
 }
 
-export {
-  joinChannel,
-  leaveChannel,
-  broadcastToRoom,
-  roomExists
-};
+export { joinChannel, leaveChannel, broadcastToRoom, roomExists };

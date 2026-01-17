@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies (test)
         run: npm ci
@@ -41,10 +41,10 @@ jobs:
               git clone https://github.com/acsuthar2006-ctrl/Online-Tech-Hiring-Platform.git ${{ secrets.TARGET_DIR }}
               cd ${{ secrets.TARGET_DIR }}
             fi
-            
+
             # Install dependencies
             npm install --production
-            
+
             # Restart application
             # Check if pm2 process exists, if not start it, else restart
             if pm2 list | grep -q "Online-Tech-Hiring-Platform"; then

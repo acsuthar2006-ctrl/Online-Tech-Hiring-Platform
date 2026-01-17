@@ -101,7 +101,7 @@ export function resetRemoteVideoUI() {
 export function setScreenShareMode(active) {
   if (screenCard) {
     // Explicitly toggle display to ensure it overrides any inline styles
-    screenCard.style.display = active ? 'flex' : 'none';
+    screenCard.style.display = active ? "flex" : "none";
   }
 
   // Toggle wrapper class for layout changes

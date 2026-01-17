@@ -36,14 +36,16 @@ export default function handleHttp(req, res) {
 
       let bytesWritten = 0;
 
-      file.on('data', (chunk) => {
+      file.on("data", (chunk) => {
         bytesWritten += chunk.length;
       });
 
       file.pipe(writeStream);
 
       writeStream.on("finish", () => {
-        console.log(`[Upload] ✅ Recording saved: ${filename} (${bytesWritten} bytes)`);
+        console.log(
+          `[Upload] ✅ Recording saved: ${filename} (${bytesWritten} bytes)`,
+        );
         uploadComplete = true;
       });
 
@@ -98,7 +100,7 @@ export default function handleHttp(req, res) {
     res.writeHead(200, {
       "Content-Type": "video/webm",
       "Content-Disposition": `attachment; filename="${roomId}.webm"`,
-      "Content-Length": stat.size
+      "Content-Length": stat.size,
     });
 
     const readStream = fs.createReadStream(filePath);
@@ -123,14 +125,16 @@ export default function handleHttp(req, res) {
     try {
       const files = fs.readdirSync(RECORDINGS_DIR);
       const recordings = files
-        .filter(file => file.startsWith(`${roomId}-`) && file.endsWith(".mp4"))
-        .map(file => {
+        .filter(
+          (file) => file.startsWith(`${roomId}-`) && file.endsWith(".mp4"),
+        )
+        .map((file) => {
           const timestamp = parseInt(file.split("-")[1].split(".")[0]);
           const date = new Date(timestamp).toLocaleString();
           return {
             filename: file,
             date: date,
-            url: `/recordings/${file}`
+            url: `/recordings/${file}`,
           };
         })
         .sort((a, b) => b.filename.localeCompare(a.filename)); // Newest first
@@ -151,7 +155,11 @@ export default function handleHttp(req, res) {
     console.log(`[API] Deleting recording: ${filename}`);
 
     // Security: Prevent directory traversal
-    if (filename.includes("..") || filename.includes("/") || !filename.endsWith(".mp4")) {
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      !filename.endsWith(".mp4")
+    ) {
       console.warn(`[Security] Invalid delete attempt: ${filename}`);
       res.writeHead(403, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Forbidden" }));
@@ -222,7 +230,7 @@ export default function handleHttp(req, res) {
     const stat = fs.statSync(filePath);
     res.writeHead(200, {
       "Content-Type": "video/mp4",
-      "Content-Length": stat.size
+      "Content-Length": stat.size,
     });
 
     fs.createReadStream(filePath).pipe(res);
@@ -249,15 +257,16 @@ export default function handleHttp(req, res) {
   }
 
   const ext = path.extname(filePath);
-  const contentType = {
-    ".html": "text/html",
-    ".js": "application/javascript",
-    ".css": "text/css",
-    ".json": "application/json",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".svg": "image/svg+xml"
-  }[ext] || "text/plain";
+  const contentType =
+    {
+      ".html": "text/html",
+      ".js": "application/javascript",
+      ".css": "text/css",
+      ".json": "application/json",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".svg": "image/svg+xml",
+    }[ext] || "text/plain";
 
   fs.readFile(filePath, (err, content) => {
     if (err) {

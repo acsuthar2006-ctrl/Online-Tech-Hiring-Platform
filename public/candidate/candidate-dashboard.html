@@ -1,152 +1,165 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candidate Dashboard - TechHiring</title>
+    <link rel="stylesheet" href="common/common.css" />
+    <link rel="stylesheet" href="candidate.css" />
+    <script src="common/auth.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Candidate Dashboard - TechHiring</title>
-  <link rel="stylesheet" href="common/common.css">
-  <link rel="stylesheet" href="candidate.css">
-  <script src="common/auth.js"></script>
-</head>
+  <body>
+    <div id="sidebar-container"></div>
 
-<body>
-  <div id="sidebar-container"></div>
-
-  <div class="main-content">
-
-    <div class="header">
-      <div class="header-left">
-        <h1>Welcome, <span id="userName">User</span>!</h1>
-        <p class="text-muted">Track your interviews and explore opportunities</p>
+    <div class="main-content">
+      <div class="header">
+        <div class="header-left">
+          <h1>Welcome, <span id="userName">User</span>!</h1>
+          <p class="text-muted">
+            Track your interviews and explore opportunities
+          </p>
+        </div>
+        <div class="header-right">
+          <button class="btn-icon" id="notificationBtn">
+            <span class="notification-badge">3</span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div class="profile-menu">
+            <div class="profile-info">
+              <div class="profile-name" id="profileName">User</div>
+              <div class="profile-role">Candidate</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="header-right">
-        <button class="btn-icon" id="notificationBtn">
-          <span class="notification-badge">3</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round" />
-            <path
-              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-        <div class="profile-menu">
-          <div class="profile-info">
-            <div class="profile-name" id="profileName">User</div>
-            <div class="profile-role">Candidate</div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Scheduled Interviews</h3>
+            <p class="stat-number">4</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Completed</h3>
+            <p class="stat-number">12</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Applications</h3>
+            <p class="stat-number">8</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Companies</h3>
+            <p class="stat-number">15</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2>Upcoming Interviews</h2>
+            <a href="#" class="link-primary">View All</a>
+          </div>
+          <div class="interview-list">
+            <div class="interview-item">
+              <div class="interview-info">
+                <h4>Technical Round - Senior Developer</h4>
+                <p>Google Inc.</p>
+                <div class="interview-meta">
+                  <span class="badge badge-blue">Video Interview</span>
+                  <span>Tomorrow, 10:00 AM</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Join</button>
+            </div>
+            <div class="interview-item">
+              <div class="interview-info">
+                <h4>Coding Round - Full Stack Engineer</h4>
+                <p>Microsoft</p>
+                <div class="interview-meta">
+                  <span class="badge badge-blue">Technical Round</span>
+                  <span>Dec 28, 2:00 PM</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Prepare</button>
+            </div>
+            <div class="interview-item">
+              <div class="interview-info">
+                <h4>Analytical Round - Data Analyst</h4>
+                <p>Amazon</p>
+                <div class="interview-meta">
+                  <span class="badge badge-blue">Technical Round</span>
+                  <span>Dec 30, 11:00 AM</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Prepare</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="quick-actions">
+            <a href="video-interview.html" class="action-card">
+              <div class="action-info">
+                <h4>Start Video Interview</h4>
+                <p>Join your scheduled interview</p>
+              </div>
+            </a>
+            <a href="technical-round.html" class="action-card">
+              <div class="action-info">
+                <h4>Technical Round</h4>
+                <p>Coding & analytical tests</p>
+              </div>
+            </a>
+            <a href="companies.html" class="action-card">
+              <div class="action-info">
+                <h4>Browse Companies</h4>
+                <p>Explore open positions</p>
+              </div>
+            </a>
+            <a href="profile.html" class="action-card">
+              <div class="action-info">
+                <h4>Update Profile</h4>
+                <p>Keep your profile current</p>
+              </div>
+            </a>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-info">
-          <h3>Scheduled Interviews</h3>
-          <p class="stat-number">4</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-info">
-          <h3>Completed</h3>
-          <p class="stat-number">12</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-info">
-          <h3>Applications</h3>
-          <p class="stat-number">8</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-info">
-          <h3>Companies</h3>
-          <p class="stat-number">15</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="content-grid">
-      <div class="card">
-        <div class="card-header">
-          <h2>Upcoming Interviews</h2>
-          <a href="#" class="link-primary">View All</a>
-        </div>
-        <div class="interview-list">
-          <div class="interview-item">
-            <div class="interview-info">
-              <h4>Technical Round - Senior Developer</h4>
-              <p>Google Inc.</p>
-              <div class="interview-meta">
-                <span class="badge badge-blue">Video Interview</span>
-                <span>Tomorrow, 10:00 AM</span>
-              </div>
-            </div>
-            <button class="btn-primary btn-sm">Join</button>
-          </div>
-          <div class="interview-item">
-            <div class="interview-info">
-              <h4>Coding Round - Full Stack Engineer</h4>
-              <p>Microsoft</p>
-              <div class="interview-meta">
-                <span class="badge badge-blue">Technical Round</span>
-                <span>Dec 28, 2:00 PM</span>
-              </div>
-            </div>
-            <button class="btn-primary btn-sm">Prepare</button>
-          </div>
-          <div class="interview-item">
-            <div class="interview-info">
-              <h4>Analytical Round - Data Analyst</h4>
-              <p>Amazon</p>
-              <div class="interview-meta">
-                <span class="badge badge-blue">Technical Round</span>
-                <span>Dec 30, 11:00 AM</span>
-              </div>
-            </div>
-            <button class="btn-primary btn-sm">Prepare</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2>Quick Actions</h2>
-        </div>
-        <div class="quick-actions">
-          <a href="video-interview.html" class="action-card">
-            <div class="action-info">
-              <h4>Start Video Interview</h4>
-              <p>Join your scheduled interview</p>
-            </div>
-          </a>
-          <a href="technical-round.html" class="action-card">
-            <div class="action-info">
-              <h4>Technical Round</h4>
-              <p>Coding & analytical tests</p>
-            </div>
-          </a>
-          <a href="companies.html" class="action-card">
-            <div class="action-info">
-              <h4>Browse Companies</h4>
-              <p>Explore open positions</p>
-            </div>
-          </a>
-          <a href="profile.html" class="action-card">
-            <div class="action-info">
-              <h4>Update Profile</h4>
-              <p>Keep your profile current</p>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <script src="common/dashboard.js"></script>
-  <script src="common/sidebar.js"></script>
-</body>
-
+    <script src="common/dashboard.js"></script>
+    <script src="common/sidebar.js"></script>
+  </body>
 </html>

@@ -146,11 +146,11 @@
   border-radius: 50%;
 }
 
-.toggle-switch input:checked+.toggle-slider {
+.toggle-switch input:checked + .toggle-slider {
   background-color: var(--blue-600);
 }
 
-.toggle-switch input:checked+.toggle-slider:before {
+.toggle-switch input:checked + .toggle-slider:before {
   transform: translateX(22px);
 }
 

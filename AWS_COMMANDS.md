@@ -32,6 +32,7 @@ pm2 restart Online-Tech-Hiring-Platform
 ```
 
 **One-liner command (run from your local terminal):**
+
 ```bash
 ssh -i peerchat-key.pem ubuntu@YOUR_SERVER_IP "cd Online-Tech-Hiring-Platform && git pull && pm2 restart Online-Tech-Hiring-Platform"
 ```
@@ -103,6 +104,7 @@ nano Online-Tech-Hiring-Platform/.env
 ```
 
 **Key Variables:**
+
 - `DETECT_PUBLIC_IP=true` (Ensures auto-IP works)
 - `ENABLE_RECORDING=true`
 - `MEDIASOUP_ANNOUNCED_IP` (Auto-updated on restart)

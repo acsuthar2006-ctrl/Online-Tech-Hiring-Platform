@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const navLinks = document.querySelectorAll(".nav-item");
 
-  navLinks.forEach(link => {
+  navLinks.forEach((link) => {
     const linkPage = link.getAttribute("href");
 
     if (linkPage === currentPage) {

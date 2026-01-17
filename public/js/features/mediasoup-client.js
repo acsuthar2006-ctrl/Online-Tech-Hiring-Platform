@@ -1,6 +1,11 @@
 import { state } from "../core/state.js";
 import { request } from "./signaling.js";
-import { remoteVideo, hideWaitingOverlay, remoteScreenVideo, setScreenShareMode } from "../modules/call-ui.js"; // Will rename ui.js to call-ui.js
+import {
+  remoteVideo,
+  hideWaitingOverlay,
+  remoteScreenVideo,
+  setScreenShareMode,
+} from "../modules/call-ui.js"; // Will rename ui.js to call-ui.js
 import MediasoupClient from "mediasoup-client";
 
 let device;
@@ -19,14 +24,14 @@ export const getConsumer = (producerId) => consumers.get(producerId);
 export function removeConsumer(producerId) {
   const consumer = consumers.get(producerId);
   if (consumer) {
-    if (consumer.appData && consumer.appData.source === 'screen') {
+    if (consumer.appData && consumer.appData.source === "screen") {
       console.log("[Mediasoup] Screen share consumer closing - resetting UI");
-      import("../modules/call-ui.js").then(ui => {
+      import("../modules/call-ui.js").then((ui) => {
         ui.setScreenShareMode(false);
         const el = document.getElementById("remote-screen-video");
         if (el) {
           el.srcObject = null;
-          el.style.display = 'none';
+          el.style.display = "none";
         }
       });
     }
@@ -44,53 +49,62 @@ export async function createPeerConnection() {
 
   // 1. Get Router Capabilities
   console.log("[Mediasoup] Requesting Capabilities...");
-  const routerRtpCapabilities = await request('getRouterRtpCapabilities');
+  const routerRtpCapabilities = await request("getRouterRtpCapabilities");
 
   device = new MediasoupClient.Device();
 
   await device.load({ routerRtpCapabilities });
-  console.log("[Mediasoup] Device loaded. Can produce video?", device.canProduce('video'));
+  console.log(
+    "[Mediasoup] Device loaded. Can produce video?",
+    device.canProduce("video"),
+  );
 
   // 2. Create Send Transport
   if (state.localStream) {
-    const transportInfo = await request('createWebRtcTransport', {
+    const transportInfo = await request("createWebRtcTransport", {
       forceTcp: false,
-      rtpCapabilities: device.rtpCapabilities
+      rtpCapabilities: device.rtpCapabilities,
     });
 
     producerTransport = device.createSendTransport({
       ...transportInfo,
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" }
-      ]
+        { urls: "stun:stun1.l.google.com:19302" },
+      ],
     });
 
-    producerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
-      try {
-        await request('connectWebRtcTransport', {
-          transportId: producerTransport.id,
-          dtlsParameters
-        });
-        callback();
-      } catch (error) {
-        errback(error);
-      }
-    });
+    producerTransport.on(
+      "connect",
+      async ({ dtlsParameters }, callback, errback) => {
+        try {
+          await request("connectWebRtcTransport", {
+            transportId: producerTransport.id,
+            dtlsParameters,
+          });
+          callback();
+        } catch (error) {
+          errback(error);
+        }
+      },
+    );
 
-    producerTransport.on('produce', async ({ kind, rtpParameters, appData }, callback, errback) => {
-      try {
-        const { producerId } = await request('produce', {
-          transportId: producerTransport.id,
-          kind,
-          rtpParameters,
-          appData
-        });
-        callback({ id: producerId });
-      } catch (error) {
-        errback(error);
-      }
-    });
+    producerTransport.on(
+      "produce",
+      async ({ kind, rtpParameters, appData }, callback, errback) => {
+        try {
+          const { producerId } = await request("produce", {
+            transportId: producerTransport.id,
+            kind,
+            rtpParameters,
+            appData,
+          });
+          callback({ id: producerId });
+        } catch (error) {
+          errback(error);
+        }
+      },
+    );
 
     // Produce Audio
     const audioTrack = state.localStream.getAudioTracks()[0];
@@ -106,35 +120,38 @@ export async function createPeerConnection() {
   }
 
   // 3. Create Recv Transport
-  const transportInfo = await request('createWebRtcTransport', {
+  const transportInfo = await request("createWebRtcTransport", {
     forceTcp: false,
-    rtpCapabilities: device.rtpCapabilities
+    rtpCapabilities: device.rtpCapabilities,
   });
 
   consumerTransport = device.createRecvTransport({
     ...transportInfo,
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" }
-    ]
+      { urls: "stun:stun1.l.google.com:19302" },
+    ],
   });
 
-  consumerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
-    try {
-      await request('connectWebRtcTransport', {
-        transportId: consumerTransport.id,
-        dtlsParameters
-      });
-      callback();
-    } catch (error) {
-      errback(error);
-    }
-  });
+  consumerTransport.on(
+    "connect",
+    async ({ dtlsParameters }, callback, errback) => {
+      try {
+        await request("connectWebRtcTransport", {
+          transportId: consumerTransport.id,
+          dtlsParameters,
+        });
+        callback();
+      } catch (error) {
+        errback(error);
+      }
+    },
+  );
 
   console.log("[Mediasoup] Transports initialized");
 
   // 4. Get existing producers
-  const { list } = await request('getProducers');
+  const { list } = await request("getProducers");
   for (const p of list) {
     await consumeProducer(p.id, p.kind);
   }
@@ -147,11 +164,11 @@ export async function consumeProducer(producerId, kind) {
     id,
     kind: consumerKind,
     rtpParameters,
-    appData
-  } = await request('consume', {
+    appData,
+  } = await request("consume", {
     transportId: consumerTransport.id,
     producerId,
-    rtpCapabilities: device.rtpCapabilities
+    rtpCapabilities: device.rtpCapabilities,
   });
 
   const consumer = await consumerTransport.consume({
@@ -159,24 +176,26 @@ export async function consumeProducer(producerId, kind) {
     producerId,
     kind: consumerKind,
     rtpParameters,
-    appData: { ...appData }
+    appData: { ...appData },
   });
 
   consumers.set(producerId, consumer);
 
-  consumer.on('producerclose', () => {
-    console.log(`[Mediasoup] Consumer closed (producer closed): ${consumer.id}`);
+  consumer.on("producerclose", () => {
+    console.log(
+      `[Mediasoup] Consumer closed (producer closed): ${consumer.id}`,
+    );
     consumers.delete(producerId);
 
-    if (kind === 'video') {
-      if (consumer.appData && consumer.appData.source === 'screen') {
+    if (kind === "video") {
+      if (consumer.appData && consumer.appData.source === "screen") {
         console.log("[Mediasoup] Screen share stopped by remote");
-        import("../modules/call-ui.js").then(ui => {
+        import("../modules/call-ui.js").then((ui) => {
           ui.setScreenShareMode(false);
           const el = document.getElementById("remote-screen-video");
           if (el) {
             el.srcObject = null;
-            el.style.display = 'none';
+            el.style.display = "none";
           }
         });
       }
@@ -187,27 +206,27 @@ export async function consumeProducer(producerId, kind) {
   const stream = new MediaStream();
   stream.addTrack(consumer.track);
 
-  await request('resume', { consumerId: consumer.id });
+  await request("resume", { consumerId: consumer.id });
 
-  if (kind === 'video') {
-    const isScreen = consumer.appData && consumer.appData.source === 'screen';
+  if (kind === "video") {
+    const isScreen = consumer.appData && consumer.appData.source === "screen";
     const videoEl = isScreen ? remoteScreenVideo : remoteVideo;
 
     videoEl.srcObject = stream;
 
     if (isScreen) {
-      videoEl.style.display = 'block';
+      videoEl.style.display = "block";
       setScreenShareMode(true);
     } else {
-      videoEl.classList.add('active');
+      videoEl.classList.add("active");
       hideWaitingOverlay();
     }
 
-    videoEl.setAttribute('playsinline', 'true');
+    videoEl.setAttribute("playsinline", "true");
     videoEl.muted = true;
 
     videoEl.onloadedmetadata = () => {
-      videoEl.play().catch(e => console.warn('Play error:', e));
+      videoEl.play().catch((e) => console.warn("Play error:", e));
     };
 
     if (!isScreen) hideWaitingOverlay();
@@ -217,13 +236,13 @@ export async function consumeProducer(producerId, kind) {
       if (isScreen) {
         console.log("[Mediasoup] Screen share track removed");
         setScreenShareMode(false);
-        videoEl.style.display = 'none';
+        videoEl.style.display = "none";
         videoEl.srcObject = null;
       }
     };
   } else {
     const audio = new Audio();
     audio.srcObject = stream;
-    audio.play().catch(e => console.error('Audio play error:', e));
+    audio.play().catch((e) => console.error("Audio play error:", e));
   }
 }

@@ -7,6 +7,7 @@ When this happens, your old link (e.g., `https://15.207.xxx.xxx`) will stop work
 ---
 
 ## Step 1: Get Your New IP
+
 1.  Go to **AWS Console** -> **EC2** -> **Instances**.
 2.  Click your `PeerChat-Server` instance.
 3.  Copy the **Public IPv4 address** (e.g., `13.123.45.67`).
@@ -14,6 +15,7 @@ When this happens, your old link (e.g., `https://15.207.xxx.xxx`) will stop work
 ---
 
 ## Step 2: Connect to Server
+
 Open your terminal on your computer and run (replacing `NEW_IP` with the actual number):
 
 ```bash
@@ -24,7 +26,9 @@ ssh -i peerchat-key.pem ubuntu@<NEW_IP_HERE>
 ---
 
 ## Step 3: Run This Update Command
+
 Once inside the server, copy and paste this **entire block** of code at once. It will:
+
 1. Update Nginx to use the new IP.
 2. Generate a new SSL certificate.
 3. Restart everything.

@@ -24,12 +24,12 @@ This guide explains how to deploy the application to an AWS EC2 instance. Deploy
 
 Create a new Security Group with the following **Inbound Rules**:
 
-| Type | Protocol | Port Range | Source | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| SSH | TCP | 22 | My IP | For you to manage the server |
-| HTTP | TCP | 80 | 0.0.0.0/0 | Optional (if using standard web port) |
-| Custom TCP | TCP | 3000 | 0.0.0.0/0 | The Node.js Web/WebSocket Server |
-| **Custom UDP** | **UDP** | **40000 - 40050** | **0.0.0.0/0** | **WebRTC Media Traffic** |
+| Type           | Protocol | Port Range        | Source        | Description                           |
+| :------------- | :------- | :---------------- | :------------ | :------------------------------------ |
+| SSH            | TCP      | 22                | My IP         | For you to manage the server          |
+| HTTP           | TCP      | 80                | 0.0.0.0/0     | Optional (if using standard web port) |
+| Custom TCP     | TCP      | 3000              | 0.0.0.0/0     | The Node.js Web/WebSocket Server      |
+| **Custom UDP** | **UDP**  | **40000 - 40050** | **0.0.0.0/0** | **WebRTC Media Traffic**              |
 
 ## Step 3: Elastic IP (Static IP)
 
@@ -68,7 +68,7 @@ sudo apt install -y ffmpeg
 ## Step 5: Deploy Code
 
 Clone your repository (or copy files via SCP):
-*(Replace with your actual repo URL)*
+_(Replace with your actual repo URL)_
 
 ```bash
 git clone https://github.com/Start-Up-POC/Online-Tech-Hiring-Platform.git
@@ -92,7 +92,8 @@ You must tell the server its own Public IP so it can announce it to clients.
 export MEDIASOUP_ANNOUNCED_IP=YOUR_PUBLIC_IP
 npm start
 ```
-*Note: Replace `YOUR_PUBLIC_IP` with the actual Elastic IP (e.g., `54.2.10.12`).*
+
+_Note: Replace `YOUR_PUBLIC_IP` with the actual Elastic IP (e.g., `54.2.10.12`)._
 
 ### Option B: Production (Using PM2)
 
@@ -112,12 +113,14 @@ pm2 startup
 ## Troubleshooting
 
 ### "Video is connecting..." forever?
+
 1.  Check **Security Groups**: Are UDP ports 40000-40050 open to `0.0.0.0/0`?
 2.  Check **Announced IP**: Did you set `MEDIASOUP_ANNOUNCED_IP` correctly?
     - Check logs: `pm2 logs Online-Tech-Hiring-Platform`
     - It should say: `Announced IP: 54.x.x.x`
 
 ### "Socket connection failed"?
+
 - Ensure port 3000 is open in Security Groups.
 - Ensure you are connecting to `http://YOUR_PUBLIC_IP:3000`.
 

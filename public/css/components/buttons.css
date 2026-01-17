@@ -15,27 +15,58 @@ button i {
 
 /* --- Primary / Action Buttons --- */
 .primary-btn {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, rgb(37, 99, 235) 100%);
   color: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   width: 100%;
-  padding: 1em;
+  padding: 1.1em;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6em;
-  transition: all 0.2s ease;
+  gap: 0.8em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shine effect */
+.primary-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.primary-btn:hover::after {
+  left: 100%;
 }
 
 .primary-btn:hover {
-  background: #2563eb;
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-1px);
+  background: linear-gradient(
+    135deg,
+    rgb(59, 130, 246) 0%,
+    rgb(29, 78, 216) 100%
+  );
+  box-shadow:
+    0 10px 15px -3px rgba(37, 99, 235, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .create-btn {
