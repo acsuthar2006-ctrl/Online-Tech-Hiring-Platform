@@ -3,17 +3,19 @@ package com.techhiring.platform.controller;
 import com.techhiring.platform.dto.AuthDto;
 import com.techhiring.platform.entity.User;
 import com.techhiring.platform.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*") // Allow requests from any frontend (Node.js)
+@RequiredArgsConstructor
 public class AuthController {
 
-  @Autowired
-  private UserService userService;
+  private final UserService userService;
 
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@RequestBody AuthDto.SignupRequest signupRequest) {
