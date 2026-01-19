@@ -1,6 +1,8 @@
 package com.techhiring.platform.service;
 
 import com.techhiring.platform.dto.AuthDto;
+import com.techhiring.platform.entity.Candidate;
+import com.techhiring.platform.entity.Interviewer;
 import com.techhiring.platform.entity.User;
 import com.techhiring.platform.repository.UserRepository;
 
@@ -20,10 +22,14 @@ public class UserService {
       throw new RuntimeException("Error: Email is already in use!");
     }
 
-    User user = new User(
-        request.getEmail(),
-        passwordEncoder.encode(request.getPassword()),
-        request.getRole());
+    User user;
+    if ("CANDIDATE".equalsIgnoreCase(request.getRole())) {
+      user = new Candidate(request.getEmail(), passwordEncoder.encode(request.getPassword()));
+    } else if ("INTERVIEWER".equalsIgnoreCase(request.getRole())) {
+      user = new Interviewer(request.getEmail(), passwordEncoder.encode(request.getPassword()));
+    } else {
+      throw new RuntimeException("Error: Invalid role!");
+    }
 
     return userRepository.save(user);
   }

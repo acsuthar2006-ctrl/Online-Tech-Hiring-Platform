@@ -2,17 +2,18 @@ package com.techhiring.platform.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
+@SuperBuilder
+public abstract class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,10 +27,4 @@ public class User {
 
   @Column(nullable = false)
   private String role; // "CANDIDATE" or "INTERVIEWER"
-
-  public User(String email, String password, String role) {
-    this.email = email;
-    this.password = password;
-    this.role = role;
-  }
 }
