@@ -24,9 +24,11 @@ public class UserService {
 
     User user;
     if ("CANDIDATE".equalsIgnoreCase(request.getRole())) {
-      user = new Candidate(request.getEmail(), passwordEncoder.encode(request.getPassword()));
+      user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
+          request.getResumeUrl(), request.getSkills());
     } else if ("INTERVIEWER".equalsIgnoreCase(request.getRole())) {
-      user = new Interviewer(request.getEmail(), passwordEncoder.encode(request.getPassword()));
+      user = new Interviewer(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
+          request.getCompanyName());
     } else {
       throw new RuntimeException("Error: Invalid role!");
     }

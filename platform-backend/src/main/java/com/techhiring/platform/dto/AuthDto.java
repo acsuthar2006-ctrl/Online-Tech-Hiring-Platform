@@ -12,7 +12,15 @@ public class AuthDto {
   public static class SignupRequest {
     private String email;
     private String password;
+    private String fullName;
     private String role;
+
+    // Candidate Specific
+    private String resumeUrl;
+    private String skills;
+
+    // Interviewer Specific
+    private String companyName;
   }
 
   @Data
@@ -30,5 +38,6 @@ public class AuthDto {
     private String message;
     private Long userId;
     private String role;
+    private String fullName;
   }
 }

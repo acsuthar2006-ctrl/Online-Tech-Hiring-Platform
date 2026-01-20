@@ -5,8 +5,11 @@ function selectRole(role) {
   document.getElementById("roleSelection").style.display = "none";
   document.getElementById("loginFormContainer").style.display = "block";
 
-  const formTitle = document.getElementById("formTitle");
   formTitle.textContent = `Sign Up as ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+
+  // Toggle Fields
+  document.getElementById("candidateFields").style.display = role === "candidate" ? "block" : "none";
+  document.getElementById("interviewerFields").style.display = role === "interviewer" ? "block" : "none";
 }
 
 function backToRoleSelection() {
@@ -35,38 +38,49 @@ function handleSignup(event) {
     return;
   }
 
-  const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+  // Call Backend API
+  fetch("http://localhost:8080/api/auth/signup", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fullName: fullname,
+      email: email,
+      password: password,
+      role: selectedRole.toUpperCase(),
+      // Optional fields based on role
+      resumeUrl: document.getElementById("resumeUrl").value || null,
+      skills: document.getElementById("skills").value || null,
+      companyName: document.getElementById("companyName").value || null,
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.text().then((text) => {
+          throw new Error(text || "Signup failed");
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      alert(data.message || "Account created successfully!");
 
-  // Check if username already exists
-  if (accounts.some((acc) => acc.username === username)) {
-    alert("Username already exists. Please choose a different one.");
-    return;
-  }
+      // Log the user in (client-side session)
+      sessionStorage.setItem("isLoggedIn", "true");
+      sessionStorage.setItem("username", username);
+      sessionStorage.setItem("userId", data.userId);
+      sessionStorage.setItem("userRole", selectedRole);
 
-  // Create new account
-  const newAccount = {
-    fullname,
-    email,
-    username,
-    password, // Note: In production, passwords should be hashed on the server
-    role: selectedRole,
-    createdAt: new Date().toISOString(),
-  };
-
-  accounts.push(newAccount);
-  localStorage.setItem("accounts", JSON.stringify(accounts));
-
-  // Log the user in
-  localStorage.setItem("isLoggedIn", "true");
-  localStorage.setItem("username", username);
-  localStorage.setItem("userRole", selectedRole);
-
-  alert("Account created successfully!");
-
-  // Redirect based on role
-  if (selectedRole === "candidate") {
-    window.location.href = "../candidate/candidate-dashboard.html";
-  } else if (selectedRole === "interviewer") {
-    window.location.href = "../interviewer/interviewer-dashboard.html";
-  }
+      // Redirect based on role
+      if (selectedRole === "candidate") {
+        window.location.href = "../candidate/candidate-dashboard.html";
+      } else if (selectedRole === "interviewer") {
+        window.location.href = "../interviewer/interviewer-dashboard.html";
+      }
+    })
+    .catch((error) => {
+      console.error("Signup Error:", error);
+      alert("Error: " + error.message);
+    });
 }

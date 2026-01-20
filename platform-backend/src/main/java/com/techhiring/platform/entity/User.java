@@ -26,5 +26,8 @@ public abstract class User {
   private String password;
 
   @Column(nullable = false)
+  private String fullName;
+
+  @Column(nullable = false)
   private String role; // "CANDIDATE" or "INTERVIEWER"
 }

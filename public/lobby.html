@@ -1,135 +1,118 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="PeerChat Lobby - Create or join video calls"
-    />
-    <meta name="theme-color" content="#06b6d4" />
-    <title>PeerChat - Lobby</title>
 
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PeerChat Lobby - Create or join video calls" />
+  <meta name="theme-color" content="#06b6d4" />
+  <title>PeerChat - Lobby</title>
 
-    <!-- Favicon -->
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📹</text></svg>"
-    />
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📹</text></svg>" />
 
-    <!-- Stylesheets -->
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/variables.css" />
-    <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/components/buttons.css" />
-    <link rel="stylesheet" href="css/components/cards.css" />
-    <link rel="stylesheet" href="css/components/forms.css" />
-    <link rel="stylesheet" href="css/lobby.css" />
-  </head>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <body>
-    <!-- Background Effects -->
-    <!-- Particles removed for professional look -->
+  <!-- Stylesheets -->
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components/buttons.css" />
+  <link rel="stylesheet" href="css/components/cards.css" />
+  <link rel="stylesheet" href="css/components/forms.css" />
+  <link rel="stylesheet" href="css/lobby.css" />
+</head>
 
-    <!-- Main Content -->
-    <main class="lobby-container">
-      <div class="lobby-card">
-        <!-- Logo/Header -->
-        <div class="lobby-header">
-          <div class="logo-icon">
-            <i class="fas fa-code"></i>
-          </div>
-          <h1 class="lobby-title">TechInterview Platform</h1>
-          <p class="lobby-sub">Professional Technical Interview Environment</p>
+<body>
+  <!-- Background Effects -->
+  <!-- Particles removed for professional look -->
+
+  <!-- Main Content -->
+  <main class="lobby-container">
+    <div class="lobby-card">
+      <!-- Logo/Header -->
+      <div class="lobby-header">
+        <div class="logo-icon">
+          <i class="fas fa-code"></i>
         </div>
+        <h1 class="lobby-title">TechInterview Platformok</h1>
+        <p class="lobby-sub">Professional Technical Interview Environment</p>
+      </div>
 
-        <!-- Room Input Section -->
-        <section class="lobby-section">
-          <form class="lobby-form" id="joinForm">
-            <div class="input-group">
-              <label for="roomInput" class="input-label"
-                >Interview Room ID</label
-              >
-              <div class="input-wrapper">
-                <i class="fas fa-hashtag input-icon"></i>
-                <input
-                  type="text"
-                  id="roomInput"
-                  placeholder="Enter Room ID"
-                  autocomplete="off"
-                  pattern="[A-Za-z0-9-_]+"
-                  title="Letters, numbers, hyphens and underscores only"
-                />
-              </div>
+      <!-- Room Input Section -->
+      <section class="lobby-section">
+        <form class="lobby-form" id="joinForm">
+          <div class="input-group">
+            <label for="roomInput" class="input-label">Interview Room ID</label>
+            <div class="input-wrapper">
+              <i class="fas fa-hashtag input-icon"></i>
+              <input type="text" id="roomInput" placeholder="Enter Room ID" autocomplete="off" pattern="[A-Za-z0-9-_]+"
+                title="Letters, numbers, hyphens and underscores only" />
             </div>
+          </div>
 
-            <!-- Action Buttons -->
-            <div class="button-group">
-              <button
-                type="button"
-                class="create-btn primary-btn"
-                id="createRoomBtn"
-              >
-                <i class="fa-solid fa-video"></i>
-                <span>Start Instant Meeting</span>
-              </button>
+          <!-- Action Buttons -->
+          <div class="button-group">
+            <button type="button" class="create-btn primary-btn" id="createRoomBtn">
+              <i class="fa-solid fa-video"></i>
+              <span>Start Instant Meeting</span>
+            </button>
 
-              <button type="submit" class="join-btn create-btn">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                <span>Join Interview</span>
-              </button>
+            <button type="submit" class="join-btn create-btn">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              <span>Join Interview</span>
+            </button>
 
-              <!-- Hidden Generate for manual use if needed -->
-              <button
-                type="button"
-                class="text-btn"
-                id="randomRoomBtn"
-                style="
+            <!-- Hidden Generate for manual use if needed -->
+            <button type="button" class="text-btn" id="randomRoomBtn" style="
                   font-size: 0.9rem;
                   margin-top: 10px;
                   background: none;
                   border: none;
                   color: var(--text-muted);
                   cursor: pointer;
-                "
-              >
-                <i class="fa-solid fa-dice"></i> Generate ID
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <!-- Download Recording Section -->
-        <section class="lobby-section recording-section" id="recordingSection">
-          <div class="divider">
-            <span>Session Archives</span>
+                ">
+              <i class="fa-solid fa-dice"></i> Generate ID
+            </button>
           </div>
-          <button class="download-btn" id="downloadRecordingBtn">
-            <i class="fa-solid fa-file-video"></i>
-            <span>Access Interview Recordings</span>
-          </button>
-        </section>
-      </div>
-    </main>
+        </form>
+      </section>
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" aria-live="polite"></div>
+      <!-- Download Recording Section -->
+      <section class="lobby-section recording-section" id="recordingSection">
+        <div class="divider">
+          <span>Session Archives</span>
+        </div>
+        <button class="download-btn" id="downloadRecordingBtn">
+          <i class="fa-solid fa-file-video"></i>
+          <span>Access Interview Recordings</span>
+        </button>
 
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loading-spinner" style="display: none">
-      <div class="spinner"></div>
-      <p>Processing...</p>
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="auth/login.html" class="text-link" style="color: #64ffda; text-decoration: none; font-size: 0.9rem;">
+            Login / Sign Up
+          </a>
+        </div>
+      </section>
     </div>
+  </main>
 
-    <!-- Scripts -->
-    <script type="module" src="js/pages/lobby.js"></script>
-  </body>
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" id="loading-spinner" style="display: none">
+    <div class="spinner"></div>
+    <p>Processing...</p>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/pages/lobby.js"></script>
+</body>
+
 </html>

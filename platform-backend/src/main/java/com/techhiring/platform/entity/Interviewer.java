@@ -17,9 +17,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Interviewer extends User {
 
-  private String specialization; // Example field
+  private String companyName;
 
-  public Interviewer(String email, String password) {
-    super(null, email, password, "INTERVIEWER");
+  public Interviewer(String fullName, String email, String password, String companyName) {
+    super(null, email, password, fullName, "INTERVIEWER");
+    this.companyName = companyName;
   }
 }

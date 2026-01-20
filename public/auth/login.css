@@ -210,3 +210,15 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.error-message {
+  color: #dc2626;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  text-align: center;
+  display: none;
+}
