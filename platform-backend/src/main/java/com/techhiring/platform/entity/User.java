@@ -1,10 +1,19 @@
 package com.techhiring.platform.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
-public class User {
+@Inheritance(strategy = InheritanceType.JOINED)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public abstract class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,47 +26,8 @@ public class User {
   private String password;
 
   @Column(nullable = false)
+  private String fullName;
+
+  @Column(nullable = false)
   private String role; // "CANDIDATE" or "INTERVIEWER"
-
-  public User() {
-  }
-
-  public User(String email, String password, String role) {
-    this.email = email;
-    this.password = password;
-    this.role = role;
-  }
-
-  // Getters and Setters
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public String getRole() {
-    return role;
-  }
-
-  public void setRole(String role) {
-    this.role = role;
-  }
 }

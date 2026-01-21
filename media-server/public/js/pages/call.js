@@ -1,0 +1,249 @@
+// call.js
+import { state } from "../core/state.js";
+import { initSocket } from "../core/socket.js";
+import { startCall, joinCall, exitCall } from "../modules/callControls.js";
+import {
+  micBtn,
+  cameraBtn,
+  localVideo,
+  preview,
+  tempDiv,
+  showWaitingOverlay,
+  updateCallButtonState,
+  screenShareBtn,
+} from "../modules/call-ui.js";
+
+// Initialize UI state
+updateCallButtonState(false);
+
+// Validate room ID
+if (!state.roomId) {
+  alert("No room ID found. Redirecting to lobby...");
+  window.location.href = "/lobby.html";
+}
+
+async function init() {
+  try {
+    // Add waiting overlay
+    if (preview && tempDiv) {
+      showWaitingOverlay();
+    }
+
+    console.log("[Init] Requesting media permissions...");
+
+    // Set UI labels and waiting message based on role
+    const localLabel = document.querySelector(".local-card .user-label");
+    const remoteLabel = document.querySelector(".remote-card .user-label");
+    const waitingText = document.querySelector(".waiting-content p");
+
+    if (state.role === "interviewer") {
+      localLabel.innerHTML =
+        '<i class="fas fa-user-tie"></i> You (Interviewer)';
+      remoteLabel.innerHTML = '<i class="fas fa-user"></i> Candidate';
+      if (waitingText)
+        waitingText.innerText = "The Candidate will join shortly...";
+    } else {
+      localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
+      remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
+      if (waitingText)
+        waitingText.innerText = "The Interviewer will join shortly...";
+
+      // Candidate only features
+      if (screenShareBtn) {
+        screenShareBtn.style.display = "flex";
+
+        // Dynamic import
+        const { startScreenShare, stopScreenShare } =
+          await import("../features/screen-share.js");
+        let isSharing = false;
+
+        screenShareBtn.addEventListener("click", async () => {
+          if (isSharing) {
+            stopScreenShare();
+            isSharing = false;
+            screenShareBtn.classList.remove("active");
+            return;
+          }
+
+          try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+              video: {
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                frameRate: { ideal: 30 },
+              },
+              audio: false,
+            });
+            const producer = await startScreenShare(stream);
+
+            if (producer) {
+              isSharing = true;
+              screenShareBtn.classList.add("active");
+
+              stream.getVideoTracks()[0].onended = () => {
+                stopScreenShare();
+                isSharing = false;
+                screenShareBtn.classList.remove("active");
+              };
+            }
+          } catch (err) {
+            console.error("Screen share cancelled:", err);
+          }
+        });
+      }
+    }
+
+    // Get camera + mic (echo-safe)
+    state.localStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 60 },
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
+
+    console.log("[Init] Media permissions granted");
+
+    // Set up local preview (NO echo)
+    localVideo.srcObject = state.localStream;
+    localVideo.muted = true; // prevents hearing yourself
+    localVideo.autoplay = true;
+    localVideo.playsInline = true;
+
+    // Start with mic muted
+    const audioTrack = state.localStream.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = false;
+      micBtn.classList.add("off");
+      micBtn.querySelector("i").className = "fa fa-microphone-slash";
+    }
+
+    // Camera ON by default
+    const videoTrack = state.localStream.getVideoTracks()[0];
+    if (videoTrack) {
+      videoTrack.enabled = true;
+      cameraBtn.classList.remove("off");
+      cameraBtn.querySelector("i").className = "fa-solid fa-video";
+    }
+
+    // Ensure video plays
+    try {
+      await localVideo.play();
+    } catch (err) {
+      console.warn("[Init] Autoplay blocked:", err);
+    }
+
+    console.log("[Init] Initialization complete");
+  } catch (err) {
+    console.error("[Init] Failed to get media:", err);
+
+    let errorMessage = "Failed to access camera/microphone. ";
+
+    if (
+      err.name === "NotAllowedError" ||
+      err.name === "PermissionDeniedError"
+    ) {
+      errorMessage +=
+        "Please allow camera and microphone permissions and refresh the page.";
+    } else if (
+      err.name === "NotFoundError" ||
+      err.name === "DevicesNotFoundError"
+    ) {
+      errorMessage +=
+        "No camera or microphone found. Please connect a device and refresh.";
+    } else if (
+      err.name === "NotReadableError" ||
+      err.name === "TrackStartError"
+    ) {
+      errorMessage +=
+        "Camera/microphone is already in use by another application.";
+    } else {
+      errorMessage += err.message;
+    }
+
+    alert(errorMessage);
+    window.location.href = "/lobby.html";
+  }
+}
+
+// Cleanup on page unload
+window.addEventListener("beforeunload", (e) => {
+  if (state.pc && state.pc.connectionState === "connected") {
+    exitCall();
+    // Some browsers require returnValue to show confirmation
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+// Handle page visibility changes
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    console.log("[Main] Page hidden");
+  } else {
+    console.log("[Main] Page visible");
+  }
+});
+
+// Initialize
+init().then(() => {
+  initSocket();
+});
+
+// Expose functions for HTML buttons
+window.startCall = startCall;
+window.joinCall = joinCall;
+window.exitCall = exitCall;
+
+// 🎤 Mic toggle
+micBtn.addEventListener("click", () => {
+  if (!state.localStream) {
+    console.warn("[Mic] No local stream");
+    return;
+  }
+
+  const audioTrack = state.localStream.getAudioTracks()[0];
+  if (!audioTrack) {
+    console.warn("[Mic] No audio track");
+    return;
+  }
+
+  const icon = micBtn.querySelector("i");
+  const willEnable = !audioTrack.enabled;
+
+  audioTrack.enabled = willEnable;
+  micBtn.classList.toggle("off", !willEnable);
+
+  icon.className = willEnable ? "fa fa-microphone" : "fa fa-microphone-slash";
+
+  console.log(`[Mic] ${willEnable ? "Unmuted" : "Muted"}`);
+});
+
+// 📹 Camera toggle
+cameraBtn.addEventListener("click", () => {
+  if (!state.localStream) {
+    console.warn("[Camera] No local stream");
+    return;
+  }
+
+  const videoTrack = state.localStream.getVideoTracks()[0];
+  if (!videoTrack) {
+    console.warn("[Camera] No video track");
+    return;
+  }
+
+  const icon = cameraBtn.querySelector("i");
+  const willEnable = !videoTrack.enabled;
+
+  videoTrack.enabled = willEnable;
+  cameraBtn.classList.toggle("off", !willEnable);
+
+  icon.className = willEnable ? "fa-solid fa-video" : "fa-solid fa-video-slash";
+
+  console.log(`[Camera] ${willEnable ? "Enabled" : "Disabled"}`);
+});

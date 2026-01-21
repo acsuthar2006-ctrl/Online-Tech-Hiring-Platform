@@ -1,0 +1,81 @@
+/* forms.css - Form and Input Components */
+
+/* Layouts */
+.lobby-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 0.3em;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1.2em;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 1em 1em 1em 3em;
+  /* More comfortable padding */
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 15px;
+  /* Slightly larger text */
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+input:focus {
+  border-color: var(--accent);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.15),
+    0 10px 20px -5px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+input:focus + .input-icon {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  /* Prevent auto-zoom on iOS by ensuring font size is 16px */
+  input {
+    font-size: 16px;
+  }
+}

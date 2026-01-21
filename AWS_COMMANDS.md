@@ -27,14 +27,22 @@ cd Online-Tech-Hiring-Platform
 # 2. Pull the latest code (Press Enter if asked)
 git pull
 
-# 3. Restart the application to apply changes
+# 3. Rebuild Frontend (Critical for UI changes)
+cd platform-frontend
+npm install
+npm run build
+cd ..
+
+# 4. Restart the Media Server
+cd media-server
+npm install
 pm2 restart Online-Tech-Hiring-Platform
 ```
 
-**One-liner command (run from your local terminal):**
+**One-liner command (from media-server folder if you only updated backend code):**
 
 ```bash
-ssh -i peerchat-key.pem ubuntu@YOUR_SERVER_IP "cd Online-Tech-Hiring-Platform && git pull && pm2 restart Online-Tech-Hiring-Platform"
+git pull && npm install && pm2 restart Online-Tech-Hiring-Platform
 ```
 
 ---
@@ -66,11 +74,8 @@ pm2 status
 pm2 stop Online-Tech-Hiring-Platform
 
 # Start the application (if stopped)
-pm2 start Online-Tech-Hiring-Platform
-
-# Full Reset (Delete and Start Fresh - fixes stuck configs/IPs)
-pm2 delete all
-cd Online-Tech-Hiring-Platform
+# Ensure you serve from media-server directory!
+cd ~/Online-Tech-Hiring-Platform/media-server
 pm2 start server.js --name Online-Tech-Hiring-Platform
 ```
 
@@ -78,15 +83,11 @@ pm2 start server.js --name Online-Tech-Hiring-Platform
 
 ## 📹 5. Managing Recordings
 
-Recordings are stored in `recordings/`.
+Recordings are stored in `media-server/recordings/`.
 
 ```bash
 # List all recordings (show sizes to verify they aren't empty)
-ls -lh Online-Tech-Hiring-Platform/recordings
-
-# Manually copy recordings to public folder (if you need to download via browser link directly)
-# (Note: The app serves them automatically via /api/recordings, so this is rarely needed)
-cp Online-Tech-Hiring-Platform/recordings/*.mp4 Online-Tech-Hiring-Platform/public/recordings/
+ls -lh ~/Online-Tech-Hiring-Platform/media-server/recordings
 ```
 
 ---
@@ -97,7 +98,7 @@ If you need to change ports or settings manually.
 
 ```bash
 # Edit .env file
-nano Online-Tech-Hiring-Platform/.env
+nano ~/Online-Tech-Hiring-Platform/media-server/.env
 
 # Save: Ctrl+O, Enter
 # Exit: Ctrl+X
@@ -107,7 +108,7 @@ nano Online-Tech-Hiring-Platform/.env
 
 - `DETECT_PUBLIC_IP=true` (Ensures auto-IP works)
 - `ENABLE_RECORDING=true`
-- `MEDIASOUP_ANNOUNCED_IP` (Auto-updated on restart)
+- `MEDIASOUP_ANNOUNCED_IP` (Auto-updated on restart if configured in env)
 
 ---
 

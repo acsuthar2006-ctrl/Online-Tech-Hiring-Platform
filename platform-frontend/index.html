@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="PeerChat - Secure peer-to-peer video calling"
+    />
+    <meta name="theme-color" content="#06b6d4" />
+    <title>PeerChat - Video Call</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📹</text></svg>"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Stylesheets -->
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components/buttons.css" />
+    <link rel="stylesheet" href="css/components/cards.css" />
+    <link rel="stylesheet" href="css/call.css" />
+  </head>
+
+  <body>
+    <!-- Background Effects -->
+    <!-- Background Effects -->
+    <!-- <div class="bg-particles"></div> -->
+
+    <!-- Main Container -->
+    <main class="main-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="logo">
+          <i class="fas fa-code"></i>
+          <span>TechInterview Platform</span>
+        </div>
+        <div class="connection-status" id="connection-status">
+          <!-- Status indicator will be handled by JS -->
+        </div>
+      </header>
+
+      <!-- Video Grid -->
+      <div id="video-wrapper">
+        <!-- Local User Card -->
+        <article class="video-card local-card">
+          <div class="video-container">
+            <video
+              class="video-player"
+              id="local-user"
+              autoplay
+              playsinline
+              muted
+            ></video>
+            <div class="video-overlay">
+              <span class="user-label">
+                <i class="fas fa-user-tie"></i> You (Interviewer)
+              </span>
+            </div>
+            <div class="start-call-overlay" id="start-call-overlay">
+              <button
+                class="call-btn join-btn"
+                id="join-call-btn"
+                onclick="joinCall()"
+              >
+                <i class="fas fa-phone"></i>
+                <span>Connect to Session</span>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Remote User Card -->
+        <article class="video-card remote-card" id="remote-user-preview">
+          <div class="video-container">
+            <video
+              class="video-player"
+              id="remote-user"
+              autoplay
+              playsinline
+            ></video>
+            <!-- Additional video for screen share -->
+            <!-- Screen share video moved to overlay -->
+
+            <div class="video-overlay">
+              <span class="user-label">
+                <i class="fas fa-user"></i> Candidate / Remote
+              </span>
+            </div>
+            <!-- Waiting overlay - will be shown/hidden dynamically -->
+            <div id="temp-div">
+              <div class="waiting-content">
+                <i class="fas fa-hourglass-half fa-spin"></i>
+                <p>Waiting for participant...</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Screen Share Card (3rd Window) -->
+        <article class="video-card screen-card" id="screen-card">
+          <div class="video-container">
+            <video
+              class="video-player"
+              id="remote-screen-video"
+              autoplay
+              playsinline
+            ></video>
+            <div class="video-overlay">
+              <span class="user-label">
+                <i class="fas fa-desktop"></i> Shared Screen
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Unified Control Bar -->
+      <footer class="call-controls-bar">
+        <div class="status-indicator">
+          <i class="fas fa-circle-info"></i>
+          <p id="status-text">Ready to connect</p>
+        </div>
+
+        <div class="control-actions">
+          <!-- Media Controls -->
+          <button
+            class="control-btn"
+            id="mic-btn"
+            aria-label="Toggle microphone"
+            title="Toggle Microphone"
+          >
+            <i class="fa fa-microphone-slash"></i>
+          </button>
+          <button
+            class="control-btn"
+            id="camera-btn"
+            aria-label="Toggle camera"
+            title="Toggle Camera"
+          >
+            <i class="fa-solid fa-video"></i>
+          </button>
+
+          <!-- Screen Share (Hidden by default) -->
+          <button
+            class="control-btn"
+            id="screen-share-btn"
+            title="Share Screen"
+            style="display: none"
+          >
+            <i class="fas fa-desktop"></i>
+          </button>
+
+          <!-- End Call (Hidden by default) -->
+          <button
+            class="control-btn exit-btn-bar"
+            id="exit-call-btn"
+            onclick="exitCall()"
+            style="display: none"
+          >
+            <i class="fas fa-phone-slash"></i>
+          </button>
+        </div>
+      </footer>
+      <!-- Mediasoup Client -->
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading-spinner" style="display: none">
+      <div class="spinner"></div>
+      <p>Connecting...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/pages/call.js"></script>
+  </body>
+</html>
