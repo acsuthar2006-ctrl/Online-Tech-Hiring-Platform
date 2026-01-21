@@ -78,7 +78,7 @@ server.listen(PORT, HOST, () => {
 ╔═══════════════════════════════════════╗
 ║    PeerChat Server Running            ║
 ╠═══════════════════════════════════════╣
-║   HTTP:      http://localhost:${PORT} ║
+║   App URL:   http://localhost:${PORT} ║
 ║   WebSocket: ws://localhost:${PORT}   ║
 ╠═══════════════════════════════════════╣
 ║   Public / External Access Info       ║

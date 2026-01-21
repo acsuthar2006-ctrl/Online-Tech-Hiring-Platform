@@ -22,7 +22,8 @@ const recorders = new Map(); // roomId -> Recorder
 const SERVER_INSTANCE = Date.now().toString();
 
 async function initWebSocket(server) {
-  const wss = new WebSocketServer({ server });
+  // Listen on specific path to avoid conflicts and allow proxying
+  const wss = new WebSocketServer({ server, path: "/ws" });
 
   // Init Mediasoup
   try {

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - TechHiring</title>
+  <link rel="stylesheet" href="profile.css">
+  <script src="common/auth.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <div class="header-left">
+        <h1>My Profile</h1>
+        <p class="text-muted">Manage your personal information and preferences</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge">3</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">User</div>
+            <div class="profile-role">Candidate</div>
+          </div>
+        </div>
+    </header>
+
+    <div class="profile-container">
+      <!-- Profile Header Card -->
+      <div class="profile-header-card">
+        <div class="profile-banner"></div>
+        <div class="profile-header-content">
+          <div class="profile-avatar-large">
+            <img src="/placeholder.svg?height=120&width=120" alt="Profile">
+            <button class="avatar-edit-btn">
+            </button>
+          </div>
+          <div class="profile-info">
+            <h2 id="profileUsername">User</h2>
+            <p class="text-muted">Interview Candidate</p>
+            <div class="profile-meta">
+              <span>Member since Jan 2024</span>
+            </div>
+          </div>
+          <button class="btn-primary">Edit Profile</button>
+        </div>
+      </div>
+
+      <!-- Profile Content Grid -->
+      <div class="content-grid">
+        <!-- Personal Information Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Personal Information</h2>
+            <button class="btn-text">Edit</button>
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" class="form-input" id="fullName" placeholder="Enter your full name">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" class="form-input" id="email" placeholder="Enter your email">
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" class="form-input" id="phone" placeholder="Enter your phone number">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" class="form-input" id="location" placeholder="Enter your location">
+          </div>
+        </div>
+
+        <!-- Skills Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Skills</h2>
+            <button class="btn-text">Manage</button>
+          </div>
+          <div class="skills-container" id="skillsContainer">
+            <span class="skill-tag">JavaScript</span>
+            <span class="skill-tag">React</span>
+            <span class="skill-tag">TypeScript</span>
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">SQL</span>
+          </div>
+        </div>
+
+        <!-- Experience Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Work Experience</h2>
+            <button class="btn-text">Add Experience</button>
+          </div>
+          <div class="experience-list">
+            <div class="experience-item">
+              <div class="experience-logo"></div>
+              <div class="experience-content">
+                <h4>Senior Developer</h4>
+                <p class="company-name">Tech Company Inc.</p>
+                <p class="date-range">Jan 2023 - Present · 1 year</p>
+                <p class="experience-description">Leading development of enterprise applications with focus on
+                  scalability and performance optimization.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Education Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Education</h2>
+            <button class="btn-text">Add Education</button>
+          </div>
+          <div class="education-list">
+            <div class="education-item">
+              <div class="education-icon"></div>
+              <div>
+                <h4>Bachelor of Science in Computer Science</h4>
+                <p class="text-muted">University Name · 2020 - 2024</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interview Statistics Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Interview Statistics</h2>
+          </div>
+          <div class="stats-list">
+            <div class="stat-item">
+              <div class="stat-label-group">
+                <span class="stat-dot"></span>
+                <span>Total Interviews</span>
+              </div>
+              <span class="stat-number">12</span>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label-group">
+                <span class="stat-dot"></span>
+                <span>Completed</span>
+              </div>
+              <span class="stat-number">10</span>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label-group">
+                <span class="stat-dot"></span>
+                <span>Pending</span>
+              </div>
+              <span class="stat-number">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="common/dashboard.js"></script>
+  <script src="profile.js"></script>
+  <script src="common/sidebar.js"></script>
+</body>
+
+</html>

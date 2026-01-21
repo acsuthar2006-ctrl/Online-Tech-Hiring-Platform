@@ -31,12 +31,15 @@ public class SecurityConfig {
     return http.build();
   }
 
+  @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins}")
+  private String allowedOrigins;
+
   @Bean
   public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-    configuration.setAllowedOrigins(java.util.List.of("*")); // Allow All for Dev
-    configuration.setAllowedMethods(java.util.List.of("*"));
-    configuration.setAllowedHeaders(java.util.List.of("*"));
+    configuration.setAllowedOrigins(java.util.Arrays.asList(allowedOrigins.split(",")));
+    configuration.setAllowedMethods(java.util.Arrays.asList("*"));
+    configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
 
     org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);

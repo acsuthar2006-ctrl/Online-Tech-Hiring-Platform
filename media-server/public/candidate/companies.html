@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Companies - TechHiring</title>
+    <link rel="stylesheet" href="companies.css" />
+    <script src="common/auth.js"></script>
+  </head>
+
+  <body>
+    <!-- Sidebar Navigation -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-left">
+          <h1>Companies & Positions</h1>
+          <p class="text-muted">
+            Explore open positions and schedule interviews
+          </p>
+        </div>
+        <div class="header-right">
+          <button class="btn-icon" id="notificationBtn">
+            <span class="notification-badge">3</span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div class="profile-menu">
+            <div class="profile-info">
+              <div class="profile-name" id="profileName">User</div>
+              <div class="profile-role">Candidate</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Search and Filters -->
+      <div class="search-section">
+        <div class="search-bar">
+          <input
+            type="text"
+            placeholder="Search companies or positions..."
+            id="searchInput"
+          />
+        </div>
+        <div class="filters">
+          <select class="filter-select">
+            <option>All Industries</option>
+            <option>Technology</option>
+            <option>Finance</option>
+            <option>Healthcare</option>
+          </select>
+          <select class="filter-select">
+            <option>All Locations</option>
+            <option>San Francisco</option>
+            <option>New York</option>
+            <option>Remote</option>
+          </select>
+          <select class="filter-select">
+            <option>All Experience Levels</option>
+            <option>Entry Level</option>
+            <option>Mid Level</option>
+            <option>Senior Level</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Companies Grid -->
+      <div class="companies-grid">
+        <!-- Company Card 1 -->
+        <div class="company-card">
+          <div class="company-header">
+            <div class="company-logo-wrapper blue-bg"></div>
+            <button class="btn-icon-sm"></button>
+          </div>
+          <h3>TechCorp Solutions</h3>
+          <p class="company-description">
+            Leading provider of enterprise software solutions
+          </p>
+          <div class="company-meta">
+            <span class="meta-item"> San Francisco, CA </span>
+            <span class="meta-item"> 5 open positions </span>
+          </div>
+          <div class="positions-list">
+            <div class="position-item">
+              <div class="position-info">
+                <h4>Senior Frontend Developer</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$120k-$180k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+            <div class="position-item">
+              <div class="position-info">
+                <h4>Backend Engineer</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$110k-$160k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+          </div>
+          <button class="btn-outline btn-full">View All Positions</button>
+        </div>
+
+        <!-- Company Card 2 -->
+        <div class="company-card">
+          <div class="company-header">
+            <div class="company-logo-wrapper green-bg"></div>
+            <button class="btn-icon-sm"></button>
+          </div>
+          <h3>DataFlow Inc</h3>
+          <p class="company-description">
+            Data analytics and business intelligence platform
+          </p>
+          <div class="company-meta">
+            <span class="meta-item"> New York, NY </span>
+            <span class="meta-item"> 3 open positions </span>
+          </div>
+          <div class="positions-list">
+            <div class="position-item">
+              <div class="position-info">
+                <h4>Full Stack Engineer</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$130k-$190k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+            <div class="position-item">
+              <div class="position-info">
+                <h4>Data Engineer</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$125k-$175k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+          </div>
+          <button class="btn-outline btn-full">View All Positions</button>
+        </div>
+
+        <!-- Company Card 3 -->
+        <div class="company-card">
+          <div class="company-header">
+            <div class="company-logo-wrapper purple-bg"></div>
+            <button class="btn-icon-sm"></button>
+          </div>
+          <h3>CloudScale Systems</h3>
+          <p class="company-description">
+            Cloud infrastructure and DevOps solutions
+          </p>
+          <div class="company-meta">
+            <span class="meta-item"> Remote </span>
+            <span class="meta-item"> 4 open positions </span>
+          </div>
+          <div class="positions-list">
+            <div class="position-item">
+              <div class="position-info">
+                <h4>DevOps Engineer</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$140k-$200k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+            <div class="position-item">
+              <div class="position-info">
+                <h4>Cloud Architect</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$160k-$220k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+          </div>
+          <button class="btn-outline btn-full">View All Positions</button>
+        </div>
+
+        <!-- Company Card 4 -->
+        <div class="company-card">
+          <div class="company-header">
+            <div class="company-logo-wrapper orange-bg"></div>
+            <button class="btn-icon-sm filled"></button>
+          </div>
+          <h3>InnovateTech Labs</h3>
+          <p class="company-description">
+            AI and machine learning research company
+          </p>
+          <div class="company-meta">
+            <span class="meta-item"> Seattle, WA </span>
+            <span class="meta-item"> 6 open positions </span>
+          </div>
+          <div class="positions-list">
+            <div class="position-item">
+              <div class="position-info">
+                <h4>ML Engineer</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$150k-$210k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+            <div class="position-item">
+              <div class="position-info">
+                <h4>Research Scientist</h4>
+                <div class="position-tags">
+                  <span class="badge badge-blue">Full-time</span>
+                  <span class="badge badge-green">$170k-$240k</span>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm">Apply</button>
+            </div>
+          </div>
+          <button class="btn-outline btn-full">View All Positions</button>
+        </div>
+      </div>
+    </main>
+
+    <script src="common/dashboard.js"></script>
+    <script src="common/sidebar.js"></script>
+  </body>
+</html>

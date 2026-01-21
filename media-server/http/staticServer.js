@@ -17,6 +17,17 @@ if (!fs.existsSync(RECORDINGS_DIR)) {
 }
 
 export default function handleHttp(req, res) {
+  /* ================= CORS SUPPORT ================= */
+  res.setHeader("Access-Control-Allow-Origin", "*"); // In production, restrict this to frontend domain
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = url.pathname;
 
@@ -205,78 +216,70 @@ export default function handleHttp(req, res) {
     return;
   }
 
-  /* ================= STATIC FILE SERVING ================= */
-  let filePath;
+  /* ================= FRONTEND SERVING (PRODUCTION) ================= */
+  // In production, we serve the built React content from ../platform-frontend/dist
 
-  // Serve recordings
-  if (pathname.startsWith("/recordings/")) {
-    const filename = pathname.replace("/recordings/", "");
-    filePath = path.join(RECORDINGS_DIR, filename);
+  const FRONTEND_BUILD_DIR = path.join(__dirname, "..", "..", "platform-frontend", "dist");
 
-    // Check for directory traversal (simple check)
-    if (filename.includes("..") || filename.includes("/")) {
-      res.writeHead(403);
-      res.end("Forbidden");
-      return;
-    }
-
-    // Verify file exists
+  // Helper to serve a file
+  const serveFile = (filePath, contentType) => {
     if (!fs.existsSync(filePath)) {
-      res.writeHead(404);
-      res.end("Recording not found");
-      return;
+      return false;
     }
-
     const stat = fs.statSync(filePath);
     res.writeHead(200, {
-      "Content-Type": "video/mp4",
+      "Content-Type": contentType,
       "Content-Length": stat.size,
     });
-
     fs.createReadStream(filePath).pipe(res);
-    return;
-  }
+    return true;
+  };
 
-  if (pathname === "/" && url.searchParams.has("room")) {
-    filePath = "./public/index.html";
-  } else if (pathname === "/") {
-    filePath = "./public/lobby.html";
-  } else {
-    filePath = `./public${pathname}`;
-  }
+  // 1. Try to serve exact file match (e.g. /assets/index.js, /favicon.ico)
+  // We strip the leading slash to join with build dir
+  let reqPath = pathname === "/" ? "index.html" : pathname.substring(1);
+  let targetPath = path.join(FRONTEND_BUILD_DIR, reqPath);
 
-  // Security: prevent path traversal
-  const resolvedPath = path.resolve(filePath);
-  const publicDir = path.resolve("./public");
-
-  if (!resolvedPath.startsWith(publicDir)) {
-    console.warn(`[Security] Path traversal attempt: ${pathname}`);
+  // Security check for traversal
+  if (reqPath.includes("..")) {
     res.writeHead(403);
     res.end("Forbidden");
     return;
   }
 
-  const ext = path.extname(filePath);
-  const contentType =
-    {
-      ".html": "text/html",
-      ".js": "application/javascript",
-      ".css": "text/css",
-      ".json": "application/json",
-      ".png": "image/png",
-      ".jpg": "image/jpeg",
-      ".svg": "image/svg+xml",
-    }[ext] || "text/plain";
+  // Determine content type
+  const ext = path.extname(targetPath).toLowerCase();
+  const mimeTypes = {
+    ".html": "text/html",
+    ".js": "text/javascript",
+    ".css": "text/css",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".webm": "video/webm",
+    ".mp4": "video/mp4",
+  };
 
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      console.warn(`[Static] File not found: ${filePath}`);
-      res.writeHead(404, { "Content-Type": "text/html" });
-      res.end("<h1>404 - Not Found</h1>");
+  const contentType = mimeTypes[ext] || "application/octet-stream";
+
+  if (serveFile(targetPath, contentType)) {
+    return;
+  }
+
+  // 2. Fallback for SPA (Single Page Application)
+  // If the file is not found, and it's not an API call (already handled above),
+  // serve index.html so React Router looks after it.
+  if (!pathname.startsWith("/api/") && !pathname.startsWith("/recordings/")) {
+    const indexPath = path.join(FRONTEND_BUILD_DIR, "index.html");
+    if (serveFile(indexPath, "text/html")) {
       return;
     }
+  }
 
-    res.writeHead(200, { "Content-Type": contentType });
-    res.end(content);
-  });
+  // 3. Last Resort
+  res.writeHead(404);
+  res.end("Not Found (Frontend build not found - did you run 'npm run build'?)");
 }
