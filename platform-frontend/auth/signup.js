@@ -39,7 +39,7 @@ function handleSignup(event) {
   }
 
   // Call Backend API
-  fetch("http://localhost:8080/api/auth/signup", {
+  fetch("/api/auth/signup", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

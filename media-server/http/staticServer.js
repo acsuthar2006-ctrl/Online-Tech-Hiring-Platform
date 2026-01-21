@@ -1,4 +1,5 @@
 import fs from "fs";
+import http from "http";
 import path from "path";
 import Busboy from "busboy";
 import { fileURLToPath } from "url";
@@ -213,6 +214,34 @@ export default function handleHttp(req, res) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ exists }));
+    return;
+  }
+
+  /* ================= PROXY: AUTH & USER API (To Backend 8080) ================= */
+  if (pathname.startsWith("/api/auth") || pathname.startsWith("/api/users")) {
+    console.log(`[Proxy] Forwarding ${pathname} to Backend (8080)...`);
+
+    const backendReq = http.request(
+      {
+        hostname: "127.0.0.1",
+        port: 8080,
+        path: url.search ? pathname + url.search : pathname,
+        method: req.method,
+        headers: req.headers,
+      },
+      (backendRes) => {
+        res.writeHead(backendRes.statusCode, backendRes.headers);
+        backendRes.pipe(res);
+      },
+    );
+
+    backendReq.on("error", (err) => {
+      console.error("[Proxy] Backend connection error:", err.message);
+      res.writeHead(502, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Backend unavailable" }));
+    });
+
+    req.pipe(backendReq);
     return;
   }
 
