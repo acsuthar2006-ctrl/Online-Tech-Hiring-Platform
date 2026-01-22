@@ -13,6 +13,20 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private final com.techhiring.platform.service.CustomUserDetailsService userDetailsService;
+
+  public SecurityConfig(com.techhiring.platform.service.CustomUserDetailsService userDetailsService) {
+    this.userDetailsService = userDetailsService;
+  }
+
+  @Bean
+  public org.springframework.security.authentication.AuthenticationProvider authenticationProvider() {
+    org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService);
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
+  }
+
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -25,8 +39,10 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless REST APIs
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
+            .requestMatchers("/api/interviews/**").permitAll() // Allow testing interviews
             .anyRequest().authenticated() // Protect everything else
-        );
+        )
+        .httpBasic(org.springframework.security.config.Customizer.withDefaults()); // Enable Basic Auth for testing
 
     return http.build();
   }
