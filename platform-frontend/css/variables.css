@@ -3,7 +3,8 @@
   --bg-gradient-start: #0a0e17;
   --bg-gradient-end: #020204;
   --bg-card: rgba(18, 20, 32, 0.65);
-
+  
+  --primary: #6366f1;
   --accent: #00d4ff;
   --accent-secondary: #0055ff;
   --accent-glow: rgba(0, 212, 255, 0.35);

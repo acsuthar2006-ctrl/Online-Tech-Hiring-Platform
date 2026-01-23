@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waiting Room</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .waiting-container {
+      text-align: center;
+      background: white;
+      padding: 3rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 2rem;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    h1 {
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    #status {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="waiting-container">
+    <div class="spinner"></div>
+    <h1>Waiting for Interviewer</h1>
+    <p>Your interview is scheduled. The interviewer will start the session shortly.</p>
+    <div id="status">Status: Checking...</div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    const email = params.get('email') || localStorage.getItem('userEmail');
+
+    async function checkStatus() {
+      try {
+        const res = await fetch(`/api/interviews/session/${room}/queue`);
+        const data = await res.json();
+
+        const myInterview = data.timeline.find(i => i.candidate.email === email);
+
+        if (myInterview) {
+          document.getElementById('status').innerText = `Status: ${myInterview.status}`;
+
+          if (myInterview.status === 'IN_PROGRESS') {
+            window.location.href = `/index.html?room=${room}&role=candidate&email=${email}`;
+          }
+        }
+      } catch (e) {
+        console.error('Status check failed:', e);
+      }
+    }
+
+    // Poll every 3 seconds
+    setInterval(checkStatus, 3000);
+    checkStatus();
+  </script>
+</body>
+
+</html>

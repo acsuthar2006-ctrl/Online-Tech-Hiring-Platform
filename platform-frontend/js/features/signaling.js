@@ -36,6 +36,11 @@ function setupResponseHandler() {
  */
 export function request(type, data = {}) {
   return new Promise((resolve, reject) => {
+    if (!state.socket) {
+      reject("Socket not initialized");
+      return;
+    }
+
     // Initialize handler once
     if (pendingRequests.size === 0 && !state.socket._hasResponseHandler) {
       setupResponseHandler();
