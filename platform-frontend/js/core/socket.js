@@ -79,7 +79,11 @@ export function initSocket() {
           console.log("[Socket] Peer left");
           setStatus("Peer left");
           resetRemoteVideoUI();
-          updateCallButtonState(false);
+          if (state.role !== 'interviewer') {
+            updateCallButtonState(false);
+          } else {
+            setStatus("Waiting for next candidate...");
+          }
           break;
 
         default:

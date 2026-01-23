@@ -36,12 +36,16 @@ async function init() {
     const remoteLabel = document.querySelector(".remote-card .user-label");
     const waitingText = document.querySelector(".waiting-content p");
 
-    if (state.role === "interviewer") {
+    if (state.role === 'interviewer') {
       localLabel.innerHTML =
         '<i class="fas fa-user-tie"></i> You (Interviewer)';
       remoteLabel.innerHTML = '<i class="fas fa-user"></i> Candidate';
       if (waitingText)
         waitingText.innerText = "The Candidate will join shortly...";
+
+      // Show Queue Button
+      const queueBtn = document.getElementById("queue-btn");
+      if (queueBtn) queueBtn.style.display = "flex";
     } else {
       localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
       remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
@@ -192,7 +196,72 @@ document.addEventListener("visibilitychange", () => {
 
 // Initialize
 init().then(() => {
-  initSocket();
+  if (state.role === "candidate") {
+    // Poll for status
+    const pollStatus = async () => {
+      // Find interviewId? It needs to be passed in URL or we need to find it by Context?
+      // Since we don't have interviewId easily in URL (only room), we might need an endpoint that takes Room + Candidate Email (or Cookie).
+      // For MVP, we assume the backend endpoint `GET /api/interviews/session/{room}/queue` returns "Current" and we check if we match "Current".
+      // But we don't know "who" we are (no auth cookie in this flow perhaps?).
+      // Let's rely on localStorage 'username' matching 'candidateName' or similar? Weak.
+      // Better: The User should have logged in? my_schedule.js uses localStorage.
+
+      // Try getting email from URL first (testing convenience), then localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get("email") || localStorage.getItem("userEmail");
+
+      if (!email) {
+        console.warn("No user email found for status check");
+        // Update overlay to show error if visible
+        const statusText = document.getElementById("candidate-status-text");
+        if (statusText) statusText.innerText = "Error: Email not found. Please log in or add &email=... to URL";
+        return;
+      }
+
+      try {
+        // New Endpoint to check "My Status" in this room
+        // We don't have it. We can use the Queue endpoint and filter client side.
+        const res = await fetch(`/api/interviews/session/${state.roomId}/queue`);
+        const data = await res.json();
+
+        const myInterview = data.timeline.find(i => i.candidate.email === email);
+
+        const overlay = document.getElementById("candidate-overlay");
+
+        if (myInterview) {
+          if (myInterview.status === "IN_PROGRESS") {
+            if (overlay) overlay.style.display = "none";
+            // Init socket if not already?
+            if (!state.socket) initSocket();
+          } else if (myInterview.status === "COMPLETED") {
+            if (!state.isLeaving) {
+              if (state.socket) {
+                alert("The interview has ended.");
+                exitCall();
+              } else {
+                alert("The interview has ended.");
+                window.location.href = "/lobby.html";
+              }
+            }
+          } else {
+            if (overlay) {
+              overlay.style.display = "flex";
+              document.getElementById("candidate-status-text").innerText =
+                "Scheduled for: " + myInterview.scheduledTime;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Polling error", e);
+      }
+    };
+
+    // Start polling
+    setInterval(pollStatus, 5000);
+    pollStatus();
+  } else {
+    initSocket();
+  }
 });
 
 // Expose functions for HTML buttons
