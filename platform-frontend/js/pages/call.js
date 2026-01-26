@@ -36,10 +36,40 @@ async function init() {
     const remoteLabel = document.querySelector(".remote-card .user-label");
     const waitingText = document.querySelector(".waiting-content p");
 
+    // Get user email from URL or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const userEmail = urlParams.get("email") || localStorage.getItem("userEmail");
+
+    // Fetch real names from the queue API
+    let localName = state.role === 'interviewer' ? 'Interviewer' : 'Candidate';
+    let remoteName = state.role === 'interviewer' ? 'Candidate' : 'Interviewer';
+
+    try {
+      const res = await fetch(`/api/interviews/session/${state.roomId}/queue`);
+      if (res.ok) {
+        const data = await res.json();
+
+        if (state.role === 'interviewer' && data.timeline && data.timeline.length > 0) {
+          // For interviewer, show first candidate's name
+          localName = data.timeline[0].interviewer?.fullName || 'Interviewer';
+          remoteName = data.timeline[0].candidate?.fullName || 'Candidate';
+        } else if (state.role === 'candidate' && userEmail && data.timeline) {
+          // For candidate, find their interview
+          const myInterview = data.timeline.find(i => i.candidate.email === userEmail);
+          if (myInterview) {
+            localName = myInterview.candidate?.fullName || 'Candidate';
+            remoteName = myInterview.interviewer?.fullName || 'Interviewer';
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[Init] Could not fetch names, using defaults:", e);
+    }
+
     if (state.role === 'interviewer') {
       localLabel.innerHTML =
-        '<i class="fas fa-user-tie"></i> You (Interviewer)';
-      remoteLabel.innerHTML = '<i class="fas fa-user"></i> Candidate';
+        `<i class="fas fa-user-tie"></i> ${localName}`;
+      remoteLabel.innerHTML = `<i class="fas fa-user"></i> ${remoteName}`;
       if (waitingText)
         waitingText.innerText = "The Candidate will join shortly...";
 
@@ -47,8 +77,8 @@ async function init() {
       const queueBtn = document.getElementById("queue-btn");
       if (queueBtn) queueBtn.style.display = "flex";
     } else {
-      localLabel.innerHTML = '<i class="fas fa-user"></i> You (Candidate)';
-      remoteLabel.innerHTML = '<i class="fas fa-user-tie"></i> Interviewer';
+      localLabel.innerHTML = `<i class="fas fa-user"></i> ${localName}`;
+      remoteLabel.innerHTML = `<i class="fas fa-user-tie"></i> ${remoteName}`;
       if (waitingText)
         waitingText.innerText = "The Interviewer will join shortly...";
 
