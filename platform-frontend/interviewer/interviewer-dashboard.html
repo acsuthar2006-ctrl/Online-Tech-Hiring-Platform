@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interviewer Dashboard</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/interviewer.css">
+  <script src="../common/auth.js"></script>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <h1>Welcome, <span id="userName">Interviewer</span>!</h1>
+        <p class="text-muted">Manage your interviews and explore opportunities</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge">5</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">Interviewer</div>
+            <div class="profile-role">Interviewer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Today's Interviews</h3>
+          <p class="stat-number">6</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Completed This Week</h3>
+          <p class="stat-number">23</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Active Companies</h3>
+          <p class="stat-number">5</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Total Earnings</h3>
+          <p class="stat-number">$2,450</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="card">
+        <div class="card-header">
+          <h2>Today's Schedule</h2>
+          <a href="interview-schedule.html" class="link-primary">View All</a>
+        </div>
+        <div class="schedule-list">
+          <div class="schedule-item">
+            <div class="schedule-time">
+              <div class="time-badge">10:00 AM</div>
+            </div>
+            <div class="schedule-info">
+              <h4>Technical Interview - Senior Developer</h4>
+              <p>Google Inc. • Candidate: John Smith</p>
+              <div class="schedule-meta">
+                <span class="badge badge-blue">Video Interview</span>
+                <span>45 minutes</span>
+              </div>
+            </div>
+            <button class="btn-primary btn-sm">Start</button>
+          </div>
+          <div class="schedule-item">
+            <div class="schedule-time">
+              <div class="time-badge">2:00 PM</div>
+            </div>
+            <div class="schedule-info">
+              <h4>Coding Round - Full Stack Engineer</h4>
+              <p>Microsoft • Candidate: Sarah Johnson</p>
+              <div class="schedule-meta">
+                <span class="badge badge-blue">Technical Round</span>
+                <span>90 minutes</span>
+              </div>
+            </div>
+            <button class="btn-outline btn-sm">Details</button>
+          </div>
+          <div class="schedule-item">
+            <div class="schedule-time">
+              <div class="time-badge">4:30 PM</div>
+            </div>
+            <div class="schedule-info">
+              <h4>Analytical Round - Data Analyst</h4>
+              <p>Amazon • Candidate: Michael Chen</p>
+              <div class="schedule-meta">
+                <span class="badge badge-blue">Technical Round</span>
+                <span>60 minutes</span>
+              </div>
+            </div>
+            <button class="btn-outline btn-sm">Details</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Companies Hiring Interviewers</h2>
+          <a href="hiring-companies.html" class="link-primary">View All</a>
+        </div>
+        <div class="company-list">
+          <div class="company-item">
+            <div class="company-info">
+              <h4>Google Inc.</h4>
+              <p>Looking for: Senior Technical Interviewers</p>
+              <div class="company-meta">
+                <span>$80/hour</span>
+                <span>•</span>
+                <span>Part-time</span>
+              </div>
+            </div>
+            <button class="btn-primary btn-sm">Apply</button>
+          </div>
+          <div class="company-item">
+            <div class="company-info">
+              <h4>Microsoft</h4>
+              <p>Looking for: Coding Interview Specialists</p>
+              <div class="company-meta">
+                <span>$75/hour</span>
+                <span>•</span>
+                <span>Part-time</span>
+              </div>
+            </div>
+            <button class="btn-primary btn-sm">Apply</button>
+          </div>
+          <div class="company-item">
+            <div class="company-info">
+              <h4>Amazon</h4>
+              <p>Looking for: System Design Interviewers</p>
+              <div class="company-meta">
+                <span>$85/hour</span>
+                <span>•</span>
+                <span>Flexible</span>
+              </div>
+            </div>
+            <button class="btn-primary btn-sm">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../common/dashboard.js"></script>
+  <script src="../common/interviewer-sidebar.js"></script>
+</body>
+</html>

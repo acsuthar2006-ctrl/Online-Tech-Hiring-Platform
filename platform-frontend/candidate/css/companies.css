@@ -1,5 +1,5 @@
 /* Companies page specific styles */
-@import url("common/common.css");
+@import url("../common/common.css");
 
 .search-section {
   margin-bottom: 32px;

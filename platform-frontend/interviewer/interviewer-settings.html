@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - InterviewPro</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/interviewer-settings.css">
+  <script src="../common/auth.js"></script>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <h1>Settings</h1>
+        <p class="text-muted">Manage your account and interview preferences</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge">1</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">Interviewer</div>
+            <div class="profile-role">Interviewer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-container">
+      <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchTab(event, 'general')">General</button>
+        <button class="settings-tab" onclick="switchTab(event, 'notifications')">Notifications</button>
+        <button class="settings-tab" onclick="switchTab(event, 'security')">Security</button>
+        <button class="settings-tab" onclick="switchTab(event, 'payment')">Payment</button>
+      </div>
+
+      <!-- General Settings -->
+      <div id="general" class="settings-section active">
+        <h3 class="section-title">General Settings</h3>
+        
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>Language</h4>
+            <p>Choose your preferred language</p>
+          </div>
+          <select style="width: auto;">
+            <option>English</option>
+            <option>Spanish</option>
+            <option>French</option>
+            <option>German</option>
+          </select>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>Theme</h4>
+            <p>Choose light or dark mode</p>
+          </div>
+          <select style="width: auto;">
+            <option>Light</option>
+            <option>Dark</option>
+            <option>Auto</option>
+          </select>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>Time Zone</h4>
+            <p>Set your time zone for interviews</p>
+          </div>
+          <select style="width: auto;">
+            <option>UTC</option>
+            <option>EST</option>
+            <option>CST</option>
+            <option>PST</option>
+          </select>
+        </div>
+
+        <button class="btn-primary" style="margin-top: 24px;">Save Changes</button>
+      </div>
+
+      <!-- Notifications Settings -->
+      <div id="notifications" class="settings-section">
+        <h3 class="section-title">Notification Preferences</h3>
+        
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>Email Notifications</h4>
+            <p>Receive interview updates via email</p>
+          </div>
+          <button class="toggle-switch on" onclick="toggleSwitch(this)"></button>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>Interview Reminders</h4>
+            <p>Get reminded 1 hour before interview</p>
+          </div>
+          <button class="toggle-switch on" onclick="toggleSwitch(this)"></button>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>New Opportunities</h4>
+            <p>Notify new hiring company opportunities</p>
+          </div>
+          <button class="toggle-switch on" onclick="toggleSwitch(this)"></button>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>Payment Notifications</h4>
+            <p>Receive payment and earnings updates</p>
+          </div>
+          <button class="toggle-switch on" onclick="toggleSwitch(this)"></button>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <h4>SMS Notifications</h4>
+            <p>Receive urgent updates via SMS</p>
+          </div>
+          <button class="toggle-switch" onclick="toggleSwitch(this)"></button>
+        </div>
+
+        <button class="btn-primary" style="margin-top: 24px;">Save Preferences</button>
+      </div>
+
+      <!-- Security Settings -->
+      <div id="security" class="settings-section">
+        <h3 class="section-title">Security & Privacy</h3>
+        
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" placeholder="Enter your current password">
+        </div>
+
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" placeholder="Enter new password">
+        </div>
+
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" placeholder="Confirm new password">
+        </div>
+
+        <button class="btn-primary">Update Password</button>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--blue-100);">
+          <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Two-Factor Authentication</h4>
+          <div class="settings-item">
+            <div class="settings-item-info">
+              <h4>2FA Security</h4>
+              <p>Add an extra layer of security to your account</p>
+            </div>
+            <button class="toggle-switch" onclick="toggleSwitch(this)"></button>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--blue-100);">
+          <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Active Sessions</h4>
+          <p style="color: var(--gray-600); margin-bottom: 12px;">Manage devices where you're signed in</p>
+          <div class="settings-item">
+            <div class="settings-item-info">
+              <h4>Current Session (Chrome on Mac)</h4>
+              <p>Last active: now</p>
+            </div>
+            <button class="btn-secondary btn-sm">Revoke</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Settings -->
+      <div id="payment" class="settings-section">
+        <h3 class="section-title">Payment & Earnings</h3>
+        
+        <div class="form-group">
+          <label>Payment Method</label>
+          <select>
+            <option>Bank Transfer</option>
+            <option>PayPal</option>
+            <option>Wire Transfer</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Bank Account</label>
+          <input type="text" placeholder="Enter your bank account number" value="****1234">
+        </div>
+
+        <div class="form-group">
+          <label>Routing Number</label>
+          <input type="text" placeholder="Enter routing number">
+        </div>
+
+        <button class="btn-primary">Save Payment Details</button>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--blue-100);">
+          <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Hourly Rate</h4>
+          <div class="form-group">
+            <label>Your Hourly Rate ($)</label>
+            <input type="number" value="75" min="0">
+          </div>
+          <button class="btn-primary">Update Rate</button>
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--blue-100);">
+          <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Earnings Summary</h4>
+          <p style="color: var(--gray-600); margin-bottom: 16px;">This month: <strong style="color: var(--blue-700); font-size: 18px;">$2,450</strong></p>
+          <button class="btn-secondary">Download Statement</button>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="danger-zone">
+        <h4>Danger Zone</h4>
+        <p>Once you delete your account, there is no going back. Please be certain.</p>
+        <button class="btn-danger">Delete Account</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../common/dashboard.js"></script>
+  <script src="js/interviewer-settings.js"></script>
+  <script src="../common/interviewer-sidebar.js"></script>
+</body>
+</html>

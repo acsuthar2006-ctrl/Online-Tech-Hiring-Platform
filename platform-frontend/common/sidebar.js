@@ -1,6 +1,6 @@
-fetch("common/sidebar.html")
-  .then((res) => res.text())
-  .then((html) => {
+fetch("../common/sidebar.html")
+  .then(res => res.text())
+  .then(html => {
     // Inject sidebar
     document.getElementById("sidebar-container").innerHTML = html;
 
@@ -9,7 +9,7 @@ fetch("common/sidebar.html")
 
     const navLinks = document.querySelectorAll(".nav-item");
 
-    navLinks.forEach((link) => {
+    navLinks.forEach(link => {
       const linkPage = link.getAttribute("href");
 
       if (linkPage === currentPage) {
@@ -17,4 +17,4 @@ fetch("common/sidebar.html")
       }
     });
   })
-  .catch((err) => console.error("Sidebar load failed", err));
+  .catch(err => console.error("Sidebar load failed", err));

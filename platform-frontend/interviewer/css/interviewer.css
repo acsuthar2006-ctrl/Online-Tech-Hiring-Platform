@@ -1,5 +1,3 @@
-@import url("common/common.css");
-
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -36,7 +34,7 @@
 }
 
 .stat-info h3 {
-  font-size: 19px;
+  font-size: 14px;
   color: var(--gray-500);
   font-weight: 500;
   margin-bottom: 4px;
@@ -53,16 +51,16 @@
   gap: 24px;
 }
 
-.interview-list {
+.schedule-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.interview-item {
+.schedule-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 16px;
   background: var(--blue-50);
   border: 1px solid var(--blue-200);
@@ -70,25 +68,44 @@
   transition: all 0.2s;
 }
 
-.interview-item:hover {
+.schedule-item:hover {
   background: var(--blue-100);
   border-color: var(--blue-400);
 }
 
-.interview-info h4 {
+.schedule-time {
+  flex-shrink: 0;
+}
+
+.time-badge {
+  background: var(--blue-700);
+  color: var(--white);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 90px;
+}
+
+.schedule-info {
+  flex: 1;
+}
+
+.schedule-info h4 {
   font-size: 16px;
   font-weight: 600;
   color: var(--gray-900);
   margin-bottom: 4px;
 }
 
-.interview-info p {
+.schedule-info p {
   font-size: 14px;
   color: var(--gray-600);
   margin-bottom: 8px;
 }
 
-.interview-meta {
+.schedule-meta {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -96,50 +113,46 @@
   color: var(--gray-500);
 }
 
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.company-list {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.action-card {
+.company-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px;
   padding: 20px;
   background: var(--blue-50);
   border: 1px solid var(--blue-200);
   border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
-.action-card:hover {
+.company-item:hover {
   background: var(--blue-100);
-  border-color: var(--blue-500);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--blue-400);
 }
 
-.action-icon {
-  font-size: 32px;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--white);
-  border-radius: 8px;
-}
-
-.action-info h4 {
-  font-size: 15px;
+.company-info h4 {
+  font-size: 16px;
   font-weight: 600;
   color: var(--gray-900);
   margin-bottom: 4px;
 }
 
-.action-info p {
+.company-info p {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+
+.company-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
-  color: var(--gray-500);
+  color: var(--blue-700);
+  font-weight: 500;
 }
