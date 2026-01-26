@@ -72,7 +72,7 @@ Go to **Settings** > **Secrets and variables** > **Actions** and add:
 
 PeerChat uses **Mediasoup** as a Selective Forwarding Unit (SFU). This means the server acts as a smart router for media packets.
 
-![PeerChat SFU Architecture](media-server/public/img/sfu_architecture_detailed.png)
+![PeerChat SFU Architecture](platform-frontend/img/sfu_architecture_detailed.png)
 
 ### 1. Forwarding (The "Router")
 
