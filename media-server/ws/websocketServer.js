@@ -3,36 +3,24 @@ import {
   joinChannel,
   leaveChannel,
   broadcastToRoom,
-  roomExists,
 } from "./channels.js";
-import {
-  createWorker,
-  createRouter,
-  createWebRtcTransport,
-} from "../sfu/mediasoup.js";
-import { Recorder } from "../sfu/recording.js";
-
-let worker;
-let router;
-const producers = new Map(); // producerId -> Producer
-const consumers = new Map(); // consumerId -> Consumer
-const transports = new Map(); // transportId -> Transport
-const recorders = new Map(); // roomId -> Recorder
+import MediasoupService from "../sfu/mediasoup.js";
+import { SfuHandler } from "./SfuHandler.js";
+import { RecordingManager } from "./RecordingManager.js";
 
 const SERVER_INSTANCE = Date.now().toString();
 
 async function initWebSocket(server) {
-  // Listen on specific path to avoid conflicts and allow proxying
+  // Listen on specific path
   const wss = new WebSocketServer({ server, path: "/ws" });
 
-  // Init Mediasoup
-  try {
-    worker = await createWorker();
-    router = await createRouter(worker);
-    console.log("🚀 Mediasoup Worker & Router initialized");
-  } catch (err) {
-    console.error("❌ Failed to init Mediasoup:", err);
-  }
+  // Init Services
+  const mediasoupService = new MediasoupService();
+  await mediasoupService.initialize();
+  console.log("🚀 Mediasoup Service initialized");
+
+  const sfuHandler = new SfuHandler(mediasoupService);
+  const recordingManager = new RecordingManager(mediasoupService);
 
   console.log("🔌 WebSocket server initialized");
 
@@ -40,15 +28,15 @@ async function initWebSocket(server) {
     const clientIp = req.socket.remoteAddress;
     console.log(`[WebSocket] New connection from ${clientIp}`);
 
-    // Send server instance ID immediately
+    // Send server instance ID
     socket.send(
       JSON.stringify({
         type: "serverInfo",
         instanceId: SERVER_INSTANCE,
-      }),
+      })
     );
 
-    // Set up ping/pong for connection health
+    // Health Check
     socket.isAlive = true;
     socket.on("pong", () => {
       socket.isAlive = true;
@@ -56,494 +44,135 @@ async function initWebSocket(server) {
 
     socket.on("message", async (msg) => {
       let data;
-
       try {
         data = JSON.parse(msg.toString());
       } catch (err) {
         console.error("[WebSocket] Invalid JSON:", err.message);
-        socket.send(
-          JSON.stringify({
-            type: "error",
-            message: "Invalid message format",
-          }),
-        );
         return;
       }
 
-      // Wrap independent logic in try/catch to prevent server crash
       try {
-        // Validate required fields
-        if (!data.type) {
-          console.warn("[WebSocket] Message missing type");
-          return;
-        }
+        if (!data.type) return;
 
         console.log(`[WebSocket] ${socket.uid || "Unknown"} -> ${data.type}`);
 
-        // ... (existing logic) ...
-        // I will rely on the fact that ReplaceFileContent allows replacing a block.
-        // But the block is huge.
-        // Instead, I will replace the start and end of the function to add try/catch?
-        // No, I must replace the valid block.
-        // Since I cannot match 400 lines easily, I will edit the specific missing try/catch areas or use 'multi_replace'.
-        // Actually, 'consume' and 'produce' are the specific risky ones.
-        // Let's wrap the logic inside the 'message' event handler.
-        // I can replace the start:
-        /*
-          socket.on("message", async (msg) => {
-             try {
-                ... parsing ...
-                ... handling ...
-             } catch (err) { console.error(...) }
-          });
-        */
-        // But the parsing has its own try/catch.
-        // I will add a try/catch *after* the parsing block that covers the rest.
-
+        // --- Room Management ---
         if (data.type === "join") {
-          if (!data.from || !data.channel) {
-            console.error("[WebSocket] Join missing from/channel");
-            socket.send(
-              JSON.stringify({
-                type: "error",
-                message: "Missing user ID or channel",
-              }),
-            );
-            socket.close();
-            return;
-          }
-
-          socket.uid = data.from;
-          const joined = joinChannel(socket, data.channel);
-
-          if (joined) {
-            // Send confirmation
-            socket.send(
-              JSON.stringify({
-                type: "joined",
-                channel: data.channel,
-              }),
-            );
-
-            // Start recording if not exists
-            if (!recorders.has(data.channel)) {
-              const recorder = new Recorder(router, data.channel);
-              recorders.set(data.channel, recorder);
-            }
-          }
+          handleJoin(socket, data, recordingManager);
           return;
         }
 
-        // Handle Mediasoup Requests
-
-        // 1. Get Router Capabilities
-        if (data.type === "getRouterRtpCapabilities") {
-          socket.send(
-            JSON.stringify({
-              type: "routerRtpCapabilities",
-              id: data.id,
-              routerRtpCapabilities: router.rtpCapabilities,
-            }),
-          );
-          return;
-        }
-
-        // 2. Create WebRTC Transport
-        if (data.type === "createWebRtcTransport") {
-          try {
-            const { transport, params } = await createWebRtcTransport(router);
-
-            transports.set(transport.id, transport);
-
-            // Cleanup on close
-            transport.on("dtlsstatechange", (dtlsState) => {
-              if (dtlsState === "closed") transport.close();
-            });
-            transport.on("close", () => {
-              console.log("Transport closed", transport.id);
-              transports.delete(transport.id);
-            });
-
-            socket.send(
-              JSON.stringify({
-                type: "createWebRtcTransportResponse",
-                id: data.id,
-                params,
-              }),
-            );
-          } catch (err) {
-            console.error(err);
-          }
-          return;
-        }
-
-        // 3. Connect Transport
-        if (data.type === "connectWebRtcTransport") {
-          const transport = transports.get(data.transportId);
-          if (transport) {
-            await transport.connect({ dtlsParameters: data.dtlsParameters });
-            socket.send(JSON.stringify({ type: "ack", id: data.id }));
-          }
-          return;
-        }
-
-        // 4. Produce
-        if (data.type === "produce") {
-          const transport = transports.get(data.transportId);
-          if (transport) {
-            const producer = await transport.produce({
-              kind: data.kind,
-              rtpParameters: data.rtpParameters,
-              appData: {
-                ...data.appData,
-                channel: socket.channel,
-                uid: socket.uid,
-              },
-            });
-
-            producers.set(producer.id, producer);
-
-            producer.on("transportclose", () => {
-              producers.delete(producer.id);
-            });
-
-            socket.send(
-              JSON.stringify({
-                type: "produceResponse",
-                id: data.id,
-                producerId: producer.id,
-              }),
-            );
-
-            // Store producer id on socket
-            if (!socket.producers) socket.producers = {};
-
-            if (data.appData.source === "screen") {
-              socket.producers.screen = producer.id;
-            } else {
-              socket.producers[data.kind] = producer.id;
-            }
-
-            // Check/Update Recording
-            const roomSockets = [...wss.clients].filter(
-              (c) => c.channel === socket.channel,
-            );
-            const activeParticipants = roomSockets.filter(
-              (c) => c.producers && c.producers.audio && c.producers.video,
-            );
-
-            if (activeParticipants.length >= 2) {
-              const enableRecording = process.env.ENABLE_RECORDING === "true";
-
-              if (enableRecording) {
-                let recorder = recorders.get(socket.channel);
-                if (!recorder) {
-                  recorder = new Recorder(router, socket.channel);
-                  recorders.set(socket.channel, recorder);
-                }
-
-                // Build list
-                const producersList = [];
-                // Add AV for first 2 participants
-                activeParticipants.slice(0, 2).forEach((s) => {
-                  producersList.push({
-                    producerId: s.producers.audio,
-                    kind: "audio",
-                  });
-                  producersList.push({
-                    producerId: s.producers.video,
-                    kind: "video",
-                  });
-                });
-
-                // Add Screen Share if any
-                const screenSharer = roomSockets.find(
-                  (s) => s.producers && s.producers.screen,
-                );
-                if (screenSharer) {
-                  producersList.push({
-                    producerId: screenSharer.producers.screen,
-                    kind: "video",
-                  });
-                }
-
-                // Start or Restart
-                if (recorder.process) {
-                  // specific check: if number of inputs changed, restart
-                  if (recorder.consumers.length !== producersList.length) {
-                    console.log(
-                      `[Recorder] Restarting recording for room ${socket.channel} (Streams: ${recorder.consumers.length} -> ${producersList.length})`,
-                    );
-                    recorder.stop();
-                    setTimeout(() => {
-                      if (recorders.has(socket.channel))
-                        recorder
-                          .start(producersList)
-                          .catch((e) => console.error(e));
-                    }, 500);
-                  }
-                } else if (recorder.consumers.length === 0) {
-                  recorder.start(producersList).catch((e) => console.error(e));
-                }
-              }
-            }
-
-            // Broadcast new producer to others
-            broadcastToRoom(socket, {
-              type: "newProducer",
-              producerId: producer.id,
-              kind: data.kind,
-              uid: socket.uid,
-              appData: producer.appData,
-            });
-          }
-          return;
-        }
-
-        // 4.2 Close Producer
-        if (data.type === "closeProducer") {
-          const producer = producers.get(data.producerId);
-          if (producer) {
-            producer.close();
-            producers.delete(data.producerId);
-
-            // Broadcast closure so clients can update lists/UI
-            broadcastToRoom(socket, {
-              type: "producerClosed",
-              producerId: data.producerId,
-              kind: producer.kind,
-              uid: socket.uid,
-            });
-
-            // Update socket.producers
-            if (socket.producers) {
-              Object.keys(socket.producers).forEach((key) => {
-                if (socket.producers[key] === data.producerId)
-                  delete socket.producers[key];
-              });
-            }
-
-            // Trigger recording update
-            const roomSockets = [...wss.clients].filter(
-              (c) => c.channel === socket.channel,
-            );
-            const activeParticipants = roomSockets.filter(
-              (c) => c.producers && c.producers.audio && c.producers.video,
-            );
-
-            if (activeParticipants.length >= 2 && recorders.has(socket.channel)) {
-              const recorder = recorders.get(socket.channel);
-
-              // Rebuild target list
-              const producersList = [];
-              activeParticipants.slice(0, 2).forEach((s) => {
-                producersList.push({
-                  producerId: s.producers.audio,
-                  kind: "audio",
-                });
-                producersList.push({
-                  producerId: s.producers.video,
-                  kind: "video",
-                });
-              });
-              const screenSharer = roomSockets.find(
-                (s) => s.producers && s.producers.screen,
-              );
-              if (screenSharer) {
-                producersList.push({
-                  producerId: screenSharer.producers.screen,
-                  kind: "video",
-                });
-              }
-
-              // Restart check
-              if (
-                recorder.process &&
-                recorder.consumers.length !== producersList.length
-              ) {
-                console.log(`[Recorder] Restarting recording (Stream removed)`);
-                recorder.stop();
-                setTimeout(() => {
-                  if (recorders.has(socket.channel))
-                    recorder.start(producersList).catch((e) => console.error(e));
-                }, 500);
-              }
-            }
-          }
-          return;
-        }
-
-        // 4.5 Get Producers (New)
-        if (data.type === "getProducers") {
-          const producerList = [];
-          for (const producer of producers.values()) {
-            // Send producers from same room, but NOT from self
-            if (
-              producer.appData.channel === socket.channel &&
-              producer.appData.uid !== socket.uid
-            ) {
-              producerList.push({
-                id: producer.id,
-                kind: producer.kind,
-                appData: producer.appData,
-              });
-            }
-          }
-
-          socket.send(
-            JSON.stringify({
-              type: "getProducersResponse",
-              id: data.id,
-              list: producerList,
-            }),
-          );
-          return;
-        }
-
-        // 5. Consume
-        if (data.type === "consume") {
-          const transport = transports.get(data.transportId);
-          const producer = producers.get(data.producerId); // Get producer to access appData
-
-          if (
-            transport &&
-            producer &&
-            router.canConsume({
-              producerId: data.producerId,
-              rtpCapabilities: data.rtpCapabilities,
-            })
-          ) {
-            const consumer = await transport.consume({
-              producerId: data.producerId,
-              rtpCapabilities: data.rtpCapabilities,
-              paused: true, // Start paused
-              appData: producer.appData, // Pass producer appData to consumer
-            });
-
-            consumers.set(consumer.id, consumer);
-
-            socket.send(
-              JSON.stringify({
-                type: "consumeResponse",
-                id: data.id,
-                params: {
-                  id: consumer.id,
-                  producerId: data.producerId,
-                  kind: consumer.kind,
-                  rtpParameters: consumer.rtpParameters,
-                  appData: consumer.appData,
-                },
-              }),
-            );
-          }
-          return;
-        }
-
-        // 6. Resume Consumer
-        if (data.type === "resume") {
-          const consumer = consumers.get(data.consumerId);
-          if (consumer) await consumer.resume();
-          socket.send(JSON.stringify({ type: "resumeResponse", id: data.id }));
-          return;
-        }
-
-        // Handle leave message
         if (data.type === "leave") {
-          if (socket.channel) {
-            broadcastToRoom(socket, {
-              type: "leave",
-              from: socket.uid,
-            });
+          handleLeave(socket, data, wss, recordingManager);
+          return;
+        }
 
-            // Stop recorder when a user leaves (since we need 2 users for merged recording)
-            if (recorders.has(socket.channel)) {
-              console.log(
-                `[WebSocket] Stopping recorder for room ${socket.channel} due to user leave`,
-              );
-              const recorder = recorders.get(socket.channel);
-              recorder.stop();
-              recorders.delete(socket.channel);
+        // --- SFU Requests ---
+        // Forward all typical SFU requests to SfuHandler
+        const sfuRequestTypes = [
+          "getRouterRtpCapabilities",
+          "createWebRtcTransport",
+          "connectWebRtcTransport",
+          "produce",
+          "closeProducer",
+          "getProducers",
+          "consume",
+          "resume",
+        ];
+
+        if (sfuRequestTypes.includes(data.type)) {
+          await sfuHandler.handleRequest(socket, data);
+
+          // Post-operation hooks for recording
+          if (data.type === "produce" || data.type === "closeProducer") {
+            const roomClients = getRoomClients(wss, socket.channel);
+            const activeParticipants = roomClients.filter(
+              (c) => c.producers && c.producers.audio && c.producers.video
+            );
+
+            if (data.type === "produce") {
+              recordingManager.checkToStartRecording(socket, activeParticipants);
+            } else {
+              recordingManager.checkToRestartRecording(socket, activeParticipants);
             }
-
-            leaveChannel(socket);
           }
           return;
         }
 
-        // Validate user is in a channel before broadcasting
-        if (!socket.channel) {
-          console.warn(
-            `[WebSocket] User ${socket.uid} not in channel, ignoring ${data.type}`,
-          );
-          return;
-        }
-
-        // Broadcast all other messages to room
+        // --- Chat / Other Broadcasts ---
+        if (!socket.channel) return;
         broadcastToRoom(socket, data);
+
       } catch (err) {
-        console.error(`[WebSocket] Error handling message ${data?.type}:`, err);
+        console.error(`[WebSocket] Error handling message ${data.type}:`, err);
       }
     });
 
     socket.on("close", (code, reason) => {
-      console.log(
-        `[WebSocket] ${socket.uid || "Unknown"} disconnected: ${code} ${reason}`,
-      );
-
+      console.log(`[WebSocket] ${socket.uid} disconnected`);
       if (socket.channel) {
-        if (recorders.has(socket.channel)) {
-          const recorder = recorders.get(socket.channel);
-          // Stop recorder if user leaves? Or keep it?
-          // MVP: Stop on leave.
-          recorder.stop();
-          recorders.delete(socket.channel);
-        }
+         // Stop recording on leave (per existing logic)
+         const roomClients = getRoomClients(wss, socket.channel);
+         // If we want to strictly follow old logic: stop if anyone leaves?
+         // We'll let recordingManager handle it.
+         recordingManager.handleRoomLeave(socket, roomClients);
 
-        broadcastToRoom(socket, {
-          type: "leave",
-          from: socket.uid,
-        });
+        broadcastToRoom(socket, { type: "leave", from: socket.uid });
         leaveChannel(socket);
       }
     });
-
-    socket.on("error", (err) => {
-      console.error(`[WebSocket] Socket error for ${socket.uid}:`, err.message);
-    });
   });
 
-  // Health check ping interval
+  // Health Interval
   const pingInterval = setInterval(() => {
     wss.clients.forEach((socket) => {
       if (socket.isAlive === false) {
-        console.log(`[WebSocket] Terminating inactive socket ${socket.uid}`);
-        if (socket.channel) {
-          leaveChannel(socket);
-        }
+        if (socket.channel) leaveChannel(socket);
         return socket.terminate();
       }
-
       socket.isAlive = false;
       socket.ping();
     });
-  }, 30000); // Every 30 seconds
+  }, 30000);
 
   wss.on("close", () => {
     clearInterval(pingInterval);
-    console.log("[WebSocket] Server closed");
   });
-
-  // Graceful shutdown
-  process.on("SIGTERM", () => {
-    console.log("[WebSocket] SIGTERM received, closing server...");
-    wss.close(() => {
-      console.log("[WebSocket] Server closed");
-    });
-  });
-
-  console.log("[WebSocket] Server ready");
 
   return wss;
+}
+
+// Helpers
+
+function handleJoin(socket, data, recordingManager) {
+  if (!data.from || !data.channel) {
+    socket.close();
+    return;
+  }
+  socket.uid = data.from;
+  const joined = joinChannel(socket, data.channel);
+
+  if (joined) {
+    socket.send(JSON.stringify({ type: "joined", channel: data.channel }));
+    // Initialize recording entry
+    recordingManager.handleRoomJoin(socket);
+  }
+}
+
+function handleLeave(socket, data, wss, recordingManager) {
+  if (socket.channel) {
+    broadcastToRoom(socket, { type: "leave", from: socket.uid });
+    
+    // Check recording stop
+    const roomClients = getRoomClients(wss, socket.channel);
+    recordingManager.handleRoomLeave(socket, roomClients);
+
+    leaveChannel(socket);
+  }
+}
+
+function getRoomClients(wss, channel) {
+  return [...wss.clients].filter((c) => c.channel === channel);
 }
 
 export default initWebSocket;

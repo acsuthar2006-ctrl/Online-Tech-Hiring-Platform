@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Schedule - TechHiring</title>
+  <title>Interview Schedule - InterviewPro</title>
   <link rel="stylesheet" href="../common/common.css">
-  <link rel="stylesheet" href="css/my_schedule.css">
+  <link rel="stylesheet" href="css/interview-schedule.css">
   <script src="../common/auth.js"></script>
 </head>
 <body>
@@ -14,12 +14,12 @@
   <div class="main-content">
     <div class="header">
       <div class="header-left">
-        <h1>My Schedule</h1>
-        <p class="text-muted">View all your scheduled interviews and technical rounds</p>
+        <h1>Interview Schedule</h1>
+        <p class="text-muted">Manage your upcoming interviews and calendar</p>
       </div>
       <div class="header-right">
         <button class="btn-icon" id="notificationBtn">
-          <span class="notification-badge">3</span>
+          <span class="notification-badge">5</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -27,32 +27,30 @@
         </button>
         <div class="profile-menu">
           <div class="profile-info">
-            <div class="profile-name" id="profileName">User</div>
-            <div class="profile-role">Candidate</div>
+            <div class="profile-name" id="profileName">Interviewer</div>
+            <div class="profile-role">Interviewer</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Schedule filter tabs for upcoming, past, and all interviews -->
     <div class="schedule-filters">
-      <button class="filter-btn active" data-filter="all">All Interviews</button>
+      <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="upcoming">Upcoming</button>
       <button class="filter-btn" data-filter="completed">Completed</button>
     </div>
 
     <div class="schedule-container">
-      <!-- Video Interview section -->
       <div class="schedule-section">
         <div class="section-header">
-          <h2>Video Interviews</h2>
-          <span class="interview-count" id="videoCount">3</span>
+          <h2>Today's Interviews</h2>
+          <span class="interview-count">3</span>
         </div>
-        <div class="interview-timeline" id="videoInterviewList">
+        <div class="interview-timeline">
           <div class="timeline-item">
             <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">25</div>
+              <div class="date-badge">Today</div>
+              <div class="date-number">10:00</div>
             </div>
             <div class="interview-card">
               <div class="interview-header">
@@ -66,31 +64,31 @@
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
-                  <span>10:00 AM - 11:00 AM</span>
+                  <span>John Smith (Candidate)</span>
                 </div>
                 <div class="interview-info-row">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span>Video Interview</span>
+                  <span>Video Interview - 45 mins</span>
                 </div>
               </div>
               <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Join Interview</button>
+                <button class="btn-secondary btn-sm">Details</button>
+                <button class="btn-primary btn-sm">Start Interview</button>
               </div>
             </div>
           </div>
 
           <div class="timeline-item">
             <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">27</div>
+              <div class="date-badge">Today</div>
+              <div class="date-number">2:00 PM</div>
             </div>
             <div class="interview-card">
               <div class="interview-header">
-                <h3>Product Manager Round</h3>
+                <h3>Coding Round - Full Stack</h3>
                 <span class="status-badge status-upcoming">Upcoming</span>
               </div>
               <div class="interview-details">
@@ -100,31 +98,30 @@
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
-                  <span>2:00 PM - 3:00 PM</span>
+                  <span>Sarah Johnson (Candidate)</span>
                 </div>
                 <div class="interview-info-row">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span>Video Interview</span>
+                  <span>Technical Round - 90 mins</span>
                 </div>
               </div>
               <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Join Interview</button>
+                <button class="btn-secondary btn-sm">Details</button>
+                <button class="btn-primary btn-sm">Start Test</button>
               </div>
             </div>
           </div>
 
           <div class="timeline-item">
             <div class="timeline-date">
-              <div class="date-badge">Jan</div>
-              <div class="date-number">02</div>
+              <div class="date-badge">Today</div>
+              <div class="date-number">4:30 PM</div>
             </div>
             <div class="interview-card">
               <div class="interview-header">
-                <h3>Final Round - Engineering</h3>
+                <h3>Analytical Round - Data Analysis</h3>
                 <span class="status-badge status-upcoming">Upcoming</span>
               </div>
               <div class="interview-details">
@@ -134,32 +131,30 @@
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
-                  <span>11:00 AM - 12:30 PM</span>
+                  <span>Michael Chen (Candidate)</span>
                 </div>
                 <div class="interview-info-row">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V13M9 5H17M9 5V3M17 3H19M19 3V5M19 13L20 14L23 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span>Video Interview</span>
+                  <span>Analytical Round - 60 mins</span>
                 </div>
               </div>
               <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Join Interview</button>
+                <button class="btn-secondary btn-sm">Details</button>
+                <button class="btn-primary btn-sm">Start Test</button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Technical Round section with coding and analytical rounds -->
       <div class="schedule-section">
         <div class="section-header">
-          <h2>Technical Rounds</h2>
-          <span class="interview-count" id="technicalCount">2</span>
+          <h2>Upcoming This Week</h2>
+          <span class="interview-count">6</span>
         </div>
-        <div class="interview-timeline" id="technicalInterviewList">
+        <div class="interview-timeline">
           <div class="timeline-item">
             <div class="timeline-date">
               <div class="date-badge">Dec</div>
@@ -167,7 +162,7 @@
             </div>
             <div class="interview-card">
               <div class="interview-header">
-                <h3>Coding Round - Data Structures</h3>
+                <h3>Frontend Developer Interview</h3>
                 <span class="status-badge status-upcoming">Upcoming</span>
               </div>
               <div class="interview-details">
@@ -177,31 +172,39 @@
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
-                  <span>9:00 AM - 10:30 AM</span>
+                  <span>Emily Davis (Candidate)</span>
                 </div>
                 <div class="interview-info-row">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span>Coding Round</span>
+                  <span>Video Interview - 45 mins</span>
                 </div>
               </div>
               <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Start Test</button>
+                <button class="btn-secondary btn-sm">Details</button>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      <div class="schedule-section">
+        <div class="section-header">
+          <h2>Completed Interviews</h2>
+          <span class="interview-count">12</span>
+        </div>
+        <div class="interview-timeline">
           <div class="timeline-item">
             <div class="timeline-date">
               <div class="date-badge">Dec</div>
-              <div class="date-number">29</div>
+              <div class="date-number">20</div>
             </div>
             <div class="interview-card">
               <div class="interview-header">
-                <h3>Analytical Round - Problem Solving</h3>
-                <span class="status-badge status-upcoming">Upcoming</span>
+                <h3>Backend Engineer Interview</h3>
+                <span class="status-badge status-completed">Completed</span>
               </div>
               <div class="interview-details">
                 <p class="company-name">Apple</p>
@@ -210,88 +213,7 @@
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
-                  <span>3:00 PM - 4:30 PM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V13M9 5H17M9 5V3M17 3H19M19 3V5M19 13L20 14L23 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Analytical Round</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Start Test</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Completed interviews section -->
-      <div class="schedule-section">
-        <div class="section-header">
-          <h2>Completed Interviews</h2>
-          <span class="interview-count" id="completedCount">2</span>
-        </div>
-        <div class="interview-timeline" id="completedInterviewList">
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">20</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Round 1 - General Knowledge</h3>
-                <span class="status-badge status-completed">Completed</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Uber</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                  <span>10:00 AM - 11:00 AM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Video Interview</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Feedback</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">18</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Coding Assessment</h3>
-                <span class="status-badge status-completed">Completed</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">LinkedIn</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                  <span>2:00 PM - 3:30 PM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Coding Round</span>
+                  <span>Rating: 4.5/5 - Excellent</span>
                 </div>
               </div>
               <div class="interview-actions">
@@ -304,8 +226,10 @@
     </div>
   </div>
 
+
+
   <script src="../common/dashboard.js"></script>
-  <script src="js/my_schedule.js"></script>
-  <script src="../common/sidebar.js"></script>
+  <script src="../common/interviewer-sidebar.js"></script>
+  <script src="js/interview-schedule.js"></script>
 </body>
 </html>

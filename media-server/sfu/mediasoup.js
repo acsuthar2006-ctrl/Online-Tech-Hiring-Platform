@@ -1,94 +1,82 @@
 import mediasoup from "mediasoup";
 import { config } from "./config.js";
 
-let worker;
-let router;
+class MediasoupService {
+  constructor() {
+    this.worker = null;
+    this.router = null;
+  }
 
-// Map <transportId, Transport>
-const transports = new Map();
-// Map <producerId, Producer>
-const producers = new Map();
-// Map <consumerId, Consumer>
-const consumers = new Map();
+  async initialize() {
+    this.worker = await mediasoup.createWorker({
+      logLevel: config.worker.logLevel,
+      logTags: config.worker.logTags,
+      rtcMinPort: config.worker.rtcMinPort,
+      rtcMaxPort: config.worker.rtcMaxPort,
+    });
 
-export async function createWorker() {
-  worker = await mediasoup.createWorker({
-    logLevel: config.worker.logLevel,
-    logTags: config.worker.logTags,
-    rtcMinPort: config.worker.rtcMinPort,
-    rtcMaxPort: config.worker.rtcMaxPort,
-  });
+    this.worker.on("died", () => {
+      console.error(
+        "mediasoup worker died, exiting in 2 seconds... [pid:%d]",
+        this.worker.pid
+      );
+      setTimeout(() => process.exit(1), 2000);
+    });
 
-  worker.on("died", () => {
-    console.error(
-      "mediasoup worker died, exiting in 2 seconds... [pid:%d]",
-      worker.pid,
-    );
-    setTimeout(() => process.exit(1), 2000);
-  });
+    const mediaCodecs = config.router.mediaCodecs;
+    this.router = await this.worker.createRouter({ mediaCodecs });
+    return this.router;
+  }
 
-  // Create a Router (room) - simplified for single room or per-room logic
-  // For this project, we might create one router per room dynamically.
-  // But for simplicity let's export a function to create a router.
+  async createWebRtcTransport() {
+    if (!this.router) throw new Error("Router not initialized");
 
-  return worker;
-}
+    const {
+      maxSctpMessageSize,
+      listenIps: staticListenIps,
+      initialAvailableOutgoingBitrate,
+    } = config.webRtcTransport;
 
-export async function createRouter(worker) {
-  const mediaCodecs = config.router.mediaCodecs;
-  const router = await worker.createRouter({ mediaCodecs });
-  return router;
-}
+    // Dynamic override: Ensure we use the latest MEDIASOUP_ANNOUNCED_IP
+    const listenIps = staticListenIps.map((ipConfig) => ({
+      ...ipConfig,
+      announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || ipConfig.announcedIp,
+    }));
 
-export async function createWebRtcTransport(router) {
-  const {
-    maxSctpMessageSize,
-    listenIps: staticListenIps,
-    initialAvailableOutgoingBitrate,
-  } = config.webRtcTransport;
+    const transport = await this.router.createWebRtcTransport({
+      listenIps,
+      enableUdp: true,
+      enableTcp: true,
+      preferUdp: true,
+      initialAvailableOutgoingBitrate,
+      enableSctp: false,
+    });
 
-  // Dynamic override: Ensure we use the latest MEDIASOUP_ANNOUNCED_IP
-  // This is critical because server.js might detect the IP *after* config.js is imported.
-  const listenIps = staticListenIps.map((ipConfig) => ({
-    ...ipConfig,
-    announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || ipConfig.announcedIp,
-  }));
-
-  const transport = await router.createWebRtcTransport({
-    listenIps,
-    enableUdp: true,
-    enableTcp: true,
-    preferUdp: true,
-    initialAvailableOutgoingBitrate,
-    enableSctp: false, // Disable SCTP for now as we don't use DataChannels
-  });
-
-  /*
     if (maxSctpMessageSize) {
-        try {
-            await transport.enableSctp({ maxSctpMessageSize });
-        } catch (error) {
-            console.warn('enableSctp() failed:%o', error);
-        }
+      try {
+        await transport.enableSctp({ maxSctpMessageSize });
+      } catch (error) {
+        console.warn("enableSctp() failed:%o", error);
+      }
     }
-    */
 
-  transports.set(transport.id, transport);
+    return {
+      transport,
+      params: {
+        id: transport.id,
+        iceParameters: transport.iceParameters,
+        iceCandidates: transport.iceCandidates,
+        dtlsParameters: transport.dtlsParameters,
+        sctpParameters: transport.sctpParameters,
+      },
+    };
+  }
 
-  return {
-    transport,
-    params: {
-      id: transport.id,
-      iceParameters: transport.iceParameters,
-      iceCandidates: transport.iceCandidates,
-      dtlsParameters: transport.dtlsParameters,
-      sctpParameters: transport.sctpParameters,
-    },
-  };
+  async createPlainTransport() {
+    if (!this.router) throw new Error("Router not initialized");
+    const transport = await this.router.createPlainTransport(config.plainTransport);
+    return transport;
+  }
 }
 
-export async function createPlainTransport(router) {
-  const transport = await router.createPlainTransport(config.plainTransport);
-  transports.set(transport.id, transport);
-  return transport;
-}
+export default MediasoupService;

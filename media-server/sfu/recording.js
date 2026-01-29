@@ -1,4 +1,3 @@
-import { createPlainTransport } from "./mediasoup.js";
 import child_process from "child_process";
 import { EventEmitter } from "events";
 import path from "path";
@@ -36,9 +35,9 @@ const getRtpCapabilities = () => {
 };
 
 export class Recorder extends EventEmitter {
-  constructor(router, roomId) {
+  constructor(mediasoupService, roomId) {
     super();
-    this.router = router;
+    this.mediasoupService = mediasoupService;
     this.roomId = roomId;
     this.transports = [];
     this.consumers = [];
@@ -56,7 +55,7 @@ export class Recorder extends EventEmitter {
     // Let's assume producersList order: [Audio1, Video1, Audio2, Video2] based on logic in server
 
     for (const p of producersList) {
-      const transport = await createPlainTransport(this.router);
+      const transport = await this.mediasoupService.createPlainTransport();
       this.transports.push(transport);
 
       // Assign a random port
