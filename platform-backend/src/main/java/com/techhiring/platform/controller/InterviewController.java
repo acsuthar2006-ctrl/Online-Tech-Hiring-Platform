@@ -21,6 +21,7 @@ public class InterviewController {
   private final EmailService emailService;
 
   @PostMapping("/schedule")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
   public ResponseEntity<Interview> scheduleInterview(@RequestBody ScheduleRequest request) {
     // If scheduledTime is null/empty, parse from string if needed, or assume
     // Jackson handles ISO8601
@@ -42,6 +43,7 @@ public class InterviewController {
   }
 
   @PostMapping("/{id}/complete")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
   public ResponseEntity<Interview> completeAndGetNext(@PathVariable Long id,
       @RequestBody(required = false) com.techhiring.platform.dto.CompletionRequest request) {
     Interview next = interviewService.completeAndGetNext(id, request);
@@ -56,6 +58,7 @@ public class InterviewController {
   }
 
   @GetMapping("/candidate/upcoming")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('CANDIDATE')")
   public ResponseEntity<?> getUpcomingInterviews(@RequestParam String email) {
     return ResponseEntity.ok(interviewService.getUpcomingInterviews(email));
   }
