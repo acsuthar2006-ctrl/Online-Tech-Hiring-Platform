@@ -31,7 +31,8 @@ public class InterviewService {
 
   @Transactional
   public Interview scheduleInterview(String interviewerEmail, String candidateEmail, String candidateName,
-      LocalDateTime scheduledTime, String title, String customMeetingLink) {
+      LocalDateTime scheduledTime, String title, String customMeetingLink, String description,
+      com.techhiring.platform.entity.InterviewType type) {
     Interviewer interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
         .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
@@ -70,6 +71,8 @@ public class InterviewService {
         .scheduledTime(scheduledTime)
         .meetingLink(meetingLink)
         .status(Interview.InterviewStatus.SCHEDULED)
+        .description(description)
+        .interviewType(type)
         .build();
 
     Interview saved = interviewRepository.save(interview);
@@ -112,12 +115,17 @@ public class InterviewService {
   }
 
   @Transactional
-  public Interview completeAndGetNext(Long interviewId) {
+  public Interview completeAndGetNext(Long interviewId, com.techhiring.platform.dto.CompletionRequest request) {
     Interview current = interviewRepository.findById(interviewId)
         .orElseThrow(() -> new RuntimeException("Interview not found"));
 
     current.setStatus(Interview.InterviewStatus.COMPLETED);
     current.setActualEndTime(LocalDateTime.now());
+    if (request != null) {
+      current.setFeedback(request.getFeedback());
+      current.setScore(request.getScore());
+      current.setRecordingUrl(request.getRecordingUrl());
+    }
     interviewRepository.save(current);
 
     // Find next in the same session (meetingLink)

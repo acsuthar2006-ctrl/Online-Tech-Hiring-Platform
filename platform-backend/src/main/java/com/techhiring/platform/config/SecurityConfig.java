@@ -40,6 +40,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
             .requestMatchers("/api/interviews/**").permitAll() // Allow testing interviews
+            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll() // Swagger
             .anyRequest().authenticated() // Protect everything else
         )
         .httpBasic(org.springframework.security.config.Customizer.withDefaults()); // Enable Basic Auth for testing

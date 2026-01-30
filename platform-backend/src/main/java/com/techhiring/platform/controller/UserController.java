@@ -34,13 +34,11 @@ public class UserController {
         .fullName(user.getFullName())
         .role(user.getRole());
 
-    if (user instanceof Candidate) {
-      Candidate candidate = (Candidate) user;
-      builder.skills(candidate.getSkills())
+    if (user instanceof Candidate candidate) {
+	    builder.skills(candidate.getSkills())
           .resumeUrl(candidate.getResumeUrl());
-    } else if (user instanceof Interviewer) {
-      Interviewer interviewer = (Interviewer) user;
-      builder.companyName(interviewer.getCompanyName());
+    } else if (user instanceof Interviewer interviewer) {
+	    builder.companyName(interviewer.getCompany().getName());
     }
 
     return ResponseEntity.ok(builder.build());

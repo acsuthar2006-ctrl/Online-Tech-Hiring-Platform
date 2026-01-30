@@ -30,7 +30,9 @@ public class InterviewController {
         request.getCandidateName(),
         request.getScheduledTime(),
         request.getTitle(),
-        request.getMeetingLink());
+        request.getMeetingLink(),
+        request.getDescription(),
+        request.getInterviewType());
     return ResponseEntity.ok(interview);
   }
 
@@ -40,8 +42,9 @@ public class InterviewController {
   }
 
   @PostMapping("/{id}/complete")
-  public ResponseEntity<Interview> completeAndGetNext(@PathVariable Long id) {
-    Interview next = interviewService.completeAndGetNext(id);
+  public ResponseEntity<Interview> completeAndGetNext(@PathVariable Long id,
+      @RequestBody(required = false) com.techhiring.platform.dto.CompletionRequest request) {
+    Interview next = interviewService.completeAndGetNext(id, request);
     // If next is null, it means no more scheduled candidates immediately
     return ResponseEntity.ok(next);
   }
