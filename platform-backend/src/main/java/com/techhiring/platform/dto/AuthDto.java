@@ -35,6 +35,7 @@ public class AuthDto {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class JwtResponse {
+    private String token;
     private String message;
     private Long userId;
     private String role;

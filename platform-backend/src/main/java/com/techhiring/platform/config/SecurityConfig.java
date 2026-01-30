@@ -1,30 +1,44 @@
 package com.techhiring.platform.config;
 
+import com.techhiring.platform.security.AuthTokenFilter;
+import com.techhiring.platform.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final com.techhiring.platform.service.CustomUserDetailsService userDetailsService;
+  private final CustomUserDetailsService userDetailsService;
+  private final AuthTokenFilter authTokenFilter;
 
-  public SecurityConfig(com.techhiring.platform.service.CustomUserDetailsService userDetailsService) {
+  public SecurityConfig(CustomUserDetailsService userDetailsService, AuthTokenFilter authTokenFilter) {
     this.userDetailsService = userDetailsService;
+    this.authTokenFilter = authTokenFilter;
   }
 
   @Bean
-  public org.springframework.security.authentication.AuthenticationProvider authenticationProvider() {
-    org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
+  public DaoAuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
     authProvider.setUserDetailsService(userDetailsService);
     authProvider.setPasswordEncoder(passwordEncoder());
     return authProvider;
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    return authConfig.getAuthenticationManager();
   }
 
   @Bean
@@ -36,14 +50,15 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless REST APIs
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
-            .requestMatchers("/api/interviews/**").permitAll() // Allow testing interviews
-            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll() // Swagger
-            .anyRequest().authenticated() // Protect everything else
-        )
-        .httpBasic(org.springframework.security.config.Customizer.withDefaults()); // Enable Basic Auth for testing
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/interviews/**").permitAll() // Keep open for now as per previous config
+            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+            .anyRequest().authenticated());
+
+    http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
