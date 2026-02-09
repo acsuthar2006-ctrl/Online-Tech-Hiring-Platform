@@ -4,26 +4,42 @@ A real-time video interviewing platform built with Mediasoup (SFU) and WebRTC. F
 
 ## Features
 
+- **Focused Interview Experience**: Dedicated platform for technical interviews with Interviewer and Candidate roles.
 - **High Quality Video/Audio**: Uses Mediasoup SFU for scalable multiparty conferencing.
 - **Screen Recording**: Server-side recording of video and audio sessions.
+- **Simple Scheduling**: Easy-to-use scheduling system with email notifications.
 - **Dynamic IP Support**: Automatically detects public IP on AWS (EC2) for seamless connectivity.
 - **CI/CD Pipeline**: Automated deployment to AWS via GitHub Actions.
 
 ## Quick Start (Local Development)
 
-1.  **Install Dependencies**:
+### Backend
+1.  **Checkout Backend Branch**:
+    ```bash
+    git checkout simplification-branch
+    ```
+2.  **Configure Config**:
+    - Update `src/main/resources/application.properties` with your DB credentials.
+    - Set `spring.jpa.hibernate.ddl-auto=create` for the first run.
+3.  **Run**:
+    ```bash
+    mvn spring-boot:run
+    ```
 
+### Frontend
+1.  **Install Dependencies**:
     ```bash
     npm install
     ```
-
 2.  **Start Server**:
-
     ```bash
     npm start
     ```
-
     - Access at `http://localhost:3000`.
+
+## Documentation
+- [Full Integration Guide](docs/INTEGRATION_GUIDE.md): Detailed guide on backend changes and frontend integration steps.
+- [AWS Deployment](AWS_DEPLOYMENT_GUIDE.md): Guide to deploying on AWS EC2.
 
 ## Deployment (AWS)
 
