@@ -430,3 +430,274 @@ curl -X POST http://localhost:8080/api/companies \
 | Method | Endpoint | Description | Auth Required |
 |:-------|:---------|:------------|:--------------|
 | POST | `/send-email` | Test email functionality | ✅ Bearer Token |
+
+## Detailed API Request/Response Examples
+
+### Companies API Examples
+
+#### Create Company - POST `/api/companies`
+**Request Body:**
+```json
+{
+  "companyName": "Tech Corp",
+  "industry": "Software",
+  "email": "contact@techcorp.com",
+  "phone": "+1234567890",
+  "location": "San Francisco, CA",
+  "website": "https://techcorp.com",
+  "description": "Leading technology company",
+  "logoUrl": "https://example.com/logo.png"
+}
+```
+**Response (201):**
+```json
+{
+  "id": 1,
+  "companyName": "Tech Corp",
+  "industry": "Software",
+  "email": "contact@techcorp.com",
+  "phone": "+1234567890",
+  "location": "San Francisco, CA",
+  "website": "https://techcorp.com",
+  "description": "Leading technology company",
+  "logoUrl": "https://example.com/logo.png",
+  "createdAt": "2026-02-09T18:22:21.145328"
+}
+```
+
+---
+
+### Positions API Examples
+
+#### Create Position - POST `/api/positions`
+**Request Body:**
+```json
+{
+  "company": {"id": 1},
+  "positionTitle": "Senior Backend Engineer",
+  "jobDescription": "Looking for experienced backend developer with Java expertise",
+  "salaryRange": "$120,000 - $180,000",
+  "requiredExpertise": "Java, Spring Boot, PostgreSQL, Docker",
+  "status": "OPEN"
+}
+```
+**Response (201):**
+```json
+{
+  "id": 1,
+  "company": {"id": 1, "companyName": "Tech Corp"},
+  "positionTitle": "Senior Backend Engineer",
+  "jobDescription": "Looking for experienced backend developer with Java expertise",
+  "salaryRange": "$120,000 - $180,000",
+  "requiredExpertise": "Java, Spring Boot, PostgreSQL, Docker",
+  "status": "OPEN",
+  "createdAt": "2026-02-09T18:23:45.833530"
+}
+```
+
+---
+
+### Applications API Examples
+
+#### Submit Application - POST `/api/applications`
+**Request Body:**
+```json
+{
+  "candidate": {"id": 3},
+  "position": {"id": 1},
+  "status": "APPLIED"
+}
+```
+**Response (201):**
+```json
+{
+  "id": 1,
+  "candidate": {
+    "id": 3,
+    "fullName": "John Doe",
+    "email": "john@example.com"
+  },
+  "position": {
+    "id": 1,
+    "positionTitle": "Senior Backend Engineer"
+  },
+  "status": "APPLIED",
+  "applicationDate": "2026-02-09T18:23:51.305764",
+  "createdAt": "2026-02-09T18:23:51.305771"
+}
+```
+
+#### Update Application Status - PATCH `/api/applications/1/status?status=SHORTLISTED`
+**Response (200):**
+```json
+{
+  "id": 1,
+  "status": "SHORTLISTED",
+  "applicationDate": "2026-02-09T18:23:51.305764"
+}
+```
+**Status Values:** `APPLIED`, `SHORTLISTED`, `INTERVIEW_SCHEDULED`, `REJECTED`, `OFFERED`
+
+---
+
+### Interviewer Applications API Examples
+
+#### Apply to Company - POST `/api/interviewer-applications`
+**Request Body:**
+```json
+{
+  "interviewer": {"id": 2},
+  "company": {"id": 1},
+  "status": "APPLIED",
+  "expertiseRequired": "Java, System Design, Algorithms"
+}
+```
+**Response (201):**
+```json
+{
+  "id": 1,
+  "interviewer": {
+    "id": 2,
+    "fullName": "Jane Smith"
+  },
+  "company": {
+    "id": 1,
+    "companyName": "Tech Corp"
+  },
+  "status": "APPLIED",
+  "expertiseRequired": "Java, System Design, Algorithms",
+  "applicationDate": "2026-02-09T18:25:00.123456",
+  "createdAt": "2026-02-09T18:25:00.123456"
+}
+```
+**Status Values:** `APPLIED`, `APPROVED`, `REJECTED`
+
+---
+
+### Interviews API Examples
+
+#### Schedule Interview - POST `/api/interviews/schedule`
+**Request Body:**
+```json
+{
+  "candidateName": "John Doe",
+  "candidateEmail": "john@example.com",
+  "interviewerId": 2,
+  "scheduledTime": "2026-02-15T14:00:00",
+  "title": "Backend Engineer Technical Interview",
+  "description": "Technical interview covering Java and system design",
+  "type": "TECHNICAL"
+}
+```
+**Response (200):**
+```json
+{
+  "id": 1,
+  "interviewId": "tech-interview-abc123",
+  "title": "Backend Engineer Technical Interview",
+  "candidate": {
+    "id": 3,
+    "fullName": "John Doe",
+    "email": "john@example.com"
+  },
+  "interviewer": {
+    "id": 2,
+    "fullName": "Jane Smith"
+  },
+  "scheduledDate": "2026-02-15",
+  "scheduledTime": "14:00:00",
+  "meetingLink": "tech-interview-abc123",
+  "interviewRound": "ROUND_1",
+  "status": "SCHEDULED",
+  "interviewType": "TECHNICAL",
+  "description": "Technical interview covering Java and system design",
+  "createdAt": "2026-02-09T18:30:00",
+  "updatedAt": "2026-02-09T18:30:00"
+}
+```
+
+#### Get Upcoming Interviews - GET `/api/interviews/candidate/upcoming`
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "title": "Backend Engineer Technical Interview",
+    "interviewer": {"id": 2, "fullName": "Jane Smith"},
+    "scheduledDate": "2026-02-15",
+    "scheduledTime": "14:00:00",
+    "meetingLink": "tech-interview-abc123",
+    "status": "SCHEDULED",
+    "interviewType": "TECHNICAL"
+  }
+]
+```
+
+#### Complete Interview - POST `/api/interviews/1/complete`
+**Request Body:**
+```json
+{
+  "feedback": "Strong Java knowledge. Good problem-solving. Recommended for hire.",
+  "score": 4.5
+}
+```
+**Response (200):**
+```json
+{
+  "id": 1,
+  "status": "COMPLETED",
+  "feedback": "Strong Java knowledge. Good problem-solving. Recommended for hire.",
+  "score": 4.5,
+  "updatedAt": "2026-02-15T15:30:00"
+}
+```
+
+**Interview Types:** `TECHNICAL`, `BEHAVIORAL`, `HR`, `SYSTEM_DESIGN`  
+**Interview Status:** `SCHEDULED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`  
+**Interview Rounds:** `ROUND_1`, `ROUND_2`, `ROUND_3`
+
+---
+
+### User Profile API Examples
+
+#### Get Current User Profile - GET `/api/users/profile`
+**Response (200) - Candidate:**
+```json
+{
+  "id": 3,
+  "email": "john@example.com",
+  "fullName": "John Doe",
+  "role": "CANDIDATE",
+  "username": "johndoe",
+  "skills": "Java, Spring Boot, React, PostgreSQL",
+  "resumeUrl": "https://example.com/resume.pdf",
+  "phone": "+1234567890",
+  "profilePhotoUrl": "https://example.com/photo.jpg",
+  "bio": "Experienced full-stack developer with 5 years",
+  "totalInterviewsAttended": 12,
+  "averageRating": 4.5,
+  "createdAt": "2026-02-09T10:00:00",
+  "updatedAt": "2026-02-09T18:00:00"
+}
+```
+
+**Response (200) - Interviewer:**
+```json
+{
+  "id": 2,
+  "email": "jane@example.com",
+  "fullName": "Jane Smith",
+  "role": "INTERVIEWER",
+  "username": "janesmith",
+  "phone": "+1987654321",
+  "profilePhotoUrl": "https://example.com/jane.jpg",
+  "bio": "Senior technical interviewer specializing in backend systems",
+  "hourlyRate": 150.00,
+  "totalInterviewsConducted": 45,
+  "averageRating": 4.8,
+  "totalEarnings": 6750.00,
+  "availabilityStatus": "AVAILABLE",
+  "createdAt": "2026-01-15T10:00:00",
+  "updatedAt": "2026-02-09T18:00:00"
+}
+```
