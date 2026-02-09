@@ -6,12 +6,6 @@
 
 ```mermaid
 erDiagram
-    COMPANIES {
-        bigint id PK
-        string name
-        string subscription_status
-        string website
-    }
     USERS {
         bigint id PK
         string email
@@ -24,14 +18,6 @@ erDiagram
         string resume_url
     }
     INTERVIEWERS {
-        bigint id FK
-        bigint company_id FK
-    }
-    COMPANY_ADMINS {
-        bigint id FK
-        bigint company_id FK
-    }
-    SYSTEM_ADMINS {
         bigint id FK
     }
     INTERVIEWS {
@@ -52,27 +38,12 @@ erDiagram
 
     USERS ||--|| CANDIDATES : "is a"
     USERS ||--|| INTERVIEWERS : "is a"
-    USERS ||--|| COMPANY_ADMINS : "is a"
-    USERS ||--|| SYSTEM_ADMINS : "is a"
-
-    COMPANIES ||--o{ INTERVIEWERS : "employs"
-    COMPANIES ||--o{ COMPANY_ADMINS : "managed by"
 
     CANDIDATES ||--o{ INTERVIEWS : "has"
     INTERVIEWERS ||--o{ INTERVIEWS : "conducts"
 ```
 
 ## Database Schema (PostgreSQL)
-
-### `companies` Table
-
-| Column                | Type        | Description               |
-| :-------------------- | :---------- | :------------------------ |
-| `id`                  | BIGINT (PK) | Auto-increment ID         |
-| `name`                | VARCHAR     | Company Name              |
-| `subscription_status` | VARCHAR     | FREE, PREMIUM, enterprise |
-| `website`             | VARCHAR     | Company Website           |
-| `logo_url`            | VARCHAR     | Logo URL                  |
 
 ### `users` Table
 
@@ -82,7 +53,7 @@ erDiagram
 | `email`     | VARCHAR     | Unique email (Username)                             |
 | `password`  | VARCHAR     | Encrypted password                                  |
 | `full_name` | VARCHAR     | User's full name                                    |
-| `role`      | VARCHAR     | CANDIDATE, INTERVIEWER, COMPANY_ADMIN, SYSTEM_ADMIN |
+| `role`      | VARCHAR     | CANDIDATE, INTERVIEWER                              |
 
 ### `candidates` Table (Extends `users`)
 
@@ -94,23 +65,9 @@ erDiagram
 
 ### `interviewers` Table (Extends `users`)
 
-| Column       | Type        | Description               |
-| :----------- | :---------- | :------------------------ |
-| `id`         | BIGINT (FK) | References `users.id`     |
-| `company_id` | BIGINT (FK) | References `companies.id` |
-
-### `company_admins` Table (Extends `users`)
-
-| Column       | Type        | Description               |
-| :----------- | :---------- | :------------------------ |
-| `id`         | BIGINT (FK) | References `users.id`     |
-| `company_id` | BIGINT (FK) | References `companies.id` |
-
-### `system_admins` Table (Extends `users`)
-
-| Column | Type        | Description           |
-| :----- | :---------- | :-------------------- |
-| `id`   | BIGINT (FK) | References `users.id` |
+| Column       | Type        | Description           |
+| :----------- | :---------- | :-------------------- |
+| `id`         | BIGINT (FK) | References `users.id` |
 
 ### `interviews` Table
 
@@ -138,7 +95,7 @@ erDiagram
 
 | Method | Endpoint  | Description       | Request Body                                          | Response     |
 | :----- | :-------- | :---------------- | :---------------------------------------------------- | :----------- |
-| POST   | `/signup` | Register new user | `{ "email": "...", "role": "...", "companyId": ... }` | JWT Response |
+| POST   | `/signup` | Register new user | `{ "email": "...", "role": "INTERVIEWER" }`           | JWT Response |
 | POST   | `/login`  | Login user        | `{ "email": "...", "password": "..." }`               | JWT Response |
 
 ### User Management (`/api/users`)
