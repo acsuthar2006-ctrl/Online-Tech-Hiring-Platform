@@ -6,7 +6,8 @@ import com.techhiring.platform.entity.InterviewType;
 
 @Data
 public class ScheduleRequest {
-  private String interviewerEmail;
+  private Long interviewerId;  // Support ID-based scheduling
+  private String interviewerEmail;  // Support email-based scheduling
   private String candidateEmail;
   private String candidateName;
   private LocalDateTime scheduledTime;

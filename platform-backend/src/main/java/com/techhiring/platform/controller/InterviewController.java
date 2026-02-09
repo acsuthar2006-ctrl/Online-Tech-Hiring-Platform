@@ -25,8 +25,12 @@ public class InterviewController {
   public ResponseEntity<Interview> scheduleInterview(@RequestBody ScheduleRequest request) {
     // If scheduledTime is null/empty, parse from string if needed, or assume
     // Jackson handles ISO8601
+    String interviewerIdentifier = request.getInterviewerId() != null 
+        ? request.getInterviewerId().toString() 
+        : request.getInterviewerEmail();
+    
     Interview interview = interviewService.scheduleInterview(
-        request.getInterviewerEmail(),
+        interviewerIdentifier,
         request.getCandidateEmail(),
         request.getCandidateName(),
         request.getScheduledTime(),

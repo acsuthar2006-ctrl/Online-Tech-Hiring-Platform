@@ -28,12 +28,17 @@ public class UserService {
       user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
           request.getResumeUrl(), request.getSkills());
     } else if ("INTERVIEWER".equalsIgnoreCase(request.getRole())) {
-      user = Interviewer.builder()
-          .fullName(request.getFullName())
-          .email(request.getEmail())
-          .password(passwordEncoder.encode(request.getPassword()))
-          .role("INTERVIEWER")
-          .build();
+      Interviewer interviewer = new Interviewer();
+      interviewer.setFullName(request.getFullName());
+      interviewer.setEmail(request.getEmail());
+      interviewer.setPassword(passwordEncoder.encode(request.getPassword()));
+      interviewer.setRole("INTERVIEWER");
+      interviewer.setAvailabilityStatus("AVAILABLE");
+      interviewer.setHourlyRate(0.0);
+      interviewer.setTotalEarnings(0.0);
+      interviewer.setTotalInterviewsConducted(0);
+      interviewer.setAverageRating(0.0);
+      user = interviewer;
     } else {
       throw new RuntimeException("Error: Invalid role!");
     }
