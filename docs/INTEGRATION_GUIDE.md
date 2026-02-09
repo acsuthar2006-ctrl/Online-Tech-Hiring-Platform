@@ -35,7 +35,62 @@ This platform is a **complete hiring ecosystem** that connects companies, candid
     ```
 3.  **First Run**: Use `ddl-auto=create` for initial table creation, then switch to `update`
 
-### B. Key API Endpoints
+### B. Authentication with JWT
+
+All API endpoints (except signup/login) require JWT Bearer token authentication.
+
+#### Frontend Implementation
+
+**1. Store Token After Login:**
+```javascript
+// After successful login
+const response = await fetch('http://localhost:8080/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+});
+
+const data = await response.json();
+// Store token securely
+localStorage.setItem('authToken', data.token);
+localStorage.setItem('userId', data.userId);
+localStorage.setItem('userRole', data.role);
+```
+
+**2. Include Token in All Requests:**
+```javascript
+// Example: Fetch companies
+const token = localStorage.getItem('authToken');
+const response = await fetch('http://localhost:8080/api/companies', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  }
+});
+```
+
+**3. Handle Token Expiration:**
+```javascript
+// Check for 401 Unauthorized
+if (response.status === 401) {
+  // Token expired, redirect to login
+  localStorage.clear();
+  window.location.href = '/login.html';
+}
+```
+
+**4. Logout:**
+```javascript
+function logout() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('userRole');
+  window.location.href = '/login.html';
+}
+```
+
+### C. Key API Endpoints
 
 #### Authentication
 - `POST /api/auth/signup`
