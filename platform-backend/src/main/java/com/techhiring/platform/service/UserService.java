@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
   private final UserRepository userRepository;
-  private final com.techhiring.platform.repository.CompanyRepository companyRepository; // Inject
+  // companyRepository removed
   private final PasswordEncoder passwordEncoder;
 
   public User registerUser(AuthDto.SignupRequest request) {
@@ -28,17 +28,12 @@ public class UserService {
       user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
           request.getResumeUrl(), request.getSkills());
     } else if ("INTERVIEWER".equalsIgnoreCase(request.getRole())) {
-      // Find or create company
-      String companyName = request.getCompanyName();
-      if (companyName == null || companyName.isEmpty()) {
-        throw new RuntimeException("Error: Company name is required for Interviewers");
-      }
-      com.techhiring.platform.entity.Company company = companyRepository.findByName(companyName)
-          .orElseGet(
-              () -> companyRepository.save(com.techhiring.platform.entity.Company.builder().name(companyName).build()));
-
-      user = new Interviewer(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
-          company);
+      user = Interviewer.builder()
+          .fullName(request.getFullName())
+          .email(request.getEmail())
+          .password(passwordEncoder.encode(request.getPassword()))
+          .role("INTERVIEWER")
+          .build();
     } else {
       throw new RuntimeException("Error: Invalid role!");
     }

@@ -20,7 +20,7 @@ public class AuthDto {
     private String skills;
 
     // Interviewer Specific
-    private String companyName;
+    // companyName removed
   }
 
   @Data

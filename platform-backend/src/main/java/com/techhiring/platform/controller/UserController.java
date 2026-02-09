@@ -37,8 +37,8 @@ public class UserController {
     if (user instanceof Candidate candidate) {
 	    builder.skills(candidate.getSkills())
           .resumeUrl(candidate.getResumeUrl());
-    } else if (user instanceof Interviewer interviewer) {
-	    builder.companyName(interviewer.getCompany().getName());
+    } else if (user instanceof Interviewer) {
+       // company name removed
     }
 
     return ResponseEntity.ok(builder.build());

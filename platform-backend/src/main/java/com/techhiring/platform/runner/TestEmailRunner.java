@@ -1,12 +1,12 @@
 package com.techhiring.platform.runner;
 
 import com.techhiring.platform.entity.Candidate;
-import com.techhiring.platform.entity.Company;
+// Company removed
 import com.techhiring.platform.entity.Interview;
 import com.techhiring.platform.entity.InterviewType;
 import com.techhiring.platform.entity.Interviewer;
 import com.techhiring.platform.repository.CandidateRepository;
-import com.techhiring.platform.repository.CompanyRepository;
+// CompanyRepository removed
 import com.techhiring.platform.repository.InterviewRepository;
 import com.techhiring.platform.repository.InterviewerRepository;
 import com.techhiring.platform.repository.UserRepository;
@@ -27,7 +27,7 @@ public class TestEmailRunner implements CommandLineRunner {
   private final InterviewerRepository interviewerRepository;
   private final CandidateRepository candidateRepository;
   private final UserRepository userRepository;
-  private final CompanyRepository companyRepository;
+  // companyRepository removed
   private final PasswordEncoder passwordEncoder;
 
   @Override
@@ -37,19 +37,15 @@ public class TestEmailRunner implements CommandLineRunner {
     String targetEmail = "sutharaarya793@gmail.com";
     String interviewerEmail = "interviewer@test.com";
 
-    // 1. Ensure Company Exists
-    Company company = companyRepository.findAll().stream().findFirst().orElseGet(() -> {
-      Company c = new Company();
-      c.setName("Test Company");
-      c.setSubscriptionStatus("FREE");
-      return companyRepository.save(c);
-    });
-
     // 2. Ensure Interviewer exists
     Interviewer interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
         .orElseGet(() -> {
-          Interviewer i = new Interviewer("Test Interviewer", interviewerEmail, passwordEncoder.encode("pass"),
-              company);
+          Interviewer i = Interviewer.builder()
+              .fullName("Test Interviewer")
+              .email(interviewerEmail)
+              .password(passwordEncoder.encode("pass"))
+              .role("INTERVIEWER")
+              .build();
           return interviewerRepository.save(i);
         });
 

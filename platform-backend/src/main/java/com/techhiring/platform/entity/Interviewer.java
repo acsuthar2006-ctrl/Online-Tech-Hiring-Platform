@@ -11,17 +11,10 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "interviewers")
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(force = true)
+// @AllArgsConstructor removed
 @SuperBuilder
 public class Interviewer extends User {
 
-  @ManyToOne
-  @JoinColumn(name = "company_id", nullable = false)
-  private Company company;
-
-  public Interviewer(String fullName, String email, String password, Company company) {
-    super(null, email, password, fullName, "INTERVIEWER");
-    this.company = company;
-  }
+  // Constructor removed in favor of SuperBuilder
 }
