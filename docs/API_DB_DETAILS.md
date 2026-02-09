@@ -248,71 +248,185 @@ erDiagram
 | `email_sent_at` | TIMESTAMP | Email sent timestamp |
 | `created_at` | TIMESTAMP | Creation timestamp |
 
+## Authentication
+
+### JWT Bearer Token Authentication
+
+All API endpoints (except `/api/auth/signup` and `/api/auth/login`) require authentication using JWT Bearer tokens.
+
+#### How to Authenticate
+
+1. **Sign Up or Login** to get a JWT token
+2. **Include the token** in the `Authorization` header of all subsequent requests
+3. **Token format**: `Bearer <your-jwt-token>`
+
+#### Example Authentication Flow
+
+**Step 1: Login**
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzA2NjQxNDcyLCJleHAiOjE3MDY3Mjc4NzJ9.8-aKumGgerUOjSNJy0xK_xuTEfyurwhb-75Bl1xJ2j4",
+  "message": "Login successful",
+  "userId": 1,
+  "role": "CANDIDATE",
+  "fullName": "John Doe"
+}
+```
+
+**Step 2: Use Token in Requests**
+```bash
+curl -X GET http://localhost:8080/api/companies \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzA2NjQxNDcyLCJleHAiOjE3MDY3Mjc4NzJ9.8-aKumGgerUOjSNJy0xK_xuTEfyurwhb-75Bl1xJ2j4"
+```
+
+#### Token Details
+
+- **Expiration**: 24 hours from issue time
+- **Algorithm**: HS256 (HMAC with SHA-256)
+- **Storage**: Store securely in browser (localStorage or sessionStorage)
+- **Refresh**: Login again when token expires
+
+#### Error Responses
+
+**401 Unauthorized** - Missing or invalid token
+```json
+{
+  "timestamp": "2026-02-09T18:44:27.123456",
+  "message": "Unauthorized",
+  "details": "uri=/api/companies"
+}
+```
+
+**403 Forbidden** - Valid token but insufficient permissions
+```json
+{
+  "timestamp": "2026-02-09T18:44:27.123456",
+  "message": "Access Denied",
+  "details": "uri=/api/companies"
+}
+```
+
+---
+
 ## API Endpoints
 
-### Companies (`/api/companies`)
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| POST | `/` | Create company |
-| GET | `/{id}` | Get company by ID |
-| GET | `/` | Get all companies |
-| PUT | `/{id}` | Update company |
-| DELETE | `/{id}` | Delete company |
+### Authentication (`/api/auth`) - **No Token Required**
 
-### Positions (`/api/positions`)
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| POST | `/` | Create position |
-| GET | `/{id}` | Get position by ID |
-| GET | `/` | Get all positions |
-| GET | `/company/{companyId}` | Get positions by company |
-| GET | `/open` | Get open positions |
-| PUT | `/{id}` | Update position |
-| DELETE | `/{id}` | Delete position |
-
-### Applications (`/api/applications`)
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| POST | `/` | Create application |
-| GET | `/{id}` | Get application by ID |
-| GET | `/candidate/{candidateId}` | Get applications by candidate |
-| GET | `/position/{positionId}` | Get applications by position |
-| PATCH | `/{id}/status` | Update application status |
-| DELETE | `/{id}` | Delete application |
-
-### Interviewer Applications (`/api/interviewer-applications`)
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| POST | `/` | Create interviewer application |
-| GET | `/{id}` | Get application by ID |
-| GET | `/interviewer/{interviewerId}` | Get applications by interviewer |
-| GET | `/company/{companyId}` | Get applications by company |
-| PATCH | `/{id}/status` | Update application status |
-| DELETE | `/{id}` | Delete application |
-
-### Authentication (`/api/auth`)
 | Method | Endpoint | Description | Request Body |
 |:-------|:---------|:------------|:-------------|
 | POST | `/signup` | Register new user | `{ "email", "password", "fullName", "role" }` |
 | POST | `/login` | Login user | `{ "email", "password" }` |
 
-### Users (`/api/users`)
+**Example Signup:**
+```bash
+curl -X POST http://localhost:8080/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "newuser@example.com",
+    "password": "securePassword123",
+    "fullName": "Jane Smith",
+    "role": "CANDIDATE"
+  }'
+```
+
+---
+
+### Companies (`/api/companies`) - **Token Required**
+| Method | Endpoint | Description | Auth Required |
+|:-------|:---------|:------------|:--------------|
+| POST | `/` | Create company | ✅ Bearer Token |
+| GET | `/{id}` | Get company by ID | ✅ Bearer Token |
+| GET | `/` | Get all companies | ✅ Bearer Token |
+| PUT | `/{id}` | Update company | ✅ Bearer Token |
+| DELETE | `/{id}` | Delete company | ✅ Bearer Token |
+
+**Example Request:**
+```bash
+curl -X POST http://localhost:8080/api/companies \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "companyName": "Tech Corp",
+    "industry": "Software",
+    "email": "contact@techcorp.com",
+    "phone": "+1234567890",
+    "location": "San Francisco",
+    "website": "https://techcorp.com",
+    "description": "Leading tech company",
+    "logoUrl": "https://example.com/logo.png"
+  }'
+```
+
+---
+
+### Positions (`/api/positions`) - **Token Required**
+| Method | Endpoint | Description | Auth Required |
+|:-------|:---------|:------------|:--------------|
+| POST | `/` | Create position | ✅ Bearer Token |
+| GET | `/{id}` | Get position by ID | ✅ Bearer Token |
+| GET | `/` | Get all positions | ✅ Bearer Token |
+| GET | `/company/{companyId}` | Get positions by company | ✅ Bearer Token |
+| GET | `/open` | Get open positions | ✅ Bearer Token |
+| PUT | `/{id}` | Update position | ✅ Bearer Token |
+| DELETE | `/{id}` | Delete position | ✅ Bearer Token |
+
+---
+
+### Applications (`/api/applications`) - **Token Required**
+| Method | Endpoint | Description | Auth Required |
+|:-------|:---------|:------------|:--------------|
+| POST | `/` | Create application | ✅ Bearer Token |
+| GET | `/{id}` | Get application by ID | ✅ Bearer Token |
+| GET | `/candidate/{candidateId}` | Get applications by candidate | ✅ Bearer Token |
+| GET | `/position/{positionId}` | Get applications by position | ✅ Bearer Token |
+| PATCH | `/{id}/status` | Update application status | ✅ Bearer Token |
+| DELETE | `/{id}` | Delete application | ✅ Bearer Token |
+
+---
+
+### Interviewer Applications (`/api/interviewer-applications`) - **Token Required**
+| Method | Endpoint | Description | Auth Required |
+|:-------|:---------|:------------|:--------------|
+| POST | `/` | Create interviewer application | ✅ Bearer Token |
+| GET | `/{id}` | Get application by ID | ✅ Bearer Token |
+| GET | `/interviewer/{interviewerId}` | Get applications by interviewer | ✅ Bearer Token |
+| GET | `/company/{companyId}` | Get applications by company | ✅ Bearer Token |
+| PATCH | `/{id}/status` | Update application status | ✅ Bearer Token |
+| DELETE | `/{id}` | Delete application | ✅ Bearer Token |
+
+---
+
+### Users (`/api/users`) - **Token Required**
 | Method | Endpoint | Description |
 |:-------|:---------|:------------|
 | GET | `/profile` | Get current user profile |
 
-### Interviews (`/api/interviews`)
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| POST | `/schedule` | Schedule an interview |
-| GET | `/session/{link}/queue` | Get session queue & status |
-| POST | `/{id}/complete` | Mark interview as complete |
-| GET | `/{id}/status` | Get interview status |
-| GET | `/candidate/upcoming` | Get upcoming interviews for candidate |
-| POST | `/{id}/start` | Mark interview as IN_PROGRESS |
-| POST | `/{id}/remind` | Send reminder email |
+---
 
-### Test (`/api/test`)
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| POST | `/send-email` | Test email functionality |
+### Interviews (`/api/interviews`) - **Token Required**
+| Method | Endpoint | Description | Auth Required |
+|:-------|:---------|:------------|:--------------|
+| POST | `/schedule` | Schedule an interview | ✅ Bearer Token |
+| GET | `/session/{link}/queue` | Get session queue & status | ✅ Bearer Token |
+| POST | `/{id}/complete` | Mark interview as complete | ✅ Bearer Token |
+| GET | `/{id}/status` | Get interview status | ✅ Bearer Token |
+| GET | `/candidate/upcoming` | Get upcoming interviews for candidate | ✅ Bearer Token |
+| POST | `/{id}/start` | Mark interview as IN_PROGRESS | ✅ Bearer Token |
+| POST | `/{id}/remind` | Send reminder email | ✅ Bearer Token |
+
+---
+
+### Test (`/api/test`) - **Token Required**
+| Method | Endpoint | Description | Auth Required |
+|:-------|:---------|:------------|:--------------|
+| POST | `/send-email` | Test email functionality | ✅ Bearer Token |
