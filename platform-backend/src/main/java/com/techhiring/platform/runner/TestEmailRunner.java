@@ -58,13 +58,14 @@ public class TestEmailRunner implements CommandLineRunner {
 
     // 4. Create Interview scheduled 27 minutes from now (To verify reliability -
     // should wait)
-    LocalDateTime scheduledTime = LocalDateTime.now().plusMinutes(27);
+    LocalDateTime scheduledDateTime = LocalDateTime.now().plusMinutes(27);
 
     Interview interview = Interview.builder()
         .title("Test Auto-Email Interview")
         .interviewer(interviewer)
         .candidate(candidate)
-        .scheduledTime(scheduledTime)
+        .scheduledDate(scheduledDateTime.toLocalDate())
+        .scheduledTime(scheduledDateTime.toLocalTime())
         .meetingLink("test-link-" + System.currentTimeMillis())
         .status(Interview.InterviewStatus.SCHEDULED)
         .interviewType(InterviewType.TECHNICAL)
@@ -73,8 +74,8 @@ public class TestEmailRunner implements CommandLineRunner {
 
     interviewRepository.save(interview);
 
-    log.info("--- TestEmailRunner: Created Interview ID {} for {} at {} ---",
-        interview.getId(), targetEmail, scheduledTime);
+    log.info("--- TestEmailRunner: Created Interview ID {} for {} at {} {} ---",
+        interview.getId(), targetEmail, scheduledDateTime.toLocalDate(), scheduledDateTime.toLocalTime());
     log.info("--- TestEmailRunner: Scheduler should pick this up in ~1 minute ---");
   }
 }
