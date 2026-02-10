@@ -25,8 +25,7 @@ public class UserService {
 
     User user;
     if ("CANDIDATE".equalsIgnoreCase(request.getRole())) {
-      user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
-          request.getResumeUrl(), request.getSkills());
+      user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()));
     } else if ("INTERVIEWER".equalsIgnoreCase(request.getRole())) {
       Interviewer interviewer = new Interviewer();
       interviewer.setFullName(request.getFullName());

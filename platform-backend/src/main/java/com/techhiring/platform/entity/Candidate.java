@@ -19,10 +19,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Candidate extends User {
 
-  @Column(columnDefinition = "TEXT")
-  private String skills; // JSON or CSV string of skills
-
-  private String resumeUrl;
 
   private String phone;
 
@@ -36,13 +32,11 @@ public class Candidate extends User {
   private Double averageRating = 0.0;
 
   // Simplified constructor for backward compatibility
-  public Candidate(String fullName, String email, String password, String resumeUrl, String skills) {
+  public Candidate(String fullName, String email, String password) {
     this.setEmail(email);
     this.setPassword(password);
     this.setFullName(fullName);
     this.setRole("CANDIDATE");
-    this.resumeUrl = resumeUrl;
-    this.skills = skills;
   }
 }
 

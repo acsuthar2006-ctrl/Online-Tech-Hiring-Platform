@@ -34,9 +34,8 @@ public class UserController {
         .fullName(user.getFullName())
         .role(user.getRole());
 
-    if (user instanceof Candidate candidate) {
-	    builder.skills(candidate.getSkills())
-          .resumeUrl(candidate.getResumeUrl());
+    if (user instanceof Candidate) {
+      // Candidate-specific fields can be added here if needed
     } else if (user instanceof Interviewer) {
        // company name removed
     }

@@ -16,8 +16,7 @@ public class AuthDto {
     private String role;
 
     // Candidate Specific
-    private String resumeUrl;
-    private String skills;
+    // Fields can be added here if needed
 
     // Interviewer Specific
     // companyName removed
