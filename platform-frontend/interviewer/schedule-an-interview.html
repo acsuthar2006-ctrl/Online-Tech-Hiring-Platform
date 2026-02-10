@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Interview - InterviewPro</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/interviewer.css">
+  <link rel="stylesheet" href="css/schedule-an-interview.css">
+  <script src="auth.js"></script>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <h1>Schedule Interview</h1>
+        <p class="text-muted">Schedule and send interview invitations to candidates</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge">2</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">Interviewer</div>
+            <div class="profile-role">Interviewer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-interview-container">
+      <div class="form-card">
+        <h2 class="form-title">Create Interview Schedule</h2>
+        <form id="scheduleForm" class="interview-form">
+          
+          <!-- Candidate Emails Section -->
+          <div class="form-section">
+            <label class="form-label">Candidate Emails</label>
+            <p class="form-help">Add candidate email addresses (comma-separated or one per line)</p>
+            <textarea id="candidateEmails" class="form-textarea" placeholder="candidate1@email.com, candidate2@email.com&#10;or&#10;candidate1@email.com&#10;candidate2@email.com" required></textarea>
+            <div id="emailList" class="email-list"></div>
+          </div>
+
+          <!-- Company Name Section -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Company Name</label>
+              <input type="text" id="companyName" class="form-input" placeholder="Enter company name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Position Title</label>
+              <input type="text" id="positionTitle" class="form-input" placeholder="e.g., Senior Developer" required>
+            </div>
+          </div>
+
+          <!-- Date and Time Section -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Interview Date</label>
+              <input type="date" id="interviewDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interview Time</label>
+              <input type="time" id="interviewTime" class="form-input" required>
+            </div>
+          </div>
+
+          <!-- Room ID and Duration Section -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Room ID / Meeting Link</label>
+              <input type="text" id="roomId" class="form-input" placeholder="e.g., room123 or https://meet.company.com/..." required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interview Duration (minutes)</label>
+              <input type="number" id="duration" class="form-input" placeholder="60" min="15" max="480" value="60" required>
+            </div>
+          </div>
+
+          <!-- Interview Type Section -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Interview Type</label>
+              <select id="interviewType" class="form-input">
+                <option value="">Select interview type</option>
+                <option value="video">Video Interview</option>
+                <option value="coding">Coding Round</option>
+                <option value="analytical">Analytical Round</option>
+                <option value="general">General Discussion</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interview Round</label>
+              <select id="roundNumber" class="form-input">
+                <option value="">Select round</option>
+                <option value="1">Round 1 (Screening)</option>
+                <option value="2">Round 2 (Technical)</option>
+                <option value="3">Round 3 (Final)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Additional Notes Section -->
+          <div class="form-section">
+            <label class="form-label">Additional Information</label>
+            <textarea id="additionalNotes" class="form-textarea" placeholder="Add any additional information or instructions for candidates (optional)"></textarea>
+          </div>
+
+          <!-- Email Preview -->
+          <div class="email-preview">
+            <h3>Email Preview</h3>
+            <div class="preview-content" id="emailPreview">
+              <p style="color: var(--gray-500);">Email preview will appear here...</p>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear Form</button>
+            <button type="submit" class="btn btn-primary" onclick="scheduleInterview(event)">Schedule & Send Emails</button>
+          </div>
+        </form>
+      </div>
+
+  <script src="../common/dashboard.js"></script>
+  <script src="js/schedule-an-interview.js"></script>
+  <script src="../common/interviewer-sidebar.js"></script>
+</body>
+</html>
