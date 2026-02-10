@@ -13,7 +13,7 @@ This platform is a **complete hiring ecosystem** that connects companies, candid
 
 ### Database Schema (9 Tables)
 - `users` - Base authentication
-- `candidates` - Extended candidate profiles (skills, resume, ratings)
+- `candidates` - Extended candidate profiles (phone, bio, ratings)
 - `interviewers` - Extended interviewer profiles (expertise, hourly rate, earnings)
 - `companies` - Company profiles
 - `positions` - Job positions
@@ -93,7 +93,7 @@ function logout() {
 ### C. Key API Endpoints
 
 #### Authentication
-- `POST /api/auth/signup`
+- `POST /api/auth/signup` (Simplified - no skills/resumeUrl required)
     - Interviewer: `{ "email", "password", "fullName", "role": "INTERVIEWER" }`
     - Candidate: `{ "email", "password", "fullName", "role": "CANDIDATE" }`
 - `POST /api/auth/login` → Returns JWT Token
@@ -229,7 +229,7 @@ function logout() {
 5.  **Interviewer** now available for company's interview assignments
 
 ### Flow 3: Candidate Journey
-1.  **Sign Up** → Create profile with skills and resume
+1.  **Sign Up** → Create profile (simplified registration)
 2.  **Browse** → View open positions
 3.  **Apply** → Submit applications to interesting positions
 4.  **Track** → Monitor application status

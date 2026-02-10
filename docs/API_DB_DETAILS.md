@@ -17,8 +17,6 @@ erDiagram
     }
     CANDIDATES {
         bigint id FK
-        text skills
-        string resume_url
         string phone
         string profile_photo_url
         text bio
@@ -142,8 +140,6 @@ erDiagram
 | Column | Type | Description |
 |:-------|:-----|:------------|
 | `id` | BIGINT (FK) | References `users.id` |
-| `skills` | TEXT | JSON/CSV of skills |
-| `resume_url` | VARCHAR | Link to resume |
 | `phone` | VARCHAR | Phone number |
 | `profile_photo_url` | VARCHAR | Profile photo URL |
 | `bio` | TEXT | Biography |
@@ -324,7 +320,7 @@ curl -X GET http://localhost:8080/api/companies \
 
 | Method | Endpoint | Description | Request Body |
 |:-------|:---------|:------------|:-------------|
-| POST | `/signup` | Register new user | `{ "email", "password", "fullName", "role" }` |
+| POST | `/signup` | Register new user (simplified) | `{ "email", "password", "fullName", "role" }` |
 | POST | `/login` | Login user | `{ "email", "password" }` |
 
 **Example Signup:**
@@ -667,17 +663,7 @@ curl -X POST http://localhost:8080/api/companies \
   "id": 3,
   "email": "john@example.com",
   "fullName": "John Doe",
-  "role": "CANDIDATE",
-  "username": "johndoe",
-  "skills": "Java, Spring Boot, React, PostgreSQL",
-  "resumeUrl": "https://example.com/resume.pdf",
-  "phone": "+1234567890",
-  "profilePhotoUrl": "https://example.com/photo.jpg",
-  "bio": "Experienced full-stack developer with 5 years",
-  "totalInterviewsAttended": 12,
-  "averageRating": 4.5,
-  "createdAt": "2026-02-09T10:00:00",
-  "updatedAt": "2026-02-09T18:00:00"
+  "role": "CANDIDATE"
 }
 ```
 
