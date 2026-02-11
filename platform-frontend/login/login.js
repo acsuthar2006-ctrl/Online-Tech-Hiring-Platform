@@ -1,3 +1,5 @@
+import { api } from '../../common/api.js'
+
 let selectedRole = ""
 
 function selectRole(role) {
@@ -15,28 +17,42 @@ function backToRoleSelection() {
   selectedRole = ""
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault()
 
-  const username = document.getElementById("username").value
+  const email = document.getElementById("email").value
   const password = document.getElementById("password").value
+  const loginButton = event.target.querySelector('button[type="submit"]')
 
-  const accounts = JSON.parse(localStorage.getItem("accounts") || "[]")
-  const account = accounts.find((acc) => acc.username === username && acc.password === password)
+  // Show loading state
+  const originalText = loginButton.textContent
+  loginButton.disabled = true
+  loginButton.textContent = "Logging in..."
 
-  if (!account) {
-    alert("Invalid username or password. Please try again or create a new account.")
-    return
-  }
+  try {
+    const response = await api.login(email, password)
 
-  localStorage.setItem("isLoggedIn", "true")
-  localStorage.setItem("username", username)
-  localStorage.setItem("userRole", account.role)
+    // Store user info
+    localStorage.setItem("isLoggedIn", "true")
+    localStorage.setItem("userId", response.userId)
+    localStorage.setItem("username", response.fullName)
+    localStorage.setItem("userRole", response.role.toLowerCase())
 
-  // Redirect based on role
-  if (account.role === "candidate") {
-    window.location.href = "../candidate/candidate-dashboard.html"
-  } else if (account.role === "interviewer") {
-    window.location.href = "../interviewer/interviewer-dashboard.html"
+    // Redirect based on role
+    const role = response.role.toLowerCase()
+    if (role === "candidate") {
+      window.location.href = "./candidate-dashboard.html"
+    } else if (role === "interviewer") {
+      window.location.href = "./interviewer-dashboard.html"
+    }
+  } catch (error) {
+    alert(`Login failed: ${error.message}`)
+    loginButton.disabled = false
+    loginButton.textContent = originalText
   }
 }
+
+// Expose functions to global scope for onclick handlers
+window.selectRole = selectRole
+window.backToRoleSelection = backToRoleSelection
+window.handleLogin = handleLogin
