@@ -4,12 +4,14 @@ import com.techhiring.platform.entity.Interview;
 import com.techhiring.platform.repository.InterviewRepository;
 import com.techhiring.platform.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationScheduler {
@@ -17,35 +19,28 @@ public class NotificationScheduler {
   private final InterviewRepository interviewRepository;
   private final EmailService emailService;
 
-  // Run every minute
-  @Scheduled(cron = "0 * * * * *")
-  public void sendUpcomingReminders() {
+  // Run every 1 minute for easier testing (production could be 5 mins)
+  @Scheduled(cron = "0 */1 * * * *")
+  public void sendInterviewReminders() {
+    log.info("Checking for upcoming interviews...");
+
     LocalDateTime now = LocalDateTime.now();
-    // Check for interviews starting in 15 minutes (+/- 1 min buffer)
-    LocalDateTime target = now.plusMinutes(15);
+    LocalDateTime startWindow = now.plusMinutes(20);
+    LocalDateTime endWindow = now.plusMinutes(25);
 
-    // This is a simplified check. In production, we'd use a dedicated
-    // 'reminderSent' flag in DB
-    // to avoid duplicate emails if the cron overlaps or application restarts.
-    // For this demo/MVP, we assume the query is tight enough.
+    // Find interviews scheduled between now+20m and now+25m
+    List<Interview> upcomingInterviews = interviewRepository.findScheduledInterviewsBetween(startWindow, endWindow);
 
-    // Ideally: findByScheduledTimeBetweenAndReminderSentFalse(...)
-    // Here we just iterate to demonstrate logic.
-    List<Interview> upcoming = interviewRepository.findAll().stream()
-        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
-        .filter(i -> isAround(i.getScheduledTime(), target))
-        .toList();
-
-    for (Interview interview : upcoming) {
-      emailService.sendInterviewReminder(
-          interview.getCandidate().getEmail(),
-          interview.getCandidate().getFullName(),
-          "http://localhost:8080/?room=" + interview.getMeetingLink());
-      System.out.println("Sent reminder to " + interview.getCandidate().getEmail());
+    for (Interview interview : upcomingInterviews) {
+      log.info("Sending reminder for interview: {}", interview.getId());
+      try {
+        emailService.sendInterviewReminder(
+            interview.getCandidate().getEmail(),
+            interview.getCandidate().getFullName(),
+            "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate");
+      } catch (Exception e) {
+        log.error("Failed to send reminder for interview {}: {}", interview.getId(), e.getMessage());
+      }
     }
-  }
-
-  private boolean isAround(LocalDateTime scheduled, LocalDateTime target) {
-    return scheduled.isAfter(target.minusMinutes(1)) && scheduled.isBefore(target.plusMinutes(1));
   }
 }

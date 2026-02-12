@@ -14,4 +14,11 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
   List<Interview> findByMeetingLink(String meetingLink);
 
   List<Interview> findByMeetingLinkAndStatus(String meetingLink, Interview.InterviewStatus status);
+
+  @org.springframework.data.jpa.repository.Query("SELECT i FROM Interview i WHERE i.status = 'SCHEDULED' AND i.scheduledTime BETWEEN :start AND :end")
+  List<Interview> findScheduledInterviewsBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
+  List<Interview> findByCandidate_Email(String email);
+
+  List<Interview> findByInterviewer_Email(String email);
 }

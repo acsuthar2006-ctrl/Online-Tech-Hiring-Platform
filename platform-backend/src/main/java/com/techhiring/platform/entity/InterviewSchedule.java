@@ -7,47 +7,44 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "interview_schedules")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public abstract class User {
+public class InterviewSchedule {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true)
-  private String email;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "interview_id", nullable = false)
+  private Interview interview;
 
   @Column(nullable = false)
-  private String password;
+  private String candidateEmail;
 
-  @Column(nullable = false)
-  private String fullName;
+  private java.time.LocalDate scheduledDate;
 
-  @Column(nullable = false)
-  private String role; // "CANDIDATE" or "INTERVIEWER"
+  private java.time.LocalTime scheduledTime;
 
   @Column(unique = true)
-  private String username;
+  private String roomId;
+
+  private String meetingLink;
+
+  @Column(columnDefinition = "TEXT")
+  private String notes;
+
+  @Column(name = "email_sent_at")
+  private java.time.LocalDateTime emailSentAt;
 
   @Column(name = "created_at", updatable = false)
   private java.time.LocalDateTime createdAt;
 
-  @Column(name = "updated_at")
-  private java.time.LocalDateTime updatedAt;
-
   @PrePersist
   protected void onCreate() {
     createdAt = java.time.LocalDateTime.now();
-    updatedAt = java.time.LocalDateTime.now();
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = java.time.LocalDateTime.now();
   }
 }

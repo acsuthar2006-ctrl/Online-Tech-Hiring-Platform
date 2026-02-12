@@ -31,9 +31,24 @@ public class InterviewService {
 
   @Transactional
   public Interview scheduleInterview(String interviewerEmail, String candidateEmail, String candidateName,
-      LocalDateTime scheduledTime, String title, String customMeetingLink) {
-    Interviewer interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
-        .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+      LocalDateTime scheduledTime, String title, String customMeetingLink, String description,
+      com.techhiring.platform.entity.InterviewType type) {
+    Interviewer interviewer;
+    
+    // Try to find by email first, if that fails, try to parse as ID
+    if (interviewerEmail != null && interviewerEmail.contains("@")) {
+      interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
+          .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+    } else {
+      // Assume it's an ID
+      try {
+        Long interviewerId = Long.parseLong(interviewerEmail);
+        interviewer = interviewerRepository.findById(interviewerId)
+            .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+      } catch (NumberFormatException e) {
+        throw new RuntimeException("Interviewer not found");
+      }
+    }
 
     // Get or Create Candidate
     Candidate candidate = (Candidate) userRepository.findByEmail(candidateEmail).orElse(null);
@@ -49,11 +64,19 @@ public class InterviewService {
     // Simple logic: reuse link if interview is within 2 hours of this new one
     String meetingLink = null;
     List<Interview> existing = interviewRepository.findByInterviewerId(interviewer.getId());
+    java.time.LocalDate schedDate = scheduledTime.toLocalDate();
+    java.time.LocalTime schedTime = scheduledTime.toLocalTime();
+    
     for (Interview i : existing) {
-      if (i.getScheduledTime().toLocalDate().isEqual(scheduledTime.toLocalDate()) &&
-          Math.abs(java.time.Duration.between(i.getScheduledTime(), scheduledTime).toHours()) < 4) {
-        meetingLink = i.getMeetingLink();
-        break;
+      if (i.getScheduledDate() != null && i.getScheduledDate().isEqual(schedDate)) {
+        // Check if times are within 4 hours
+        if (i.getScheduledTime() != null) {
+          long hoursDiff = Math.abs(java.time.Duration.between(i.getScheduledTime(), schedTime).toHours());
+          if (hoursDiff < 4) {
+            meetingLink = i.getMeetingLink();
+            break;
+          }
+        }
       }
     }
 
@@ -67,9 +90,12 @@ public class InterviewService {
         .title(title)
         .interviewer(interviewer)
         .candidate(candidate)
-        .scheduledTime(scheduledTime)
+        .scheduledDate(schedDate)
+        .scheduledTime(schedTime)
         .meetingLink(meetingLink)
         .status(Interview.InterviewStatus.SCHEDULED)
+        .description(description)
+        .interviewType(type)
         .build();
 
     Interview saved = interviewRepository.save(interview);
@@ -112,12 +138,17 @@ public class InterviewService {
   }
 
   @Transactional
-  public Interview completeAndGetNext(Long interviewId) {
+  public Interview completeAndGetNext(Long interviewId, com.techhiring.platform.dto.CompletionRequest request) {
     Interview current = interviewRepository.findById(interviewId)
         .orElseThrow(() -> new RuntimeException("Interview not found"));
 
     current.setStatus(Interview.InterviewStatus.COMPLETED);
     current.setActualEndTime(LocalDateTime.now());
+    if (request != null) {
+      current.setFeedback(request.getFeedback());
+      current.setScore(request.getScore());
+      current.setRecordingUrl(request.getRecordingUrl());
+    }
     interviewRepository.save(current);
 
     // Find next in the same session (meetingLink)
@@ -149,8 +180,14 @@ public class InterviewService {
   }
 
   public List<Interview> getUpcomingInterviews(String candidateEmail) {
-    return interviewRepository.findAll().stream() // Ideally filter by candidate email at DB level
-        .filter(i -> i.getCandidate().getEmail().equals(candidateEmail))
+    return interviewRepository.findByCandidate_Email(candidateEmail).stream()
+        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
+        .sorted(Comparator.comparing(Interview::getScheduledTime))
+        .collect(Collectors.toList());
+  }
+
+  public List<Interview> getUpcomingInterviewsForInterviewer(String interviewerEmail) {
+    return interviewRepository.findByInterviewer_Email(interviewerEmail).stream()
         .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
         .sorted(Comparator.comparing(Interview::getScheduledTime))
         .collect(Collectors.toList());

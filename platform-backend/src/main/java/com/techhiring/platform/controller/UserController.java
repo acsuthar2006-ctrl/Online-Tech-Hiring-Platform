@@ -35,12 +35,9 @@ public class UserController {
         .role(user.getRole());
 
     if (user instanceof Candidate) {
-      Candidate candidate = (Candidate) user;
-      builder.skills(candidate.getSkills())
-          .resumeUrl(candidate.getResumeUrl());
+      // Candidate-specific fields can be added here if needed
     } else if (user instanceof Interviewer) {
-      Interviewer interviewer = (Interviewer) user;
-      builder.companyName(interviewer.getCompanyName());
+       // company name removed
     }
 
     return ResponseEntity.ok(builder.build());

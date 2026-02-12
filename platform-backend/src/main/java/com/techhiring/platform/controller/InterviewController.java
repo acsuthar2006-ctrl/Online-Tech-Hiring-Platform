@@ -21,16 +21,23 @@ public class InterviewController {
   private final EmailService emailService;
 
   @PostMapping("/schedule")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
   public ResponseEntity<Interview> scheduleInterview(@RequestBody ScheduleRequest request) {
     // If scheduledTime is null/empty, parse from string if needed, or assume
     // Jackson handles ISO8601
+    String interviewerIdentifier = request.getInterviewerId() != null 
+        ? request.getInterviewerId().toString() 
+        : request.getInterviewerEmail();
+    
     Interview interview = interviewService.scheduleInterview(
-        request.getInterviewerEmail(),
+        interviewerIdentifier,
         request.getCandidateEmail(),
         request.getCandidateName(),
         request.getScheduledTime(),
         request.getTitle(),
-        request.getMeetingLink());
+        request.getMeetingLink(),
+        request.getDescription(),
+        request.getInterviewType());
     return ResponseEntity.ok(interview);
   }
 
@@ -40,8 +47,10 @@ public class InterviewController {
   }
 
   @PostMapping("/{id}/complete")
-  public ResponseEntity<Interview> completeAndGetNext(@PathVariable Long id) {
-    Interview next = interviewService.completeAndGetNext(id);
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
+  public ResponseEntity<Interview> completeAndGetNext(@PathVariable Long id,
+      @RequestBody(required = false) com.techhiring.platform.dto.CompletionRequest request) {
+    Interview next = interviewService.completeAndGetNext(id, request);
     // If next is null, it means no more scheduled candidates immediately
     return ResponseEntity.ok(next);
   }
@@ -53,8 +62,15 @@ public class InterviewController {
   }
 
   @GetMapping("/candidate/upcoming")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('CANDIDATE')")
   public ResponseEntity<?> getUpcomingInterviews(@RequestParam String email) {
     return ResponseEntity.ok(interviewService.getUpcomingInterviews(email));
+  }
+
+  @GetMapping("/interviewer/upcoming")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
+  public ResponseEntity<?> getUpcomingInterviewsForInterviewer(@RequestParam String email) {
+    return ResponseEntity.ok(interviewService.getUpcomingInterviewsForInterviewer(email));
   }
 
   @PostMapping("/{id}/start")

@@ -1,8 +1,8 @@
 package com.techhiring.platform.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -13,14 +13,28 @@ import lombok.experimental.SuperBuilder;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
 public class Interviewer extends User {
 
-  private String companyName;
+  private String phone;
 
-  public Interviewer(String fullName, String email, String password, String companyName) {
-    super(null, email, password, fullName, "INTERVIEWER");
-    this.companyName = companyName;
-  }
+  private String profilePhotoUrl;
+
+  @Column(columnDefinition = "TEXT")
+  private String bio;
+
+  @Builder.Default
+  private Double hourlyRate = 0.0;
+
+  @Builder.Default
+  private Integer totalInterviewsConducted = 0;
+
+  @Builder.Default
+  private Double averageRating = 0.0;
+
+  @Builder.Default
+  private Double totalEarnings = 0.0;
+
+  @Builder.Default
+  private String availabilityStatus = "AVAILABLE"; // AVAILABLE, BUSY, OFFLINE
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
   private final UserRepository userRepository;
+  // companyRepository removed
   private final PasswordEncoder passwordEncoder;
 
   public User registerUser(AuthDto.SignupRequest request) {
@@ -24,11 +25,19 @@ public class UserService {
 
     User user;
     if ("CANDIDATE".equalsIgnoreCase(request.getRole())) {
-      user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
-          request.getResumeUrl(), request.getSkills());
+      user = new Candidate(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()));
     } else if ("INTERVIEWER".equalsIgnoreCase(request.getRole())) {
-      user = new Interviewer(request.getFullName(), request.getEmail(), passwordEncoder.encode(request.getPassword()),
-          request.getCompanyName());
+      Interviewer interviewer = new Interviewer();
+      interviewer.setFullName(request.getFullName());
+      interviewer.setEmail(request.getEmail());
+      interviewer.setPassword(passwordEncoder.encode(request.getPassword()));
+      interviewer.setRole("INTERVIEWER");
+      interviewer.setAvailabilityStatus("AVAILABLE");
+      interviewer.setHourlyRate(0.0);
+      interviewer.setTotalEarnings(0.0);
+      interviewer.setTotalInterviewsConducted(0);
+      interviewer.setAverageRating(0.0);
+      user = interviewer;
     } else {
       throw new RuntimeException("Error: Invalid role!");
     }
@@ -36,14 +45,8 @@ public class UserService {
     return userRepository.save(user);
   }
 
-  public User authenticateUser(AuthDto.LoginRequest request) {
-    User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new RuntimeException("Error: User not found"));
-
-    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-      throw new RuntimeException("Error: Invalid credentials");
-    }
-
-    return user;
+  public User findByEmail(String email) {
+    return userRepository.findByEmail(email)
+        .orElseThrow(() -> new RuntimeException("Error: User not found with email: " + email));
   }
 }

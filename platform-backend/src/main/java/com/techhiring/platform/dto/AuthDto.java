@@ -16,11 +16,10 @@ public class AuthDto {
     private String role;
 
     // Candidate Specific
-    private String resumeUrl;
-    private String skills;
+    // Fields can be added here if needed
 
     // Interviewer Specific
-    private String companyName;
+    // companyName removed
   }
 
   @Data
@@ -35,6 +34,7 @@ public class AuthDto {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class JwtResponse {
+    private String token;
     private String message;
     private Long userId;
     private String role;

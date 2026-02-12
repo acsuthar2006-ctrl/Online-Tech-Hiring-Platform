@@ -16,8 +16,7 @@ public class UserProfileDTO {
   private String role;
 
   // Candidate specific
-  private String resumeUrl;
-  private String skills;
+  // Fields can be added here if needed
 
   // Interviewer specific
   private String companyName;
