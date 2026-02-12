@@ -18,6 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
+import org.springframework.context.annotation.Profile;
+
+@Profile({"dev", "test"})
 @Slf4j
 @Component
 @RequiredArgsConstructor
