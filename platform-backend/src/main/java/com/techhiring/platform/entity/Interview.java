@@ -47,6 +47,7 @@ public class Interview {
 
   private String meetingLink; // e.g., "/room/abc-123"
 
+  @Builder.Default
   private String interviewRound = "ROUND_1"; // ROUND_1, ROUND_2, ROUND_3
 
   @Column(name = "actual_start_time")

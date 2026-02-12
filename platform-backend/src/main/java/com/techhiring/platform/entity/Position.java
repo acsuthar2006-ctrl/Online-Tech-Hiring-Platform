@@ -3,6 +3,7 @@ package com.techhiring.platform.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -36,6 +37,7 @@ public class Position {
   private String requiredExpertise;
 
   @Column(nullable = false)
+  @Builder.Default
   private String status = "OPEN"; // OPEN, CLOSED, FILLED
 
   @Column(name = "created_at", updatable = false)

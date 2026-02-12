@@ -3,6 +3,7 @@ package com.techhiring.platform.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -29,6 +30,7 @@ public class Application {
   private Position position;
 
   @Column(nullable = false)
+  @Builder.Default
   private String status = "APPLIED"; // APPLIED, SHORTLISTED, INTERVIEW_SCHEDULED, REJECTED, OFFERED
 
   @Column(name = "application_date", updatable = false)

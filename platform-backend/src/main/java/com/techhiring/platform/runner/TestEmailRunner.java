@@ -52,7 +52,7 @@ public class TestEmailRunner implements CommandLineRunner {
     // 3. Ensure Candidate exists (User's email)
     Candidate candidate = (Candidate) userRepository.findByEmail(targetEmail)
         .orElseGet(() -> {
-          Candidate c = new Candidate("Aarya Suthar", targetEmail, passwordEncoder.encode("pass"), null, null);
+          Candidate c = new Candidate("Aarya Suthar", targetEmail, passwordEncoder.encode("pass"));
           return candidateRepository.save(c);
         });
 

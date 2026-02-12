@@ -54,9 +54,19 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+            // Public endpoints - no authentication required
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/interviews/**").permitAll() // Keep open for now as per previous config
+            .requestMatchers("/api/interviews/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+            
+            // Public read-only endpoints for browsing
+            .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/positions/**").permitAll()
+            .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/companies/**").permitAll()
+            
+            // Test endpoints (for development/testing)
+            .requestMatchers("/api/test/**").permitAll()
+            
+            // All other endpoints require authentication
             .anyRequest().authenticated());
 
     http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);

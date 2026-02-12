@@ -5,6 +5,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -27,8 +28,10 @@ public class Candidate extends User {
   @Column(columnDefinition = "TEXT")
   private String bio;
 
+  @Builder.Default
   private Integer totalInterviewsAttended = 0;
 
+  @Builder.Default
   private Double averageRating = 0.0;
 
   // Simplified constructor for backward compatibility
