@@ -67,6 +67,12 @@ public class InterviewController {
     return ResponseEntity.ok(interviewService.getUpcomingInterviews(email));
   }
 
+  @GetMapping("/interviewer/upcoming")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
+  public ResponseEntity<?> getUpcomingInterviewsForInterviewer(@RequestParam String email) {
+    return ResponseEntity.ok(interviewService.getUpcomingInterviewsForInterviewer(email));
+  }
+
   @PostMapping("/{id}/start")
   public ResponseEntity<?> startInterview(@PathVariable Long id) {
     try {

@@ -180,8 +180,14 @@ public class InterviewService {
   }
 
   public List<Interview> getUpcomingInterviews(String candidateEmail) {
-    return interviewRepository.findAll().stream() // Ideally filter by candidate email at DB level
-        .filter(i -> i.getCandidate().getEmail().equals(candidateEmail))
+    return interviewRepository.findByCandidate_Email(candidateEmail).stream()
+        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
+        .sorted(Comparator.comparing(Interview::getScheduledTime))
+        .collect(Collectors.toList());
+  }
+
+  public List<Interview> getUpcomingInterviewsForInterviewer(String interviewerEmail) {
+    return interviewRepository.findByInterviewer_Email(interviewerEmail).stream()
         .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
         .sorted(Comparator.comparing(Interview::getScheduledTime))
         .collect(Collectors.toList());
