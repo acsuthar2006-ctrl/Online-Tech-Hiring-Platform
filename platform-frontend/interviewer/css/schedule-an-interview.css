@@ -1,0 +1,275 @@
+/* Schedule Interview Page Styles */
+
+.schedule-interview-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  gap: 32px;
+}
+
+.form-card {
+  background: var(--white);
+  border: 1px solid var(--blue-200);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--blue-100);
+}
+
+.interview-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  display: block;
+}
+
+.form-help {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--blue-200);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--blue-50);
+  color: var(--gray-900);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--blue-600);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.email-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.email-tag {
+  background: var(--blue-100);
+  color: var(--blue-800);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--blue-300);
+}
+
+.email-tag button {
+  background: none;
+  border: none;
+  color: var(--blue-800);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.email-tag button:hover {
+  color: var(--blue-900);
+}
+
+.email-preview {
+  background: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.email-preview h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 12px 0;
+}
+
+.preview-content {
+  background: var(--white);
+  border: 1px solid var(--blue-200);
+  border-radius: 6px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--gray-700);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.preview-content strong {
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 2px solid var(--blue-100);
+}
+
+.scheduled-list-container {
+  margin-top: 20px;
+}
+
+.scheduled-list-container h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 20px;
+}
+
+.scheduled-interviews {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scheduled-item {
+  background: var(--white);
+  border: 1px solid var(--blue-200);
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.scheduled-item:hover {
+  border-color: var(--blue-400);
+  box-shadow: var(--shadow-md);
+}
+
+.scheduled-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.scheduled-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.scheduled-status {
+  background: var(--blue-600);
+  color: var(--white);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scheduled-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.detail-item {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: var(--gray-500);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.scheduled-recipients {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--blue-100);
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .scheduled-details {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}
