@@ -11,6 +11,7 @@ import {
 // Global state
 let interviewerProfile = null
 let scheduledInterviews = []
+let hiringCompanies = []
 
 // Initialize dashboard on page load
 
@@ -27,8 +28,17 @@ async function initializeDashboard() {
     console.log('Interviewer profile loaded:', interviewerProfile)
 
     // Load interviews where this interviewer is assigned
-    scheduledInterviews = await api.getUpcomingInterviews(interviewerProfile.email)
+    scheduledInterviews = await api.getUpcomingInterviewsForInterviewer(interviewerProfile.email)
     console.log('Scheduled interviews loaded:', scheduledInterviews)
+
+    // Load hiring companies
+    try {
+      hiringCompanies = await api.getAllCompanies()
+      console.log('Companies loaded:', hiringCompanies)
+    } catch (e) {
+      console.warn('Failed to load companies:', e)
+      hiringCompanies = []
+    }
 
     // Render dashboard
     renderDashboard()
@@ -48,9 +58,12 @@ function renderDashboard() {
   }
 
   // Calculate Stats
-  const todayCount = scheduledInterviews.length // partial logic
-  const completedCount = 23 // Mock, backend missing "completed this week"
-  const activeCompanies = 5 // Mock
+  const todayCount = scheduledInterviews.length
+  const completedCount = interviewerProfile.totalInterviewsConducted || 0
+
+  // Derive active companies from scheduled interviews
+  const companySet = new Set(scheduledInterviews.map(i => i.companyName).filter(Boolean))
+  const activeCompanies = interviewerProfile.activeCompanies || companySet.size
   const totalEarnings = interviewerProfile.totalEarnings ? `$${interviewerProfile.totalEarnings}` : '$0'
 
 
@@ -122,36 +135,34 @@ function renderDashboard() {
       <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
         <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
           <h2 style="margin: 0; font-size: 18px;">Companies Hiring Interviewers</h2>
-          <span class="badge badge-gray" style="font-size: 12px; padding: 4px 8px; background: #e5e7eb; border-radius: 12px;">Demo Data</span>
         </div>
         <div class="company-list" style="padding: 20px;">
-           <!-- Static items from original HTML -->
-           <div class="company-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 10px;">
-            <div class="company-info">
-              <h4 style="margin: 0 0 5px 0; font-size: 16px;">Google Inc.</h4>
-              <p style="margin: 0 0 5px 0; font-size: 14px; color: #6b7280;">Looking for: Senior Technical Interviewers</p>
-              <div class="company-meta" style="font-size: 13px; color: #1d4ed8;">
-                <span>$80/hour</span> • <span>Part-time</span>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="alert('Applications coming soon!')">Apply</button>
-          </div>
-          <div class="company-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px;">
-            <div class="company-info">
-              <h4 style="margin: 0 0 5px 0; font-size: 16px;">Microsoft</h4>
-              <p style="margin: 0 0 5px 0; font-size: 14px; color: #6b7280;">Looking for: Coding Interview Specialists</p>
-              <div class="company-meta" style="font-size: 13px; color: #1d4ed8;">
-                <span>$75/hour</span> • <span>Part-time</span>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="alert('Applications coming soon!')">Apply</button>
-          </div>
+           ${renderCompanyList(hiringCompanies)}
         </div>
       </div>
     </div>
   `;
 
   contentDiv.innerHTML = html
+}
+
+function renderCompanyList(companies) {
+  if (!companies || companies.length === 0) {
+    return '<p class="text-muted">No hiring companies found at the moment.</p>'
+  }
+
+  return companies.map(company => `
+    <div class="company-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 10px;">
+      <div class="company-info">
+        <h4 style="margin: 0 0 5px 0; font-size: 16px;">${company.name}</h4>
+        <p style="margin: 0 0 5px 0; font-size: 14px; color: #6b7280;">${company.industry || 'Technology'}</p>
+        <div class="company-meta" style="font-size: 13px; color: #1d4ed8;">
+          <span>${company.location || 'Remote'}</span>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="alert('Applications for ${company.name} coming soon!')">View</button>
+    </div>
+  `).join('')
 }
 
 function renderScheduleList(interviews) {

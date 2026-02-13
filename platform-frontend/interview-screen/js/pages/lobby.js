@@ -48,7 +48,7 @@ joinForm.addEventListener("submit", async (evt) => {
     }
 
     console.log(`[Lobby] Joining room: ${room}`);
-    window.location.href = `${BASE_URL}/?room=${room}&role=candidate`;
+    window.location.href = `video-interview.html?room=${room}&role=candidate`;
   } catch (err) {
     showLoading(false);
     console.error("[Lobby] Error checking room:", err);
@@ -68,7 +68,7 @@ createBtn.addEventListener("click", async () => {
     // Check if exists
     // actually, we should just proceed with the generated ID
     console.log(`[Lobby] Instant meeting generated: ${randomId}`);
-    window.location.href = `${BASE_URL}/?room=${randomId}&role=interviewer`;
+    window.location.href = `video-interview.html?room=${randomId}&role=interviewer`;
     return;
   }
 
@@ -95,7 +95,7 @@ createBtn.addEventListener("click", async () => {
     }
 
     console.log(`[Lobby] Creating room: ${room}`);
-    window.location.href = `${BASE_URL}/?room=${room}&role=interviewer`;
+    window.location.href = `video-interview.html?room=${room}&role=interviewer`;
   } catch (err) {
     showLoading(false);
     console.error("[Lobby] Error checking room:", err);

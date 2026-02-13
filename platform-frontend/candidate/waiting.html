@@ -89,7 +89,7 @@
           document.getElementById('status').innerText = `Status: ${myInterview.status}`;
 
           if (myInterview.status === 'IN_PROGRESS') {
-            window.location.href = `/index.html?room=${room}&role=candidate&email=${email}`;
+            window.location.href = `../interview-screen/video-interview.html?room=${room}&role=candidate&email=${email}`;
           }
         }
       } catch (e) {

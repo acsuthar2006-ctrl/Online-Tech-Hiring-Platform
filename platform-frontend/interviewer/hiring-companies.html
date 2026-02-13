@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
 
   <script src="../common/auth.js"></script>
 </head>
+
 <body>
   <div id="sidebar-container"></div>
 
@@ -22,8 +24,11 @@
         <button class="btn-icon" id="notificationBtn">
           <span class="notification-badge">3</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
         <div class="profile-menu">
@@ -54,315 +59,19 @@
 
       <div class="search-results">Showing 8 companies actively hiring interviewers</div>
 
-      <div class="company-grid">
-        <!-- Company 1 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">G</div>
-            <div class="company-basic">
-              <h3>Google Inc.</h3>
-              <p>Tech · Mountain View, CA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$85/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Part-time</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">5 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">System Design</span>
-              <span class="req-tag">Backend</span>
-              <span class="req-tag">Data Structures</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
-        </div>
-
-        <!-- Company 2 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">M</div>
-            <div class="company-basic">
-              <h3>Microsoft</h3>
-              <p>Tech · Redmond, WA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$80/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Flexible</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">3 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">Full Stack</span>
-              <span class="req-tag">Cloud</span>
-              <span class="req-tag">C++</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
-        </div>
-
-        <!-- Company 3 -->
-        <div class="company-card">
-          <div class="company-status status-applied">Applied</div>
-          <div class="company-header">
-            <div class="company-logo">A</div>
-            <div class="company-basic">
-              <h3>Amazon</h3>
-              <p>Tech · Seattle, WA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$90/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Part-time</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">8 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">System Design</span>
-              <span class="req-tag">Algorithms</span>
-              <span class="req-tag">AWS</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Withdraw</button>
-            <button class="btn-outline btn-half" disabled>Pending</button>
-          </div>
-        </div>
-
-        <!-- Company 4 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">F</div>
-            <div class="company-basic">
-              <h3>Facebook (Meta)</h3>
-              <p>Tech · Menlo Park, CA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$95/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Flexible</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">6 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">Frontend</span>
-              <span class="req-tag">React</span>
-              <span class="req-tag">Mobile</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
-        </div>
-
-        <!-- Company 5 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">A</div>
-            <div class="company-basic">
-              <h3>Apple</h3>
-              <p>Tech · Cupertino, CA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$100/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Part-time</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">4 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">iOS</span>
-              <span class="req-tag">Swift</span>
-              <span class="req-tag">Objective-C</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
-        </div>
-
-        <!-- Company 6 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">U</div>
-            <div class="company-basic">
-              <h3>Uber</h3>
-              <p>Tech · San Francisco, CA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$75/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Flexible</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">7 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">Backend</span>
-              <span class="req-tag">Distributed Systems</span>
-              <span class="req-tag">Java</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
-        </div>
-
-        <!-- Company 7 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">L</div>
-            <div class="company-basic">
-              <h3>LinkedIn</h3>
-              <p>Tech · Sunnyvale, CA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$85/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Part-time</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">5 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">Full Stack</span>
-              <span class="req-tag">Scale</span>
-              <span class="req-tag">Python</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
-        </div>
-
-        <!-- Company 8 -->
-        <div class="company-card">
-          <div class="company-status status-open">Open Position</div>
-          <div class="company-header">
-            <div class="company-logo">T</div>
-            <div class="company-basic">
-              <h3>Twitter/X</h3>
-              <p>Tech · San Francisco, CA</p>
-            </div>
-          </div>
-          <div class="company-details">
-            <div class="detail-row">
-              <span class="detail-label">Hourly Rate:</span>
-              <span class="detail-value">$80/hour</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Availability:</span>
-              <span class="detail-value">Flexible</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Positions:</span>
-              <span class="detail-value">6 Available</span>
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="req-title">Required Expertise</div>
-            <div class="req-list">
-              <span class="req-tag">Backend</span>
-              <span class="req-tag">Scala</span>
-              <span class="req-tag">Real-time</span>
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="btn-secondary btn-half">Learn More</button>
-            <button class="btn-primary btn-half">Apply Now</button>
-          </div>
+      <div class="company-grid" id="companyGrid">
+        <!-- Content will be injected by js/hiring-companies.js -->
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading hiring companies...</p>
         </div>
       </div>
     </div>
   </div>
-  
+
   <script src="../common/dashboard.js"></script>
   <script src="../common/interviewer-sidebar.js"></script>
+  <script type="module" src="js/hiring-companies.js"></script>
 </body>
+
 </html>

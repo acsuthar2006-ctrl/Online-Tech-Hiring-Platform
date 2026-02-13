@@ -145,11 +145,28 @@ class ApiService {
     return this.request('/companies');
   }
 
+  // ===== POSITION ENDPOINTS =====
+  async getAllPositions() {
+    return this.request('/positions');
+  }
+
+  async getPositionsByCompany(companyId) {
+    return this.request(`/positions/company/${companyId}`);
+  }
+
+  async getInterviewerExpertise(interviewerId) {
+    return this.request(`/interviewers/${interviewerId}/expertise`);
+  }
+
 
 
   // ===== INTERVIEW ENDPOINTS (No auth required) =====
   async getUpcomingInterviews(email) {
     return this.request(`/interviews/candidate/upcoming?email=${encodeURIComponent(email)}`);
+  }
+
+  async getUpcomingInterviewsForInterviewer(email) {
+    return this.request(`/interviews/interviewer/upcoming?email=${encodeURIComponent(email)}`);
   }
 
   async scheduleInterview(data) {

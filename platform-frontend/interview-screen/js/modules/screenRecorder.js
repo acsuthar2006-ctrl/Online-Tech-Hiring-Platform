@@ -215,7 +215,7 @@ export async function uploadRecording(roomId) {
     //  NOTE: sendBeacon does NOT support custom headers (like CORS preflight bypass) easily, 
     //  but since we are cross-origin, standard simple requests might work if server allows.
     //  Targeting localhost:3000 explicitly.
-    const UPLOAD_URL = "http://localhost:3000/upload-recording";
+    const UPLOAD_URL = "/upload-recording";
 
     if (blob.size <= MAX_BEACON_SIZE && navigator.sendBeacon) {
       const ok = navigator.sendBeacon(UPLOAD_URL, formData);
