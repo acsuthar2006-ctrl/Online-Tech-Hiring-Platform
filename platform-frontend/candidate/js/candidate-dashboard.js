@@ -52,10 +52,12 @@ function renderDashboard() {
   }
 
   // Calculate stats
-  // Note: Backend might not provide all these stats yet, using placeholders or partial data
-  const scheduledCount = upcomingInterviews.filter(i => i.status === 'SCHEDULED').length
+  // Note: Backend might not provide all these stats in the profile DTO yet, adding fallbacks
+  const scheduledCount = upcomingInterviews.filter(i => i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS').length
   const completedCount = candidateProfile.totalInterviewsAttended || 0
-  const avgRating = candidateProfile.averageRating ? candidateProfile.averageRating.toFixed(1) + '/5' : 'N/A'
+  const avgRating = (candidateProfile.averageRating && candidateProfile.averageRating > 0)
+    ? candidateProfile.averageRating.toFixed(1) + '/5'
+    : 'N/A'
 
   const html = `
     <!-- Header -->

@@ -48,7 +48,7 @@ export async function exitCall() {
     endCall();
 
     setTimeout(() => {
-      window.location.href = "/lobby.html";
+      window.location.href = "lobby.html";
     }, 50);
   }
 }

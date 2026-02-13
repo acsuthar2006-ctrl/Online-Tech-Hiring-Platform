@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
   <link rel="stylesheet" href="css/interviewer-settings.css">
   <script src="../common/auth.js"></script>
 </head>
+
 <body>
   <div id="sidebar-container"></div>
 
@@ -21,8 +23,11 @@
         <button class="btn-icon" id="notificationBtn">
           <span class="notification-badge">1</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
         <div class="profile-menu">
@@ -45,7 +50,7 @@
       <!-- General Settings -->
       <div id="general" class="settings-section active">
         <h3 class="section-title">General Settings</h3>
-        
+
         <div class="settings-item">
           <div class="settings-item-info">
             <h4>Language</h4>
@@ -90,7 +95,7 @@
       <!-- Notifications Settings -->
       <div id="notifications" class="settings-section">
         <h3 class="section-title">Notification Preferences</h3>
-        
+
         <div class="settings-item">
           <div class="settings-item-info">
             <h4>Email Notifications</h4>
@@ -137,7 +142,7 @@
       <!-- Security Settings -->
       <div id="security" class="settings-section">
         <h3 class="section-title">Security & Privacy</h3>
-        
+
         <div class="form-group">
           <label>Current Password</label>
           <input type="password" placeholder="Enter your current password">
@@ -182,7 +187,7 @@
       <!-- Payment Settings -->
       <div id="payment" class="settings-section">
         <h3 class="section-title">Payment & Earnings</h3>
-        
+
         <div class="form-group">
           <label>Payment Method</label>
           <select>
@@ -215,7 +220,8 @@
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--blue-100);">
           <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Earnings Summary</h4>
-          <p style="color: var(--gray-600); margin-bottom: 16px;">This month: <strong style="color: var(--blue-700); font-size: 18px;">$2,450</strong></p>
+          <p style="color: var(--gray-600); margin-bottom: 16px;">This month: <strong
+              style="color: var(--blue-700); font-size: 18px;">$2,450</strong></p>
           <button class="btn-secondary">Download Statement</button>
         </div>
       </div>
@@ -230,7 +236,8 @@
   </div>
 
   <script src="../common/dashboard.js"></script>
-  <script src="js/interviewer-settings.js"></script>
   <script src="../common/interviewer-sidebar.js"></script>
+  <script type="module" src="js/interviewer-settings.js"></script>
 </body>
+
 </html>

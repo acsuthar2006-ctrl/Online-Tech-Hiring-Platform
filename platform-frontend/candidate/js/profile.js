@@ -1,47 +1,61 @@
+import { api } from '../../common/api.js';
+
 document.addEventListener("DOMContentLoaded", () => {
-  const username = localStorage.getItem("username") || "User"
+  loadProfile();
+});
 
-  // Update username display elements
-  const profileUsernameElement = document.getElementById("profileUsername")
-  if (profileUsernameElement) {
-    profileUsernameElement.textContent = username
+async function loadProfile() {
+  try {
+    const [profile, interviews] = await Promise.all([
+      api.getUserProfile(),
+      api.getUpcomingInterviews(localStorage.getItem('userEmail'))
+    ]);
+
+    if (profile) {
+      // Update Header Card
+      const profileUsernameElement = document.getElementById("profileUsername");
+      if (profileUsernameElement) profileUsernameElement.textContent = profile.fullName;
+
+      // Populate Personal Information
+      const fullNameInput = document.getElementById("fullName");
+      const emailInput = document.getElementById("email");
+      const phoneInput = document.getElementById("phone");
+
+      if (fullNameInput) fullNameInput.value = profile.fullName || '';
+      if (emailInput) emailInput.value = profile.email || '';
+      if (phoneInput) phoneInput.value = profile.phone || ''; // Note: DTO might need update but we'll try
+
+      // Update Statistics
+      // Backend fields from Candidate entity: totalInterviewsAttended (completed), averageRating
+      const totalInterviews = (profile.totalInterviewsAttended || 0) + interviews.length;
+      const completedInterviews = profile.totalInterviewsAttended || 0;
+      const pendingInterviews = interviews.length;
+
+      updateStat('Total Interviews', totalInterviews);
+      updateStat('Completed', completedInterviews);
+      updateStat('Pending', pendingInterviews);
+    }
+  } catch (error) {
+    console.error('Failed to load profile:', error);
   }
+}
 
-  // Load saved profile data if it exists
-  const savedFullName = localStorage.getItem("fullName")
-  if (savedFullName) {
-    document.getElementById("fullName").value = savedFullName
-  }
+function updateStat(label, value) {
+  const statsList = document.querySelector('.stats-list');
+  if (!statsList) return;
 
-  const savedEmail = localStorage.getItem("email")
-  if (savedEmail) {
-    document.getElementById("email").value = savedEmail
-  }
+  const statItems = statsList.querySelectorAll('.stat-item');
+  statItems.forEach(item => {
+    const itemLabel = item.querySelector('span:not(.stat-number):not(.stat-dot)').textContent;
+    if (itemLabel.trim() === label) {
+      item.querySelector('.stat-number').textContent = value;
+    }
+  });
+}
 
-  const savedPhone = localStorage.getItem("phone")
-  if (savedPhone) {
-    document.getElementById("phone").value = savedPhone
-  }
-
-  const savedLocation = localStorage.getItem("location")
-  if (savedLocation) {
-    document.getElementById("location").value = savedLocation
-  }
-})
-
-// Save profile data when user makes changes
-document.getElementById("fullName")?.addEventListener("change", (e) => {
-  localStorage.setItem("fullName", e.target.value)
-})
-
-document.getElementById("email")?.addEventListener("change", (e) => {
-  localStorage.setItem("email", e.target.value)
-})
-
-document.getElementById("phone")?.addEventListener("change", (e) => {
-  localStorage.setItem("phone", e.target.value)
-})
-
-document.getElementById("location")?.addEventListener("change", (e) => {
-  localStorage.setItem("location", e.target.value)
-})
+// Keep the save listeners as placeholders since backend endpoints are missing
+document.querySelectorAll('.form-input').forEach(input => {
+  input.addEventListener('change', (e) => {
+    console.log(`Field ${e.target.id} changed to ${e.target.value}. Update API missing on main branch.`);
+  });
+});

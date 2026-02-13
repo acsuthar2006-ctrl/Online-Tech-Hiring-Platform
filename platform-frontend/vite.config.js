@@ -9,7 +9,8 @@ export default defineConfig({
         target: 'ws://localhost:3000',
         ws: true
       },
-      '/recordings': 'http://localhost:3000'
+      '/recordings': 'http://localhost:3000',
+      '/upload-recording': 'http://localhost:3000'
     }
   }
 });
