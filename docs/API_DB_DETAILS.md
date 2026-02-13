@@ -687,3 +687,49 @@ curl -X POST http://localhost:8080/api/companies \
   "updatedAt": "2026-02-09T18:00:00"
 }
 ```
+
+## New Features (v2)
+
+### Additional ERD Entities
+```mermaid
+erDiagram
+    CANDIDATES ||--o{ CANDIDATE_SKILLS : "has"
+    CANDIDATES ||--o{ CANDIDATE_EXPERIENCE : "has"
+    CANDIDATES ||--o{ CANDIDATE_EDUCATION : "has"
+    CANDIDATES ||--|| CANDIDATE_SETTINGS : "has"
+    INTERVIEWERS ||--o{ INTERVIEWER_EXPERTISE : "has"
+    INTERVIEWERS ||--|| INTERVIEWER_SETTINGS : "has"
+    
+    CANDIDATE_SKILLS { bigint id PK, bigint candidate_id FK, string skill_name, string proficiency_level }
+    CANDIDATE_EXPERIENCE { bigint id PK, bigint candidate_id FK, string job_title, string company_name }
+    CANDIDATE_EDUCATION { bigint id PK, bigint candidate_id FK, string school_name, string degree }
+    INTERVIEWER_EXPERTISE { bigint id PK, bigint interviewer_id FK, string expertise_area }
+    INTERVIEWER_JOBS { bigint id PK, string company_name, string title, double hourly_rate, string status }
+    RECORDINGS { bigint id PK, string interview_id, string filename, string url }
+```
+
+### Candidate Profile API (`/api/candidates`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/{id}/profile` | Get full profile |
+| `POST` | `/{id}/skills` | Add Skill |
+| `POST` | `/{id}/experience` | Add Experience |
+| `POST` | `/{id}/education` | Add Education |
+
+### Interviewer Profile API (`/api/interviewers`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/{id}/profile` | Get full profile |
+| `POST` | `/{id}/expertise` | Add Expertise |
+
+### Settings API (`/api/settings`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET/PUT` | `/candidate/{id}` | Candidate Settings |
+| `GET/PUT` | `/interviewer/{id}` | Interviewer Settings |
+
+### Features API
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/interviewer-jobs` | Open Jobs |
+| `GET` | `/api/recordings/{interviewId}` | Interview Recordings |
