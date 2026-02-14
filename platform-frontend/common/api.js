@@ -2,48 +2,41 @@
 // Backend uses JWT tokens with Bearer authentication
 const API_BASE_URL = '/api';
 const TOKEN_KEY = 'jwt_token';
-const TOKEN_EXPIRY_KEY = 'jwt_token_expiry';
+const USER_INFO_KEY = 'user_info'; 
 
 class ApiService {
   constructor() {
-    this.token = localStorage.getItem(TOKEN_KEY);
-    this.checkTokenExpiry();
+    this.token = sessionStorage.getItem(TOKEN_KEY);
   }
 
   // Store JWT token after successful login
   setToken(token) {
     this.token = token;
-    localStorage.setItem(TOKEN_KEY, token);
-    // Token expiry: 24 hours from now
-    const expiryTime = new Date().getTime() + 86400000; // 24 hours in ms
-    localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime);
+    sessionStorage.setItem(TOKEN_KEY, token);
+  }
+  
+  // Store user info
+  setUserInfo(user) {
+      sessionStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
+  }
+
+  getUserInfo() {
+      const data = sessionStorage.getItem(USER_INFO_KEY);
+      return data ? JSON.parse(data) : null;
   }
 
   // Clear token on logout or expiry
   clearToken() {
     this.token = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(TOKEN_EXPIRY_KEY);
-  }
-
-  // Check if token has expired
-  checkTokenExpiry() {
-    const expiryTime = localStorage.getItem(TOKEN_EXPIRY_KEY);
-    if (!expiryTime) return;
-
-    if (new Date().getTime() > parseInt(expiryTime)) {
-      console.warn('JWT token expired');
-      this.clearToken();
-      window.location.href = '../login/login.html';
-    }
+    sessionStorage.clear(); // Clear everything
   }
 
   // Get Authorization header with Bearer token
   getAuthHeader() {
     if (!this.token) {
-      return null;
+      this.token = sessionStorage.getItem(TOKEN_KEY); 
     }
-    return `Bearer ${this.token}`;
+    return this.token ? `Bearer ${this.token}` : null;
   }
 
   // Helper method for all requests
@@ -84,19 +77,19 @@ class ApiService {
         // 401 Unauthorized - redirect to login
         if (response.status === 401) {
           this.clearToken();
-          window.location.href = '../login/login.html';
+          window.location.href = '/login/login.html';
         }
 
         throw new Error(errorMessage);
       }
 
       // For successful responses without content, return null
-      const contentLength = response.headers.get('content-length');
-      if (response.status === 204 || !contentLength) {
+      if (response.status === 204) {
         return null;
       }
 
-      return await response.json();
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
     } catch (error) {
       console.error(`API Error [${endpoint}]:`, error);
       throw error;
@@ -105,21 +98,19 @@ class ApiService {
 
   // ===== AUTH ENDPOINTS =====
   async signup(email, password, fullName, role, additionalData = {}) {
+    // Force role to uppercase to match backend enum
     const payload = {
       email,
       password,
       fullName,
-      role: role.toUpperCase(), // Backend expects CANDIDATE or INTERVIEWER
-      ...additionalData, // resumeUrl, skills for candidate; companyName for interviewer
+      role: role ? role.toUpperCase() : 'CANDIDATE',
+      ...additionalData,
     };
 
-    const data = await this.request('/auth/signup', {
+    return this.request('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-
-    // Signup doesn't return token, user must login after
-    return data; // Returns: { token: null, message, userId, role, fullName }
   }
 
   async login(email, password) {
@@ -129,15 +120,31 @@ class ApiService {
     });
 
     // Login returns JWT token - store it for future requests
-    if (data.token) {
+    if (data && data.token) {
       this.setToken(data.token);
+      // Store basic user info if returned
+      if (data.userId) {
+          this.setUserInfo({
+              id: data.userId,
+              email: email, 
+              role: data.role,
+              fullName: data.fullName
+          });
+      }
     }
-    return data; // Returns: { token, message, userId, role, fullName }
+    return data; 
   }
 
   // ===== USER ENDPOINTS =====
   async getUserProfile() {
     return this.request('/users/profile');
+  }
+
+  async updateUserProfile(data) {
+      return this.request('/users/profile', {
+          method: 'PUT', // or POST depending on backend
+          body: JSON.stringify(data)
+      });
   }
 
   // ===== COMPANY ENDPOINTS =====
@@ -157,9 +164,6 @@ class ApiService {
   async getInterviewerExpertise(interviewerId) {
     return this.request(`/interviewers/${interviewerId}/expertise`);
   }
-
-
-
   // ===== INTERVIEW ENDPOINTS (No auth required) =====
   async getUpcomingInterviews(email) {
     return this.request(`/interviews/candidate/upcoming?email=${encodeURIComponent(email)}`);
@@ -170,6 +174,7 @@ class ApiService {
   }
 
   async scheduleInterview(data) {
+    // data should match ScheduleRequest DTO
     return this.request('/interviews/schedule', {
       method: 'POST',
       body: JSON.stringify(data),

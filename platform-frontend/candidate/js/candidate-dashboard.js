@@ -1,15 +1,15 @@
 // Candidate Dashboard
-import { api } from '../../common/api.js'
+import { api } from '../../common/api.js';
+import { Router } from '../../common/router.js'; // Auth check
 import {
   formatDateTime,
   createLoadingState,
   createErrorState,
-  createEmptyState
-} from '../../common/dashboard-utils.js'
+} from '../../common/dashboard-utils.js';
 
 // Global state
-let candidateProfile = null
-let upcomingInterviews = []
+let candidateProfile = null;
+let upcomingInterviews = [];
 
 /**
  * Initialize dashboard on page load
@@ -17,47 +17,65 @@ let upcomingInterviews = []
 async function initializeDashboard() {
   try {
     // Show loading state
-    const contentDiv = document.getElementById('dashboard-content')
+    const contentDiv = document.getElementById('dashboard-content');
     if (contentDiv) {
-      contentDiv.innerHTML = createLoadingState()
+      contentDiv.innerHTML = createLoadingState();
     }
 
     // Load candidate profile
-    candidateProfile = await api.getUserProfile()
-    console.log('Profile loaded:', candidateProfile)
+    // Try to get from session first to display quickly, then refresh
+    const cachedUser = api.getUserInfo();
+    if (cachedUser && cachedUser.role === 'CANDIDATE') {
+         candidateProfile = cachedUser;
+         // Set name immediately
+         const nameEl = document.getElementById('userName');
+         if(nameEl) nameEl.textContent = candidateProfile.fullName;
+    }
+
+    // Fetch fresh profile
+    try {
+        candidateProfile = await api.getUserProfile();
+    } catch (e) {
+        console.warn("Failed to refresh profile, using cached if available", e);
+        if (!candidateProfile) throw e;
+    }
+    
+    // Redirect if not candidate (Double check)
+    if (candidateProfile.role !== 'CANDIDATE') {
+      window.location.href = '/interviewer/interviewer-dashboard.html';
+      return;
+    }
 
     // Load upcoming interviews
-    upcomingInterviews = await api.getUpcomingInterviews(candidateProfile.email)
-    console.log('Interviews loaded:', upcomingInterviews)
+    upcomingInterviews = await api.getUpcomingInterviews(candidateProfile.email);
 
     // Render dashboard
-    renderDashboard()
+    renderDashboard();
   } catch (error) {
-    console.error('Dashboard initialization error:', error)
-    const contentDiv = document.getElementById('dashboard-content')
+    console.error('Dashboard initialization error:', error);
+    const contentDiv = document.getElementById('dashboard-content');
     if (contentDiv) {
-      contentDiv.innerHTML = createErrorState(error.message || 'Failed to load dashboard')
+      contentDiv.innerHTML = createErrorState(error.message || 'Failed to load dashboard');
     }
   }
 }
 
 /**
  * Render complete dashboard
- * Matches structure of platform-frontend/candidate/candidate-dashboard.html
  */
 function renderDashboard() {
-  const contentDiv = document.getElementById('dashboard-content')
+  const contentDiv = document.getElementById('dashboard-content');
   if (!contentDiv) {
-    return
+    return;
   }
 
   // Calculate stats
   // Note: Backend might not provide all these stats in the profile DTO yet, adding fallbacks
-  const scheduledCount = upcomingInterviews.filter(i => i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS').length
-  const completedCount = candidateProfile.totalInterviewsAttended || 0
+  const scheduledCount = upcomingInterviews ? upcomingInterviews.filter(i => i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS').length : 0;
+  const completedCount = candidateProfile.totalInterviewsAttended || 0;
   const avgRating = (candidateProfile.averageRating && candidateProfile.averageRating > 0)
     ? candidateProfile.averageRating.toFixed(1) + '/5'
-    : 'N/A'
+    : 'N/A';
 
   const html = `
     <!-- Header -->
@@ -67,7 +85,6 @@ function renderDashboard() {
         <p class="text-muted">Track your interviews and explore opportunities</p>
       </div>
       <div class="header-right">
-         <!-- Reuse static header right structure if needed, or simple actions -->
          <button class="btn btn-secondary btn-sm" onclick="window.logout()">Logout</button>
       </div>
     </div>
@@ -83,24 +100,7 @@ function renderDashboard() {
           <p class="stat-number">${scheduledCount}</p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        </div>
-        <div class="stat-info">
-          <h3>Completed</h3>
-          <p class="stat-number">${completedCount}</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        </div>
-        <div class="stat-info">
-          <h3>Avg Rating</h3>
-          <p class="stat-number">${avgRating}</p>
-        </div>
-      </div>
+      <!-- Other stats hidden until supported -->
     </div>
 
     <!-- Content Grid -->
@@ -121,6 +121,7 @@ function renderDashboard() {
           <h2 style="margin: 0; font-size: 18px;">Quick Actions</h2>
         </div>
         <div class="quick-actions" style="padding: 20px;">
+          <!-- 
           <a href="./companies.html" class="action-card">
             <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
@@ -129,7 +130,8 @@ function renderDashboard() {
               <h4>Browse Companies</h4>
               <p>Explore open positions</p>
             </div>
-          </a>
+          </a> 
+          -->
           <a href="./profile.html" class="action-card">
             <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -144,8 +146,9 @@ function renderDashboard() {
     </div>
   `;
 
-  contentDiv.innerHTML = html
+  contentDiv.innerHTML = html;
 }
+
 
 /**
  * Render interview list items
@@ -212,7 +215,7 @@ async function logout() {
     localStorage.removeItem('userId')
     localStorage.removeItem('username')
     localStorage.removeItem('userRole')
-    window.location.href = '../../login/login.html'
+    window.location.href = '/login/login.html'
   }
 }
 

@@ -1,61 +1,49 @@
 import { api } from '../../common/api.js';
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadProfile();
-});
-
-async function loadProfile() {
-  try {
-    const [profile, interviews] = await Promise.all([
-      api.getUserProfile(),
-      api.getUpcomingInterviews(localStorage.getItem('userEmail'))
-    ]);
-
-    if (profile) {
-      // Update Header Card
-      const profileUsernameElement = document.getElementById("profileUsername");
-      if (profileUsernameElement) profileUsernameElement.textContent = profile.fullName;
-
-      // Populate Personal Information
-      const fullNameInput = document.getElementById("fullName");
-      const emailInput = document.getElementById("email");
-      const phoneInput = document.getElementById("phone");
-
-      if (fullNameInput) fullNameInput.value = profile.fullName || '';
-      if (emailInput) emailInput.value = profile.email || '';
-      if (phoneInput) phoneInput.value = profile.phone || ''; // Note: DTO might need update but we'll try
-
-      // Update Statistics
-      // Backend fields from Candidate entity: totalInterviewsAttended (completed), averageRating
-      const totalInterviews = (profile.totalInterviewsAttended || 0) + interviews.length;
-      const completedInterviews = profile.totalInterviewsAttended || 0;
-      const pendingInterviews = interviews.length;
-
-      updateStat('Total Interviews', totalInterviews);
-      updateStat('Completed', completedInterviews);
-      updateStat('Pending', pendingInterviews);
-    }
-  } catch (error) {
-    console.error('Failed to load profile:', error);
+document.addEventListener("DOMContentLoaded", async () => {
+  const userInfo = api.getUserInfo();
+  if (userInfo) {
+       const profileName = document.getElementById("profileUsername");
+       if(profileName) profileName.textContent = userInfo.fullName;
   }
-}
 
-function updateStat(label, value) {
-  const statsList = document.querySelector('.stats-list');
-  if (!statsList) return;
-
-  const statItems = statsList.querySelectorAll('.stat-item');
-  statItems.forEach(item => {
-    const itemLabel = item.querySelector('span:not(.stat-number):not(.stat-dot)').textContent;
-    if (itemLabel.trim() === label) {
-      item.querySelector('.stat-number').textContent = value;
-    }
-  });
-}
-
-// Keep the save listeners as placeholders since backend endpoints are missing
-document.querySelectorAll('.form-input').forEach(input => {
-  input.addEventListener('change', (e) => {
-    console.log(`Field ${e.target.id} changed to ${e.target.value}. Update API missing on main branch.`);
-  });
+  try {
+      const profile = await api.getUserProfile();
+      populateForm(profile);
+  } catch (error) {
+      console.error("Failed to load profile", error);
+  }
 });
+
+function populateForm(profile) {
+   if (profile.fullName) document.getElementById("fullName").value = profile.fullName;
+   if (profile.email) document.getElementById("email").value = profile.email;
+   if (profile.phone) document.getElementById("phone").value = profile.phone;
+   // Location might not be in basic profile yet, need to check backend Entity
+}
+
+// Save profile data
+const saveBtn = document.querySelector('.btn-primary'); // Assuming there is a save button
+if (saveBtn) {
+    saveBtn.addEventListener('click', async (e) => {
+        // e.preventDefault(); // If it's a form submit
+        const data = {
+            fullName: document.getElementById("fullName").value,
+            phone: document.getElementById("phone").value,
+            // email might be read-only
+        };
+        
+        try {
+            await api.updateUserProfile(data);
+            alert("Profile updated successfully");
+            // Update session cache
+            const currentUser = api.getUserInfo();
+            if (currentUser) {
+                currentUser.fullName = data.fullName;
+                api.setUserInfo(currentUser);
+            }
+        } catch (error) {
+            alert("Failed to update profile: " + error.message);
+        }
+    });
+}

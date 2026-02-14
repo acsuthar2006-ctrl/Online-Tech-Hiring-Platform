@@ -36,9 +36,9 @@ async function init() {
     const remoteLabel = document.querySelector(".remote-card .user-label");
     const waitingText = document.querySelector(".waiting-content p");
 
-    // Get user email from URL or localStorage
+    // Get user email from URL or sessionStorage
     const urlParams = new URLSearchParams(window.location.search);
-    const userEmail = urlParams.get("email") || localStorage.getItem("userEmail");
+    const userEmail = urlParams.get("email") || sessionStorage.getItem("userEmail");
 
     // Fetch real names from the queue API
     let localName = state.role === 'interviewer' ? 'Interviewer' : 'Candidate';
@@ -236,9 +236,9 @@ init().then(() => {
       // Let's rely on localStorage 'username' matching 'candidateName' or similar? Weak.
       // Better: The User should have logged in? my_schedule.js uses localStorage.
 
-      // Try getting email from URL first (testing convenience), then localStorage
+      // Try getting email from URL first (testing convenience), then sessionStorage
       const urlParams = new URLSearchParams(window.location.search);
-      const email = urlParams.get("email") || localStorage.getItem("userEmail");
+      const email = urlParams.get("email") || sessionStorage.getItem("userEmail");
 
       if (!email) {
         console.warn("No user email found for status check");
