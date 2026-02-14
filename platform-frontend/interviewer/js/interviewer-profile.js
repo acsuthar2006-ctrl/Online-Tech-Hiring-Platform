@@ -40,6 +40,10 @@ function populateProfileFields(profile) {
     const emailInput = document.querySelector('input[type="email"]');
     const phoneInput = document.querySelector('input[type="tel"]');
     const bioTextarea = document.querySelector('textarea');
+    
+    // Interviewer specific
+    const rateInput = document.querySelector('input[type="number"][min="0"]'); // Hourly rate
+    const availabilitySelect = document.querySelector('.profile-section select'); // Availability
 
     if (profile.fullName) {
         const nameParts = profile.fullName.split(' ');
@@ -54,61 +58,67 @@ function populateProfileFields(profile) {
     if (emailInput && profile.email) emailInput.value = profile.email;
     if (phoneInput && profile.phone) phoneInput.value = profile.phone;
     if (bioTextarea && profile.bio) bioTextarea.value = profile.bio;
+    
+    if (rateInput && profile.hourlyRate) rateInput.value = profile.hourlyRate;
+    if (availabilitySelect && profile.availabilityStatus) availabilitySelect.value = profile.availabilityStatus;
 }
 
-function renderExpertise(expertise) {
-    const expertiseLists = document.querySelectorAll('.expertise-list');
-    if (expertiseLists.length === 0) return;
-
-    // Primary focus areas
-    const focusList = expertiseLists[0];
-    focusList.innerHTML = '';
-
-    if (!expertise || expertise.length === 0) {
-        focusList.innerHTML = '<span class="text-muted">No expertise tags added yet.</span>';
-        return;
-    }
-
-    expertise.forEach(item => {
-        const tag = document.createElement('span');
-        tag.className = 'expertise-tag';
-        tag.textContent = item.name;
-        focusList.appendChild(tag);
-    });
-}
 
 function setupEventListeners() {
-    const saveBtn = document.querySelector('.btn-primary');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-
+    // Save Personal Info
+    const savePersonalInfoBtn = document.querySelector('.profile-section:nth-of-type(1) .btn-primary');
+    if (savePersonalInfoBtn) {
+        savePersonalInfoBtn.addEventListener('click', async (e) => {
+            // e.preventDefault(); // If form
+            
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
+            
             const data = {
                 fullName: `${firstName} ${lastName}`.trim(),
                 phone: document.querySelector('input[type="tel"]')?.value || null,
                 bio: document.querySelector('textarea')?.value || null
             };
-
-            try {
-                await api.updateUserProfile(data);
-                alert("Profile updated successfully");
-
-                // Update session cache
-                const currentUser = api.getUserInfo();
-                if (currentUser) {
-                    currentUser.fullName = data.fullName;
-                    api.setUserInfo(currentUser);
-                }
-
-                // Refresh header name
-                const profileNameEl = document.getElementById("profileName");
-                if (profileNameEl) profileNameEl.textContent = data.fullName;
-
-            } catch (error) {
-                alert("Failed to update profile: " + error.message);
-            }
+            
+            updateInterviewerProfile(data);
         });
+    }
+
+    // Save Professional Details
+    const saveProfessionalBtn = document.querySelector('.profile-section:nth-of-type(3) .btn-primary');
+    if (saveProfessionalBtn) {
+        saveProfessionalBtn.addEventListener('click', async (e) => {
+             const rateInput = document.querySelector('input[type="number"][min="0"]');
+             const availabilitySelect = document.querySelector('.profile-section select');
+             
+             const data = {
+                 hourlyRate: rateInput ? parseFloat(rateInput.value) : null,
+                 availabilityStatus: availabilitySelect ? availabilitySelect.value : null
+             };
+             
+             updateInterviewerProfile(data);
+        });
+    }
+}
+
+async function updateInterviewerProfile(data) {
+    try {
+        await api.updateUserProfile(data);
+        alert("Profile updated successfully");
+
+        // Update session cache if name changed
+        if (data.fullName) {
+            const currentUser = api.getUserInfo();
+            if (currentUser) {
+                currentUser.fullName = data.fullName;
+                api.setUserInfo(currentUser);
+            }
+             // Refresh header name
+             const profileNameEl = document.getElementById("profileName");
+             if (profileNameEl) profileNameEl.textContent = data.fullName;
+        }
+
+    } catch (error) {
+        alert("Failed to update profile: " + error.message);
     }
 }

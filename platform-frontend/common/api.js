@@ -142,8 +142,31 @@ class ApiService {
 
   async updateUserProfile(data) {
       return this.request('/users/profile', {
-          method: 'PUT', // or POST depending on backend
+          method: 'PUT',
           body: JSON.stringify(data)
+      });
+  }
+
+  // ===== SETTINGS ENDPOINTS =====
+  async getCandidateSettings(candidateId) {
+      return this.request(`/settings/candidate/${candidateId}`);
+  }
+
+  async updateCandidateSettings(candidateId, settings) {
+      return this.request(`/settings/candidate/${candidateId}`, {
+          method: 'PUT',
+          body: JSON.stringify(settings)
+      });
+  }
+
+  async getInterviewerSettings(interviewerId) {
+      return this.request(`/settings/interviewer/${interviewerId}`);
+  }
+
+  async updateInterviewerSettings(interviewerId, settings) {
+      return this.request(`/settings/interviewer/${interviewerId}`, {
+          method: 'PUT',
+          body: JSON.stringify(settings)
       });
   }
 
