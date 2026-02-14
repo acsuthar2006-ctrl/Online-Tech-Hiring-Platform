@@ -109,3 +109,5 @@ window.resetForm = () => {
   document.getElementById('scheduleForm').reset();
   updateEmailPreview();
 };
+
+window.scheduleInterview = scheduleInterview;

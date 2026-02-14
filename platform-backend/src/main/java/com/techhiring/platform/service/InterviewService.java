@@ -54,7 +54,8 @@ public class InterviewService {
     Candidate candidate = (Candidate) userRepository.findByEmail(candidateEmail).orElse(null);
     if (candidate == null) {
       String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-      candidate = new Candidate(candidateName, candidateEmail, passwordEncoder.encode(tempPassword), null, null);
+      // Use the 3-arg constructor which correctly sets User fields (fullName, email, password)
+      candidate = new Candidate(candidateName, candidateEmail, passwordEncoder.encode(tempPassword));
       candidateRepository.save(candidate);
       // TODO: Email the candidate their temp credentials? For now, we just schedule.
     }

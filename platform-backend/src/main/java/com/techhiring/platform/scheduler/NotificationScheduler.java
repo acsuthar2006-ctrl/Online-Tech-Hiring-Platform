@@ -29,7 +29,10 @@ public class NotificationScheduler {
     LocalDateTime endWindow = now.plusMinutes(25);
 
     // Find interviews scheduled between now+20m and now+25m
-    List<Interview> upcomingInterviews = interviewRepository.findScheduledInterviewsBetween(startWindow, endWindow);
+    List<Interview> upcomingInterviews = interviewRepository.findScheduledInterviewsBetween(
+        startWindow.toLocalDate(), 
+        startWindow.toLocalTime(), 
+        endWindow.toLocalTime());
 
     for (Interview interview : upcomingInterviews) {
       log.info("Sending reminder for interview: {}", interview.getId());

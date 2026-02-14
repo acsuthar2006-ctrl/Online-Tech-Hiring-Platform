@@ -47,9 +47,8 @@
             const role = params.get('role');
 
             if (room) {
-                // If we have a room, redirect to the lobby
-                // If role is missing, default to candidate or try to guess from session
-                const targetUrl = `/interview-screen/lobby.html?room=${encodeURIComponent(room)}&role=${encodeURIComponent(role || 'candidate')}`;
+                // If we have a room, redirect to the video interview directly (skip lobby)
+                const targetUrl = `/interview-screen/video-interview.html?room=${encodeURIComponent(room)}&role=${encodeURIComponent(role || 'candidate')}`;
                 window.location.href = targetUrl;
             } else {
                 // No specific room, check if logged in

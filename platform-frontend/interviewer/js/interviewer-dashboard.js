@@ -213,11 +213,15 @@ function createActionButtons(interview) {
 
 async function joinInterview(interviewId, meetingLink) {
   try {
-    console.log(`Joining interview ${interviewId} with meeting link: ${meetingLink}`)
-    await api.startInterview(interviewId)
-    window.location.href = `../../interview-screen/lobby.html?room=${encodeURIComponent(meetingLink)}&role=interviewer`
+    console.log(`Joining interview ${interviewId} with meeting link: ${meetingLink}`);
+    // Do not auto-start. Let the interviewer "Call In" from the video room.
+    // await api.startInterview(interviewId); 
+    
+    // Get email for direct access
+    const email = interviewerProfile ? interviewerProfile.email : '';
+    window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(meetingLink)}&role=interviewer&email=${encodeURIComponent(email)}`;
   } catch (error) {
-    alert(`Failed to join interview: ${error.message}`)
+    alert(`Failed to join interview: ${error.message}`);
   }
 }
 

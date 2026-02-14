@@ -197,11 +197,15 @@ function createInterviewItem(interview) {
  */
 async function joinInterview(interviewId, meetingLink) {
   try {
-    console.log(`Joining interview ${interviewId}`)
-    await api.startInterview(interviewId)
-    window.location.href = `../../interview-screen/lobby.html?room=${encodeURIComponent(meetingLink)}&role=candidate`
+    console.log(`Joining interview ${interviewId}`);
+    // Candidate should never auto-start the interview
+    // await api.startInterview(interviewId);
+    
+    // Get email
+    const email = candidateProfile ? candidateProfile.email : '';
+    window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(meetingLink)}&role=candidate&email=${encodeURIComponent(email)}`;
   } catch (error) {
-    alert(`Failed to join interview: ${error.message}`)
+    alert(`Failed to join interview: ${error.message}`);
   }
 }
 

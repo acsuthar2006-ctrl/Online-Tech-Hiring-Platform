@@ -133,9 +133,16 @@ function setupFilters() {
   });
 }
 
-window.joinInterview = (link) => {
+window.joinInterview = async (link) => {
   if (link) {
-    window.location.href = `../../interview-screen/lobby.html?room=${encodeURIComponent(link)}&role=interviewer`;
+    try {
+        const profile = await api.getUserProfile();
+        const email = profile ? profile.email : '';
+        window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(link)}&role=interviewer&email=${encodeURIComponent(email)}`;
+    } catch (e) {
+        console.warn("Could not get profile for email param", e);
+        window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(link)}&role=interviewer`;
+    }
   } else {
     alert('Meeting link not available.');
   }

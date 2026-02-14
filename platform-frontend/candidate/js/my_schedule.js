@@ -108,8 +108,12 @@ function renderInterviewList(interviews) {
 async function joinInterview(interviewId, meetingLink) {
   try {
     console.log(`Joining interview ${interviewId}`);
-    await api.startInterview(interviewId);
-    window.location.href = `../../interview-screen/lobby.html?room=${encodeURIComponent(meetingLink)}&role=candidate`;
+    // await api.startInterview(interviewId); // Candidate doesn't start it, they just join
+    
+    const userInfo = api.getUserInfo();
+    const email = userInfo ? userInfo.email : '';
+    
+    window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(meetingLink)}&role=candidate&email=${encodeURIComponent(email)}`;
   } catch (error) {
     alert(`Failed to join interview: ${error.message}`);
   }

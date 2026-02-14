@@ -22,6 +22,13 @@ if (!state.roomId) {
   window.location.href = "/lobby.html";
 }
 
+
+// Immediately show overlay for candidates to prevent flash
+if (state.role === 'candidate') {
+  const overlay = document.getElementById("candidate-overlay");
+  if (overlay) overlay.style.display = "flex";
+}
+
 async function init() {
   try {
     // Add waiting overlay

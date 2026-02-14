@@ -41,6 +41,38 @@ export function formatDateTime(date, time) {
 }
 
 /**
+ * Format date portion only
+ * @param {string|Date} date - Date to format
+ * @param {Object} options - Intl.DateTimeFormat options
+ * @returns {string} Formatted date
+ */
+export function formatDate(date, options) {
+  if (!date) return 'TBD';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return 'TBD';
+  
+  return dateObj.toLocaleDateString('en-US', options || { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+  });
+}
+
+/**
+ * Format time portion only
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted time
+ */
+export function formatTime(date) {
+  if (!date) return 'TBD';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return 'TBD';
+  
+  return dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
  * Create loading skeleton
  * @returns {string} HTML for loading state
  */
