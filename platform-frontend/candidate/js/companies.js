@@ -2,6 +2,19 @@ import { api } from '../../common/api.js';
 import { createErrorState, createEmptyState } from '../../common/dashboard-utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    const userInfo = api.getUserInfo();
+      if (!userInfo) {
+          window.location.href = '../../login/login.html';
+          return;
+      }
+
+      // Update headers
+      const userNameElements = document.querySelectorAll("#userName, #profileName");
+      userNameElements.forEach((element) => {
+        element.textContent = userInfo.fullName;
+      });
+
     initializeCompanies();
 });
 

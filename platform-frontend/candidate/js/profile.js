@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", async () => {
        const profileName = document.getElementById("profileUsername");
        if(profileName) profileName.textContent = userInfo.fullName;
   }
+    // Update headers
+    const userNameElements = document.querySelectorAll("#userName, #profileName");
+    userNameElements.forEach((element) => {
+      element.textContent = userInfo.fullName;
+    });
 
   try {
       const profile = await api.getUserProfile();

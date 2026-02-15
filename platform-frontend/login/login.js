@@ -61,10 +61,10 @@ async function handleLogin(e) {
     // Redirect based on role received from backend
     if (response.role === 'INTERVIEWER') {
        sessionStorage.setItem('userRole', 'INTERVIEWER');
-       window.location.href = '/interviewer/interviewer-dashboard.html';
+       window.location.href = '../interviewer/interviewer-dashboard.html';
     } else {
        sessionStorage.setItem('userRole', 'CANDIDATE');
-       window.location.href = '/candidate/candidate-dashboard.html';
+       window.location.href = '../candidate/candidate-dashboard.html';
     }
 
   } catch (error) {

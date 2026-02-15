@@ -7,7 +7,7 @@ let allInterviews = [];
 document.addEventListener("DOMContentLoaded", async () => {
   const userInfo = api.getUserInfo();
   if (!userInfo) {
-      window.location.href = '/login/login.html';
+      window.location.href = '../../login/login.html';
       return;
   }
 
