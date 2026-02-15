@@ -21,7 +21,10 @@ function setupFormListeners() {
   const inputs = form.querySelectorAll('input, textarea, select');
 
   inputs.forEach(input => {
-    input.addEventListener('input', updateEmailPreview);
+    input.addEventListener('input', () => {
+        updateEmailPreview();
+        clearError(input);
+    });
   });
 
   form.onsubmit = scheduleInterview;
@@ -61,23 +64,27 @@ function updateEmailPreview() {
 async function scheduleInterview(event) {
   event.preventDefault();
 
+  if (!validateForm()) {
+    return;
+  }
+
   const candidateEmails = document.getElementById('candidateEmails').value;
   const companyName = document.getElementById('companyName').value;
   const positionTitle = document.getElementById('positionTitle').value;
   const interviewDate = document.getElementById('interviewDate').value;
   const interviewTime = document.getElementById('interviewTime').value;
   const roomId = document.getElementById('roomId').value;
-  const duration = document.getElementById('duration').value;
   const interviewType = document.getElementById('interviewType').value;
   const additionalNotes = document.getElementById('additionalNotes').value;
 
   const emails = candidateEmails.split(',').map(e => e.trim()).filter(e => e);
-  if (emails.length === 0) {
-    alert('Please enter at least one candidate email.');
-    return;
-  }
+  const submitBtn = document.getElementById('scheduleBtn');
+  const originalText = submitBtn.textContent;
 
   try {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Scheduling...';
+
     const profile = await api.getUserProfile();
 
     // The backend expects a single candidate per request based on ScheduleRequest DTO
@@ -96,13 +103,93 @@ async function scheduleInterview(event) {
     };
 
     await api.scheduleInterview(payload);
-    alert('Interview scheduled successfully and invitation sent!');
+    
+    // Success feedback
+    alert('Interview scheduled successfully!'); 
     document.getElementById('scheduleForm').reset();
     updateEmailPreview();
+    
+    // Clear any lingering errors
+    document.querySelectorAll('.input-error').forEach(el => clearError(el));
+
   } catch (error) {
     console.error('Failed to schedule interview:', error);
     alert('Failed to schedule interview: ' + error.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
   }
+}
+
+function validateForm() {
+    let isValid = true;
+    const inputs = document.getElementById('scheduleForm').querySelectorAll('input, select, textarea');
+    
+    // Clear previous errors first? Or just let them update.
+    // Let's clear specific fields we are re-validating if we want, but checking all is safer.
+    
+    // 1. Required Fields
+    inputs.forEach(input => {
+        if (input.required && !input.value.trim()) {
+            showError(input, 'This field is required');
+            isValid = false;
+        } else {
+            clearError(input);
+        }
+    });
+
+    // 2. Email Validation
+    const emailInput = document.getElementById('candidateEmails');
+    const emails = emailInput.value.split(',').map(e => e.trim()).filter(e => e);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (emails.length === 0) {
+        showError(emailInput, 'At least one email is required');
+        isValid = false;
+    } else {
+        const invalidEmails = emails.filter(e => !emailRegex.test(e));
+        if (invalidEmails.length > 0) {
+            showError(emailInput, `Invalid email(s): ${invalidEmails.join(', ')}`);
+            isValid = false;
+        }
+    }
+
+    // 3. Date/Time Validation
+    const dateInput = document.getElementById('interviewDate');
+    const timeInput = document.getElementById('interviewTime');
+    
+    if (dateInput.value && timeInput.value) {
+        const scheduledDateTime = new Date(`${dateInput.value}T${timeInput.value}`);
+        const now = new Date();
+        if (scheduledDateTime < now) {
+            showError(dateInput, 'Date cannot be in the past');
+            showError(timeInput, 'Time cannot be in the past');
+            isValid = false;
+        }
+    }
+
+    return isValid;
+}
+
+function showError(input, message) {
+    input.classList.add('input-error');
+    
+    // Check if error text already exists
+    let errorDisplay = input.parentNode.querySelector('.error-text');
+    if (!errorDisplay) {
+        errorDisplay = document.createElement('span');
+        errorDisplay.className = 'error-text';
+        input.parentNode.appendChild(errorDisplay);
+    }
+    errorDisplay.textContent = message;
+}
+
+function clearError(input) {
+    input.classList.remove('input-error');
+    const errorDisplay = input.parentNode.querySelector('.error-text');
+    if (errorDisplay) {
+        errorDisplay.remove();
+    }
 }
 
 window.resetForm = () => {

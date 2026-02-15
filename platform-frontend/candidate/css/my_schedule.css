@@ -209,6 +209,40 @@
   font-size: 13px;
 }
 
+/* Empty State Styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: var(--blue-50);
+  border-radius: 8px;
+  border: 1px dashed var(--blue-200);
+}
+
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  color: var(--blue-300);
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--blue-900);
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  color: var(--gray-600);
+  margin: 0;
+  font-size: 14px;
+  max-width: 300px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .timeline-item {

@@ -305,6 +305,7 @@ init().then(() => {
 window.startCall = startCall;
 window.joinCall = joinCall;
 window.exitCall = exitCall;
+window.getMediaSocket = () => state.socket;
 
 // 🎤 Mic toggle
 micBtn.addEventListener("click", () => {

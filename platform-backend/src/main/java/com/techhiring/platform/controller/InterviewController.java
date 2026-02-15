@@ -90,7 +90,7 @@ public class InterviewController {
     emailService.sendManualNudge(
         interview.getCandidate().getEmail(),
         interview.getCandidate().getFullName(),
-        "http://localhost:8080/?room=" + interview.getMeetingLink());
+        "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail());
     return ResponseEntity.ok("Reminder sent");
   }
 }

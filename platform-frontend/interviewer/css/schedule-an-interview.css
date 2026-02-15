@@ -273,3 +273,19 @@
     width: 100%;
   }
 }
+/* Validation Styles */
+.input-error {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}

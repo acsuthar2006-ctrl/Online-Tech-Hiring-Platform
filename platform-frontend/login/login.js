@@ -69,13 +69,18 @@ async function handleLogin(e) {
 
   } catch (error) {
     console.error('Login error:', error);
+    
     if(errorMessage) {
         errorMessage.textContent = error.message || 'Invalid email or password';
         errorMessage.style.display = 'block';
-        errorMessage.style.color = 'red';
-        errorMessage.style.marginTop = '10px';
-    } else {
-        alert(error.message || 'Login failed');
+        errorMessage.style.color = '#dc2626'; // Red-600
+        errorMessage.style.backgroundColor = '#fee2e2'; // Red-100
+        errorMessage.style.padding = '10px';
+        errorMessage.style.borderRadius = '6px';
+        errorMessage.style.marginTop = '16px';
+        errorMessage.style.fontSize = '14px';
+        errorMessage.style.border = '1px solid #fecaca';
+        errorMessage.style.textAlign = 'center';
     }
   } finally {
     if(loginBtn) {
@@ -83,6 +88,15 @@ async function handleLogin(e) {
         loginBtn.textContent = originalBtnText;
     }
   }
+}
+
+// Clear error on input
+function clearError() {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
+    }
 }
 
 function createErrorElement() {
@@ -112,5 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
+        
+        // Clear errors on typing
+        const inputs = loginForm.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', clearError);
+        });
     }
 });

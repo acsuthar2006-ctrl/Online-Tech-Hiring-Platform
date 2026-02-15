@@ -455,14 +455,25 @@ async function initWebSocket(server) {
               from: socket.uid,
             });
 
-            // Stop recorder when a user leaves (since we need 2 users for merged recording)
+            // Check remaining participants
+            const remaining = [...wss.clients].filter(
+              (c) => c.channel === socket.channel && c.uid !== socket.uid
+            );
+
             if (recorders.has(socket.channel)) {
-              console.log(
-                `[WebSocket] Stopping recorder for room ${socket.channel} due to user leave`,
-              );
               const recorder = recorders.get(socket.channel);
-              recorder.stop();
-              recorders.delete(socket.channel);
+              if (remaining.length === 0) {
+                 console.log(`[WebSocket] Room ${socket.channel} empty. Saving and stopping recorder.`);
+                 // Save and cleanup
+                 await recorder.stop(); // Stop potential active process
+                 recorder.saveRecording().then(() => {
+                    recorders.delete(socket.channel);
+                 });
+              } else if (remaining.length < 2) {
+                 // Not enough for a call, stop process but keep instance (preserve chunks)
+                 console.log(`[WebSocket] Pausing recording for room ${socket.channel} (Not enough participants)`);
+                 await recorder.stop();
+              }
             }
 
             leaveChannel(socket);
@@ -478,14 +489,40 @@ async function initWebSocket(server) {
           return;
         }
 
-        // Broadcast all other messages to room
+        // 7. Stop Recording (End Interview)
+        if (data.type === "stopRecording") {
+          console.log(`[WebSocket] Stop recording request for ${data.recordingName}`);
+          if (recorders.has(socket.channel)) {
+            const recorder = recorders.get(socket.channel);
+            await recorder.stop();
+            // Allow some time for file close? usually stop() kills process.
+            // Await save
+            const filename = data.recordingName + ".mp4";
+            await recorder.saveRecording(filename);
+            
+            socket.send(JSON.stringify({
+                type: "recordingSaved",
+                filename: filename
+            }));
+          } else {
+            console.warn("[WebSocket] No recorder found to stop");
+            // Send success anyway so frontend proceeds?
+             socket.send(JSON.stringify({
+                type: "recordingSaved",
+                filename: null
+            }));
+          }
+          return;
+        }
+
+        // Validate user is in a channel before broadcasting
         broadcastToRoom(socket, data);
       } catch (err) {
         console.error(`[WebSocket] Error handling message ${data?.type}:`, err);
       }
     });
 
-    socket.on("close", (code, reason) => {
+    socket.on("close", async (code, reason) => {
       console.log(
         `[WebSocket] ${socket.uid || "Unknown"} disconnected: ${code} ${reason}`,
       );
@@ -493,10 +530,21 @@ async function initWebSocket(server) {
       if (socket.channel) {
         if (recorders.has(socket.channel)) {
           const recorder = recorders.get(socket.channel);
-          // Stop recorder if user leaves? Or keep it?
-          // MVP: Stop on leave.
-          recorder.stop();
-          recorders.delete(socket.channel);
+          
+          const remaining = [...wss.clients].filter(
+              (c) => c.channel === socket.channel && c !== socket && c.readyState === 1
+          );
+
+          if (remaining.length === 0) {
+             console.log(`[WebSocket] Room ${socket.channel} empty (close). Saving and stopping recorder.`);
+             await recorder.stop();
+             recorder.saveRecording().then(() => {
+                if (recorders.has(socket.channel)) recorders.delete(socket.channel);
+             });
+          } else if (remaining.length < 2) {
+             console.log(`[WebSocket] Pausing recording for room ${socket.channel} (Not enough participants - close)`);
+             await recorder.stop();
+          }
         }
 
         broadcastToRoom(socket, {
@@ -533,13 +581,31 @@ async function initWebSocket(server) {
     console.log("[WebSocket] Server closed");
   });
 
-  // Graceful shutdown
-  process.on("SIGTERM", () => {
-    console.log("[WebSocket] SIGTERM received, closing server...");
+  // Graceful shutdown logic
+  const shutdownHandler = async () => {
+    console.log("[WebSocket] Shutting down... Saving recordings...");
+    
+    const savePromises = [];
+    for (const [roomId, recorder] of recorders.entries()) {
+        console.log(`[WebSocket] Saving recording for room ${roomId}`);
+        await recorder.stop();
+        savePromises.push(recorder.saveRecording());
+    }
+    
+    try {
+        await Promise.all(savePromises);
+    } catch (e) {
+        console.error("[WebSocket] Error saving recordings during shutdown:", e);
+    }
+
     wss.close(() => {
       console.log("[WebSocket] Server closed");
+      // server.js handles the process.exit usually, but we ensure wss is done.
     });
-  });
+  };
+
+  process.on("SIGTERM", shutdownHandler);
+  process.on("SIGINT", shutdownHandler);
 
   console.log("[WebSocket] Server ready");
 

@@ -106,32 +106,31 @@ function renderDashboard() {
     <!-- Content Grid -->
     <div class="content-grid">
       <!-- Upcoming Interviews Card -->
-      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
+      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; margin-bottom: 20px;">
         <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
           <h2 style="margin: 0; font-size: 18px;">Upcoming Interviews</h2>
         </div>
         <div class="interview-list" style="padding: 20px;">
-           ${renderInterviewList(upcomingInterviews)}
+           ${renderInterviewList(upcomingInterviews, 'upcoming')}
+        </div>
+      </div>
+
+      <!-- Past Interviews Card -->
+      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
+        <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: 18px;">Past Interviews</h2>
+        </div>
+        <div class="interview-list" style="padding: 20px;">
+           ${renderInterviewList(upcomingInterviews, 'past')}
         </div>
       </div>
 
       <!-- Quick Actions -->
-      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
+      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; margin-top: 20px;">
         <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb;">
           <h2 style="margin: 0; font-size: 18px;">Quick Actions</h2>
         </div>
         <div class="quick-actions" style="padding: 20px;">
-          <!-- 
-          <a href="./companies.html" class="action-card">
-            <div class="action-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-            </div>
-            <div class="action-info">
-              <h4>Browse Companies</h4>
-              <p>Explore open positions</p>
-            </div>
-          </a> 
-          -->
           <a href="./profile.html" class="action-card">
             <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -153,30 +152,46 @@ function renderDashboard() {
 /**
  * Render interview list items
  */
-function renderInterviewList(interviews) {
+function renderInterviewList(interviews, type) {
   if (!interviews || interviews.length === 0) {
-    return '<p class="text-muted">No upcoming interviews scheduled.</p>'
+    return '<p class="text-muted">No interviews found.</p>'
   }
 
-  // Filter only Scheduled/In Progress? 
-  // Static dashboard had separate sections? No, it had "Upcoming Interviews" list.
-  // We'll show all active ones.
-  const activeInterviews = interviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
-
-  if (activeInterviews.length === 0) {
-    return '<p class="text-muted">No upcoming interviews scheduled.</p>'
+  let filtered = [];
+  if (type === 'upcoming') {
+      filtered = interviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
+  } else {
+      filtered = interviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
+      // Sort past interviews desc
+      filtered.sort((a, b) => new Date(b.scheduledDate + 'T' + b.scheduledTime) - new Date(a.scheduledDate + 'T' + a.scheduledTime));
   }
 
-  return activeInterviews.map(createInterviewItem).join('')
+  if (filtered.length === 0) {
+    return `<p class="text-muted">No ${type} interviews.</p>`
+  }
+
+  return filtered.map(i => createInterviewItem(i, type)).join('')
 }
 
 /**
  * Create HTML for a single interview item
  */
-function createInterviewItem(interview) {
+function createInterviewItem(interview, type) {
   const dateStr = interview.scheduledDate || 'TBD';
   const timeStr = interview.scheduledTime || '';
   const dateTime = formatDateTime(interview.scheduledDate, interview.scheduledTime);
+  
+  let actionBtn = '';
+  if (type === 'upcoming') {
+      actionBtn = `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>`;
+  } else if (interview.recordingUrl) {
+      // Use media server port 3000
+      const downloadLink = `http://localhost:3000/recordings/${interview.recordingUrl}`;
+      actionBtn = `<a href="${downloadLink}" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none; display: inline-block;">Download Recording</a>`;
+  } else {
+      actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;
+  }
+
   return `
     <div class="interview-item">
       <div class="interview-info">
@@ -185,9 +200,10 @@ function createInterviewItem(interview) {
         <div class="interview-meta">
           <span class="badge badge-blue">${interview.interviewRound || 'General'}</span>
           <span>${dateTime}</span>
+          <span class="badge ${interview.status === 'COMPLETED' ? 'badge-green' : 'badge-gray'}">${interview.status}</span>
         </div>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>
+      ${actionBtn}
     </div>
   `
 }

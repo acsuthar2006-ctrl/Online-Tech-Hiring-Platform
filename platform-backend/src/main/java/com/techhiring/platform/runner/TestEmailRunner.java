@@ -41,7 +41,7 @@ public class TestEmailRunner implements CommandLineRunner {
     String interviewerEmail = "interviewer@test.com";
 
     // 2. Ensure Interviewer exists
-    Interviewer interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
+    userRepository.findByEmail(interviewerEmail)
         .orElseGet(() -> {
           Interviewer i = Interviewer.builder()
               .fullName("Test Interviewer")
@@ -52,15 +52,30 @@ public class TestEmailRunner implements CommandLineRunner {
           return interviewerRepository.save(i);
         });
 
+    // 2.1 Ensure Second Interviewer exists (User Request)
+    String interviewerEmail2 = "acsuthar2006@gmail.com";
+    Interviewer interviewer2 = (Interviewer) userRepository.findByEmail(interviewerEmail2)
+        .orElseGet(() -> {
+          Interviewer i = Interviewer.builder()
+              .fullName("Aa")
+              .email(interviewerEmail2)
+              .password(passwordEncoder.encode("pass"))
+              .role("INTERVIEWER")
+              .build();
+          return interviewerRepository.save(i);
+        });
+
+    log.info("--- TestEmailRunner: Ensure Interviewer 2 ({}) exists ---", interviewer2.getEmail());
+
     // 3. Ensure Candidate exists (User's email)
-    Candidate candidate = (Candidate) userRepository.findByEmail(targetEmail)
+    userRepository.findByEmail(targetEmail)
         .orElseGet(() -> {
           Candidate c = new Candidate("Aarya Suthar", targetEmail, passwordEncoder.encode("pass"));
           return candidateRepository.save(c);
         });
 
-    // 4. Create Interview scheduled 27 minutes from now (To verify reliability -
-    // should wait)
+    // 4. Create Interview - DISABLED per user request (clean state)
+    /*
     LocalDateTime scheduledDateTime = LocalDateTime.now().plusMinutes(27);
 
     Interview interview = Interview.builder()
@@ -80,5 +95,7 @@ public class TestEmailRunner implements CommandLineRunner {
     log.info("--- TestEmailRunner: Created Interview ID {} for {} at {} {} ---",
         interview.getId(), targetEmail, scheduledDateTime.toLocalDate(), scheduledDateTime.toLocalTime());
     log.info("--- TestEmailRunner: Scheduler should pick this up in ~1 minute ---");
+    */
+    log.info("--- TestEmailRunner: Skipped creating dummy interview per configuration ---");
   }
 }

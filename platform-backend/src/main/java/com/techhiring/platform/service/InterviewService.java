@@ -109,7 +109,7 @@ public class InterviewService {
           candidateName,
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_DATE),
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-          "http://localhost:5173/?room=" + meetingLink + "&role=candidate" // Frontend URL
+          "http://localhost:5173/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail // Frontend URL
       );
     } catch (Exception e) {
       System.err.println("Failed to send email: " + e.getMessage());
@@ -182,14 +182,12 @@ public class InterviewService {
 
   public List<Interview> getUpcomingInterviews(String candidateEmail) {
     return interviewRepository.findByCandidate_Email(candidateEmail).stream()
-        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
         .sorted(Comparator.comparing(Interview::getScheduledTime))
         .collect(Collectors.toList());
   }
 
   public List<Interview> getUpcomingInterviewsForInterviewer(String interviewerEmail) {
     return interviewRepository.findByInterviewer_Email(interviewerEmail).stream()
-        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
         .sorted(Comparator.comparing(Interview::getScheduledTime))
         .collect(Collectors.toList());
   }
