@@ -39,10 +39,6 @@ function renderCompanyGrid(companies) {
         const card = document.createElement('div');
         card.className = 'company-card';
 
-        // Mock data for rate and availability as they are not in the Company entity
-        const mockRate = Math.floor(Math.random() * 40) + 60; // $60-100
-        const mockAvailability = ['Part-time', 'Flexible', 'Full-time'][Math.floor(Math.random() * 3)];
-
         card.innerHTML = `
             <div class="company-status status-open">Open Position</div>
             <div class="company-header">
@@ -55,11 +51,11 @@ function renderCompanyGrid(companies) {
             <div class="company-details">
                 <div class="detail-row">
                     <span class="detail-label">Hourly Rate:</span>
-                    <span class="detail-value">$${mockRate}/hour</span>
+                    <span class="detail-value">Competitive</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Availability:</span>
-                    <span class="detail-value">${mockAvailability}</span>
+                    <span class="detail-value">Various</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Positions:</span>
@@ -69,9 +65,8 @@ function renderCompanyGrid(companies) {
             <div class="job-requirements">
                 <div class="req-title">Required Expertise</div>
                 <div class="req-list">
-                    <span class="req-tag">System Design</span>
-                    <span class="req-tag">Backend</span>
-                    <span class="req-tag">Algorithms</span>
+                    <span class="req-tag">Technical Interviewing</span>
+                    <span class="req-tag">Code Review</span>
                 </div>
             </div>
             <div class="company-actions">

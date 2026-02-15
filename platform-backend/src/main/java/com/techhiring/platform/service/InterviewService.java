@@ -54,7 +54,8 @@ public class InterviewService {
     Candidate candidate = (Candidate) userRepository.findByEmail(candidateEmail).orElse(null);
     if (candidate == null) {
       String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-      candidate = new Candidate(candidateName, candidateEmail, passwordEncoder.encode(tempPassword), null, null);
+      // Use the 3-arg constructor which correctly sets User fields (fullName, email, password)
+      candidate = new Candidate(candidateName, candidateEmail, passwordEncoder.encode(tempPassword));
       candidateRepository.save(candidate);
       // TODO: Email the candidate their temp credentials? For now, we just schedule.
     }
@@ -108,7 +109,7 @@ public class InterviewService {
           candidateName,
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_DATE),
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-          "http://localhost:5173/?room=" + meetingLink + "&role=candidate" // Frontend URL
+          "http://localhost:5173/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail // Frontend URL
       );
     } catch (Exception e) {
       System.err.println("Failed to send email: " + e.getMessage());
@@ -181,14 +182,12 @@ public class InterviewService {
 
   public List<Interview> getUpcomingInterviews(String candidateEmail) {
     return interviewRepository.findByCandidate_Email(candidateEmail).stream()
-        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
         .sorted(Comparator.comparing(Interview::getScheduledTime))
         .collect(Collectors.toList());
   }
 
   public List<Interview> getUpcomingInterviewsForInterviewer(String interviewerEmail) {
     return interviewRepository.findByInterviewer_Email(interviewerEmail).stream()
-        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
         .sorted(Comparator.comparing(Interview::getScheduledTime))
         .collect(Collectors.toList());
   }

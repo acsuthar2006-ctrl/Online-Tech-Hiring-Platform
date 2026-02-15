@@ -36,22 +36,25 @@ function renderSchedule(interviews) {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const endOfWeek = new Date(today);
-  endOfWeek.setDate(today.getDate() + 7);
-
   const todayInterviews = [];
   const weekInterviews = [];
   const completedInterviews = [];
 
   interviews.forEach(interview => {
-    const interviewDate = new Date(interview.scheduledTime);
-    interviewDate.setHours(0, 0, 0, 0);
+    // Fix: Combine date and time for proper parsing
+    const dateTimeStr = `${interview.scheduledDate}T${interview.scheduledTime}`;
+    const interviewDate = new Date(dateTimeStr);
+    
+    // Create a date-only object for comparison
+    const interviewDateOnly = new Date(interviewDate);
+    interviewDateOnly.setHours(0, 0, 0, 0);
 
     if (interview.status === 'COMPLETED') {
       completedInterviews.push(interview);
-    } else if (interviewDate.getTime() === today.getTime()) {
+    } else if (interviewDateOnly.getTime() === today.getTime()) {
       todayInterviews.push(interview);
-    } else if (interviewDate > today && interviewDate <= endOfWeek) {
+    } else if (interviewDateOnly > today) {
+      // Show all future interviews in the "Upcoming" section
       weekInterviews.push(interview);
     }
   });
@@ -59,6 +62,8 @@ function renderSchedule(interviews) {
   updateSection('today', todayInterviews);
   updateSection('week', weekInterviews);
   updateSection('completed', completedInterviews);
+
+
 
   setupFilters();
 }
@@ -78,7 +83,8 @@ function updateSection(id, interviews) {
 }
 
 function renderTimelineItem(interview, sectionId) {
-  const date = new Date(interview.scheduledTime);
+  const dateTimeStr = `${interview.scheduledDate}T${interview.scheduledTime}`;
+  const date = new Date(dateTimeStr);
   const isCompleted = interview.status === 'COMPLETED';
 
   return `
@@ -133,9 +139,16 @@ function setupFilters() {
   });
 }
 
-window.joinInterview = (link) => {
+window.joinInterview = async (link) => {
   if (link) {
-    window.location.href = `../../interview-screen/lobby.html?room=${encodeURIComponent(link)}&role=interviewer`;
+    try {
+        const profile = await api.getUserProfile();
+        const email = profile ? profile.email : '';
+        window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(link)}&role=interviewer&email=${encodeURIComponent(email)}`;
+    } catch (e) {
+        console.warn("Could not get profile for email param", e);
+        window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(link)}&role=interviewer`;
+    }
   } else {
     alert('Meeting link not available.');
   }

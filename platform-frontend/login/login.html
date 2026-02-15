@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TechHiring Login</title>
-  <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="/login/login.css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
       <div class="role-selection" id="roleSelection">
         <h2>Select Your Role</h2>
         <div class="role-cards">
-          <div class="role-card" onclick="selectRole('candidate')">
+          <div class="role-card" id="btn-role-candidate">
             <div class="role-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -30,7 +30,7 @@
             </div>
             <h2>Candidate</h2>
           </div>
-          <div class="role-card" onclick="selectRole('interviewer')">
+          <div class="role-card" id="btn-role-interviewer">
             <div class="role-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -45,10 +45,10 @@
 
       <div class="login-form-container" id="loginFormContainer" style="display: none;">
         <h2 id="formTitle">Login as Candidate</h2>
-        <form id="loginForm" onsubmit="handleLogin(event)">
+        <form id="loginForm">
           <div class="form-group">
-            <label for="username">Email Address</label>
-            <input type="email" id="username" required placeholder="Enter your email">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" required placeholder="Enter your email">
           </div>
           <div class="form-group">
             <label for="password">Password</label>

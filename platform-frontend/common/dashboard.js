@@ -1,7 +1,15 @@
 // Load username from localStorage and display it
 document.addEventListener("DOMContentLoaded", () => {
-  const username = localStorage.getItem("username") || "User"
-  const userRole = localStorage.getItem("userRole") || "Candidate"
+  // Check if user is logged in
+  const isLoggedIn = sessionStorage.getItem("jwt_token");
+  
+  if (!isLoggedIn) {
+      window.location.href = '/login/login.html';
+      return;
+  }
+
+  const username = sessionStorage.getItem("username") || "User"
+  const userRole = sessionStorage.getItem("userRole") || "Candidate"
 
   // Update all username displays
   const userNameElements = document.querySelectorAll("#userName, #profileName")

@@ -92,12 +92,19 @@ export default function handleHttp(req, res) {
     return;
   }
 
-  /* ================= RECORDING DOWNLOAD ================= */
-  if (req.method === "GET" && pathname.startsWith("/download-recording/")) {
-    const roomId = pathname.split("/").pop();
-    const filePath = path.join(RECORDINGS_DIR, `${roomId}.webm`);
+  /* ================= RECORDING DOWNLOAD / STATIC SERVE ================= */
+  if (req.method === "GET" && pathname.startsWith("/recordings/")) {
+    const filename = pathname.split("/").pop();
+    const filePath = path.join(RECORDINGS_DIR, filename);
 
-    console.log(`[Download] Request for: ${roomId}`);
+    console.log(`[Download] Request for: ${filename}`);
+
+    // Security: Prevent directory traversal
+    if (filename.includes("..") || filename.includes("/")) {
+      res.writeHead(403);
+      res.end("Forbidden");
+      return;
+    }
 
     if (!fs.existsSync(filePath)) {
       console.warn(`[Download] ❌ Recording not found: ${filePath}`);
@@ -107,24 +114,24 @@ export default function handleHttp(req, res) {
     }
 
     const stat = fs.statSync(filePath);
-    console.log(`[Download] ✅ Sending: ${roomId}.webm (${stat.size} bytes)`);
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes = {
+      ".mp4": "video/mp4",
+      ".webm": "video/webm",
+      ".mkv": "video/x-matroska"
+    };
+    const contentType = mimeTypes[ext] || "application/octet-stream";
+
+    console.log(`[Download] ✅ Sending: ${filename} (${stat.size} bytes)`);
 
     res.writeHead(200, {
-      "Content-Type": "video/webm",
-      "Content-Disposition": `attachment; filename="${roomId}.webm"`,
+      "Content-Type": contentType,
       "Content-Length": stat.size,
+      // Optional: Force download if query param ?download=true, else play in browser
+      // "Content-Disposition": `attachment; filename="${filename}"`, 
     });
 
     const readStream = fs.createReadStream(filePath);
-
-    readStream.on("error", (err) => {
-      console.error("[Download] Stream error:", err);
-      if (!res.headersSent) {
-        res.writeHead(500);
-        res.end("Error reading file");
-      }
-    });
-
     readStream.pipe(res);
     return;
   }

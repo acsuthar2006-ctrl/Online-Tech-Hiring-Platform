@@ -5,6 +5,40 @@
   margin-bottom: 32px;
 }
 
+/* Standard States */
+.loading-state, .empty-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: #6b7280;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  min-height: 200px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty-state p { font-size: 1.1em; }
+.error-state { border-color: #fca5a5; background: #fef2f2; color: #b91c1c; }
+.btn-secondary { margin-top: 10px; cursor: pointer; }
+
 .stat-card {
   background: var(--white);
   border: 1px solid var(--blue-200);

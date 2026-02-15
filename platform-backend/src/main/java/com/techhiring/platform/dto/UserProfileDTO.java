@@ -15,9 +15,13 @@ public class UserProfileDTO {
   private String fullName;
   private String role;
 
-  // Candidate specific
-  // Fields can be added here if needed
+  // Common fields
+  private String phone;
+  private String bio;
+  private String profilePhotoUrl;
 
   // Interviewer specific
   private String companyName;
+  private Double hourlyRate;
+  private String availabilityStatus;
 }

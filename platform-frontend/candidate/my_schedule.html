@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Schedule - TechHiring</title>
-  <link rel="stylesheet" href="../common/common.css">
-  <link rel="stylesheet" href="css/my_schedule.css">
-  <script src="../common/auth.js"></script>
+  <link rel="stylesheet" href="/common/common.css">
+  <link rel="stylesheet" href="/candidate/css/my_schedule.css">
+  <script type="module" src="/common/auth.js"></script>
 </head>
 
 <body>
@@ -48,282 +48,43 @@
 
     <div class="schedule-container">
       <!-- Video Interview section -->
-      <div class="schedule-section">
+      <div class="schedule-section" id="videoSection">
         <div class="section-header">
           <h2>Video Interviews</h2>
-          <span class="interview-count" id="videoCount">3</span>
+          <span class="interview-count" id="videoCount">0</span>
         </div>
         <div class="interview-timeline" id="videoInterviewList">
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">25</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Senior Developer Interview</h3>
-                <span class="status-badge status-upcoming">Upcoming</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Google Inc.</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>10:00 AM - 11:00 AM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round" />
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Video Interview</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Join Interview</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">27</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Product Manager Round</h3>
-                <span class="status-badge status-upcoming">Upcoming</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Microsoft</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>2:00 PM - 3:00 PM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round" />
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Video Interview</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Join Interview</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Jan</div>
-              <div class="date-number">02</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Final Round - Engineering</h3>
-                <span class="status-badge status-upcoming">Upcoming</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Amazon</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>11:00 AM - 12:30 PM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round" />
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Video Interview</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Join Interview</button>
-              </div>
-            </div>
-          </div>
+             <div class="loading-state">Loading...</div>
         </div>
       </div>
 
       <!-- Technical Round section with coding and analytical rounds -->
-      <div class="schedule-section">
+      <div class="schedule-section" id="technicalSection">
         <div class="section-header">
           <h2>Technical Rounds</h2>
-          <span class="interview-count" id="technicalCount">2</span>
+          <span class="interview-count" id="technicalCount">0</span>
         </div>
         <div class="interview-timeline" id="technicalInterviewList">
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">26</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Coding Round - Data Structures</h3>
-                <span class="status-badge status-upcoming">Upcoming</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Facebook</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>9:00 AM - 10:30 AM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Coding Round</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Start Test</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">29</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Analytical Round - Problem Solving</h3>
-                <span class="status-badge status-upcoming">Upcoming</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Apple</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>3:00 PM - 4:30 PM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V13M9 5H17M9 5V3M17 3H19M19 3V5M19 13L20 14L23 11"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Analytical Round</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Details</button>
-                <button class="btn-primary btn-sm">Start Test</button>
-              </div>
-            </div>
-          </div>
+             <div class="loading-state">Loading...</div>
         </div>
       </div>
 
       <!-- Completed interviews section -->
-      <div class="schedule-section">
+      <div class="schedule-section" id="completedSection">
         <div class="section-header">
           <h2>Completed Interviews</h2>
-          <span class="interview-count" id="completedCount">2</span>
+          <span class="interview-count" id="completedCount">0</span>
         </div>
         <div class="interview-timeline" id="completedInterviewList">
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">20</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Round 1 - General Knowledge</h3>
-                <span class="status-badge status-completed">Completed</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">Uber</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>10:00 AM - 11:00 AM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round" />
-                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Video Interview</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Feedback</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-date">
-              <div class="date-badge">Dec</div>
-              <div class="date-number">18</div>
-            </div>
-            <div class="interview-card">
-              <div class="interview-header">
-                <h3>Coding Assessment</h3>
-                <span class="status-badge status-completed">Completed</span>
-              </div>
-              <div class="interview-details">
-                <p class="company-name">LinkedIn</p>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <span>2:00 PM - 3:30 PM</span>
-                </div>
-                <div class="interview-info-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>Coding Round</span>
-                </div>
-              </div>
-              <div class="interview-actions">
-                <button class="btn-secondary btn-sm">View Feedback</button>
-              </div>
-            </div>
-          </div>
+             <div class="loading-state">Loading...</div>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="../common/dashboard.js"></script>
+  <script type="module" src="../common/dashboard.js"></script>
   <script type="module" src="js/my_schedule.js"></script>
-  <script src="../common/sidebar.js"></script>
+  <script type="module" src="../common/sidebar.js"></script>
 </body>
 
 </html>

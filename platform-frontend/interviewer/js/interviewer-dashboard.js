@@ -1,31 +1,39 @@
 /* Interviewer Dashboard */
 
-import { api } from '../../common/api.js'
+import { api } from '../../common/api.js';
+import { Router } from '../../common/router.js'; // Auth check
 import {
   formatDateTime,
   createLoadingState,
   createErrorState,
   createEmptyState
-} from '../../common/dashboard-utils.js'
+} from '../../common/dashboard-utils.js';
 
+// Global state
 // Global state
 let interviewerProfile = null
 let scheduledInterviews = []
 let hiringCompanies = []
+
 
 // Initialize dashboard on page load
 
 async function initializeDashboard() {
   try {
     // Show loading state
-    const contentDiv = document.getElementById('dashboard-content')
+    const contentDiv = document.getElementById('dashboard-content');
     if (contentDiv) {
-      contentDiv.innerHTML = createLoadingState()
+      contentDiv.innerHTML = createLoadingState();
     }
 
     // Load interviewer profile
-    interviewerProfile = await api.getUserProfile()
-    console.log('Interviewer profile loaded:', interviewerProfile)
+    interviewerProfile = await api.getUserProfile();
+
+    // Redirect if not interviewer
+    if (interviewerProfile.role !== 'INTERVIEWER') {
+      window.location.href = '/candidate/candidate-dashboard.html';
+      return;
+    }
 
     // Load interviews where this interviewer is assigned
     scheduledInterviews = await api.getUpcomingInterviewsForInterviewer(interviewerProfile.email)
@@ -41,20 +49,32 @@ async function initializeDashboard() {
     }
 
     // Render dashboard
-    renderDashboard()
+    renderDashboard();
   } catch (error) {
-    console.error('Dashboard initialization error:', error)
-    const contentDiv = document.getElementById('dashboard-content')
+    console.error('Dashboard initialization error:', error);
+    const contentDiv = document.getElementById('dashboard-content');
     if (contentDiv) {
-      contentDiv.innerHTML = createErrorState(error.message || 'Failed to load dashboard')
+      contentDiv.innerHTML = createErrorState(error.message || 'Failed to load dashboard');
     }
   }
 }
 
 function renderDashboard() {
-  const contentDiv = document.getElementById('dashboard-content')
+  // Add styles for empty state if not present
+  if (!document.getElementById('dashboard-styles')) {
+    const style = document.createElement('style');
+    style.id = 'dashboard-styles';
+    style.textContent = `
+      .empty-state { text-align: center; padding: 30px; }
+      .empty-icon { font-size: 48px; margin-bottom: 10px; }
+      .empty-state h3 { color: #374151; margin-bottom: 5px; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const contentDiv = document.getElementById('dashboard-content');
   if (!contentDiv) {
-    return
+    return;
   }
 
   // Calculate Stats
@@ -86,43 +106,17 @@ function renderDashboard() {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         </div>
         <div class="stat-info">
-          <h3>Upcoming Interviews</h3>
+          <h3>Upcoming</h3>
           <p class="stat-number">${todayCount}</p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </div>
-        <div class="stat-info">
-          <h3>Completed (Mock)</h3>
-          <p class="stat-number">${completedCount}</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-4h8v4"></path></svg>
-        </div>
-        <div class="stat-info">
-          <h3>Active Companies</h3>
-          <p class="stat-number">${activeCompanies}</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-        </div>
-        <div class="stat-info">
-          <h3>Total Earnings</h3>
-          <p class="stat-number">${totalEarnings}</p>
-        </div>
-      </div>
+      <!-- Other stats hidden until backend support exists -->
     </div>
 
     <!-- Content Grid -->
     <div class="content-grid">
       <!-- Schedule List -->
-      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
+      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; width: 100%;">
         <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
           <h2 style="margin: 0; font-size: 18px;">Interview Schedule</h2>
         </div>
@@ -143,7 +137,7 @@ function renderDashboard() {
     </div>
   `;
 
-  contentDiv.innerHTML = html
+  contentDiv.innerHTML = html;
 }
 
 function renderCompanyList(companies) {
@@ -167,11 +161,18 @@ function renderCompanyList(companies) {
 
 function renderScheduleList(interviews) {
   if (!interviews || interviews.length === 0) {
-    return '<p class="text-muted">No interviews scheduled.</p>'
+    return `
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h3>No Upcoming Interviews</h3>
+        <p class="text-muted">You don't have any interviews scheduled at the moment.</p>
+      </div>
+    `;
   }
 
-  return interviews.map(createScheduleItem).join('')
+  return interviews.map(createScheduleItem).join('');
 }
+
 
 function createScheduleItem(interview) {
   // Extract time from scheduledTime "HH:mm:ss"
@@ -212,11 +213,15 @@ function createActionButtons(interview) {
 
 async function joinInterview(interviewId, meetingLink) {
   try {
-    console.log(`Joining interview ${interviewId} with meeting link: ${meetingLink}`)
-    await api.startInterview(interviewId)
-    window.location.href = `../../interview-screen/lobby.html?room=${encodeURIComponent(meetingLink)}&role=interviewer`
+    console.log(`Joining interview ${interviewId} with meeting link: ${meetingLink}`);
+    // Do not auto-start. Let the interviewer "Call In" from the video room.
+    // await api.startInterview(interviewId); 
+    
+    // Get email for direct access
+    const email = interviewerProfile ? interviewerProfile.email : '';
+    window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(meetingLink)}&role=interviewer&email=${encodeURIComponent(email)}`;
   } catch (error) {
-    alert(`Failed to join interview: ${error.message}`)
+    alert(`Failed to join interview: ${error.message}`);
   }
 }
 
@@ -229,7 +234,7 @@ async function logout() {
     localStorage.removeItem('userId')
     localStorage.removeItem('username')
     localStorage.removeItem('userRole')
-    window.location.href = '../../login/login.html'
+    window.location.href = '/login/login.html'
   }
 }
 

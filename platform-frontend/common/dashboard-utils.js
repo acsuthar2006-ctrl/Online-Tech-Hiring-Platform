@@ -12,18 +12,64 @@
 export function formatDateTime(date, time) {
   try {
     if (!date) return 'TBD';
+    
+    // Handle full ISO strings that might contain time
     const dateObj = new Date(date);
-    const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (isNaN(dateObj.getTime())) return 'TBD';
+    
+    const dateStr = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
 
     if (time) {
-      const timeObj = new Date(`2000-01-01T${time}`);
+      // Handle "HH:mm:ss" or "HH:mm"
+      const [hours, minutes] = time.split(':');
+      const timeObj = new Date();
+      timeObj.setHours(parseInt(hours), parseInt(minutes));
+      
       const timeStr = timeObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      return `${dateStr} at ${timeStr}`;
+      return `${dateStr} @ ${timeStr}`;
     }
     return dateStr;
   } catch (e) {
-    return 'Invalid date';
+    console.warn("Date formatting error", e);
+    return 'Invalid Date';
   }
+}
+
+/**
+ * Format date portion only
+ * @param {string|Date} date - Date to format
+ * @param {Object} options - Intl.DateTimeFormat options
+ * @returns {string} Formatted date
+ */
+export function formatDate(date, options) {
+  if (!date) return 'TBD';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return 'TBD';
+  
+  return dateObj.toLocaleDateString('en-US', options || { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+  });
+}
+
+/**
+ * Format time portion only
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted time
+ */
+export function formatTime(date) {
+  if (!date) return 'TBD';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return 'TBD';
+  
+  return dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
 /**

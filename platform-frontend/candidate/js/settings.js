@@ -2,46 +2,133 @@ import { api } from '../../common/api.js';
 
 // Load initial data
 document.addEventListener("DOMContentLoaded", () => {
+    const userInfo = api.getUserInfo();
+    if(userInfo) {
+       document.querySelectorAll("#userName, #profileName").forEach((element) => {
+         element.textContent = userInfo.fullName;
+       });
+       
+       const usernameInput = document.getElementById("usernameInput");
+       if (usernameInput) {
+         usernameInput.value = userInfo.fullName;
+       }
+    }
+
+  // Toggle switches functionality
+  const toggles = document.querySelectorAll(".toggle-switch input")
+  toggles.forEach((toggle) => {
+    toggle.addEventListener("change", () => {
+      // Placeholder for backend setting update
+      console.log("Setting toggled:", toggle.checked);
+    })
+  })
+
+  // Bind Update Buttons
+  const updateUsernameBtn = document.querySelector("#account .form-group:nth-child(2) button");
+  if(updateUsernameBtn) {
+      updateUsernameBtn.addEventListener('click', () => updateProfile('fullName'));
+  }
+  
+  const updatePhoneBtn = document.querySelector("#account .form-group:nth-child(3) button");
+  if(updatePhoneBtn) {
+      updatePhoneBtn.addEventListener('click', () => updateProfile('phone'));
+  }
+
+  // Load current settings
   loadSettings();
-  setupEventListeners();
 });
 
 async function loadSettings() {
-  try {
-    const profile = await api.getUserProfile();
-    if (profile) {
-      // Update email input
-      const emailInput = document.querySelector('input[type="email"]');
-      if (emailInput) emailInput.value = profile.email || '';
+    const user = api.getUserInfo();
+    if(!user) return;
 
-      // Update username input
-      const usernameInput = document.getElementById("usernameInput");
-      if (usernameInput) usernameInput.value = profile.fullName || '';
+    try {
+        const settings = await api.getCandidateSettings(user.id);
+        if(settings) {
+            // Map settings to toggles
+            // This requires mapping specific toggles to setting fields.
+            // For now, let's assume the first toggle is email notifications and second is reminders based on HTML structure
+            // Notifications Tab
+            const notificationToggles = document.querySelectorAll("#notifications .toggle-switch input");
+            if(notificationToggles.length > 0) notificationToggles[0].checked = settings.emailNotificationsEnabled;
+            if(notificationToggles.length > 1) notificationToggles[1].checked = settings.interviewRemindersEnabled;
+            
+            // Preferences Tab
+            const langSelect = document.querySelector("#preferences select");
+            if(langSelect) langSelect.value = settings.language || "English";
+        }
+    } catch(e) {
+        console.error("Failed to load settings", e);
     }
-  } catch (error) {
-    console.error('Failed to load settings:', error);
+}
+
+async function updateProfile(field) {
+  const user = api.getUserInfo();
+  let data = {};
+  
+  if (field === 'fullName') {
+      const val = document.getElementById("usernameInput").value.trim();
+      if(!val) return alert("Value cannot be empty");
+      data.fullName = val;
+  } else if (field === 'phone') {
+      // Assuming the input is the one in the 3rd form group
+      const val = document.querySelector("#account .form-group:nth-child(3) input").value.trim();
+      if(!val) return alert("Value cannot be empty");
+      data.phone = val;
+  }
+
+  try {
+      await api.updateUserProfile(data);
+      
+      if(data.fullName) {
+          document.querySelectorAll("#userName, #profileName").forEach((element) => {
+            element.textContent = data.fullName;
+          });
+          
+          const cached = api.getUserInfo();
+          if(cached) {
+              cached.fullName = data.fullName;
+              api.setUserInfo(cached);
+          }
+      }
+
+      alert("Updated successfully!");
+  } catch (e) {
+      console.error(e);
+      alert("Failed to update: " + e.message);
   }
 }
 
-function setupEventListeners() {
-  // Tab switching
-  const menuItems = document.querySelectorAll(".settings-menu-item");
-  menuItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      const tabName = item.getAttribute('href').substring(1);
-      switchTab(e, tabName);
-    });
-  });
+async function saveSettings() {
+    const user = api.getUserInfo();
+    if(!user) return;
+    
+    const notificationToggles = document.querySelectorAll("#notifications .toggle-switch input");
+    const langSelect = document.querySelector("#preferences select");
 
-  // Toggle switches (Mock)
-  const toggles = document.querySelectorAll(".toggle-switch input");
-  toggles.forEach((toggle) => {
-    toggle.addEventListener("change", () => {
-      console.log("Setting changed:", toggle.checked, "(Update API missing)");
-    });
-  });
+    const settings = {
+        emailNotificationsEnabled: notificationToggles.length > 0 ? notificationToggles[0].checked : true,
+        interviewRemindersEnabled: notificationToggles.length > 1 ? notificationToggles[1].checked : true,
+        language: langSelect ? langSelect.value : "English"
+    };
+
+    try {
+        await api.updateCandidateSettings(user.id, settings);
+        console.log("Settings saved"); // Silent save or show toast
+    } catch(e) {
+        console.error("Failed to save settings", e);
+    }
 }
 
+// Add event listeners to toggles to auto-save
+document.addEventListener("DOMContentLoaded", () => {
+    const inputs = document.querySelectorAll(".toggle-switch input, #preferences select");
+    inputs.forEach(input => {
+        input.addEventListener('change', saveSettings);
+    });
+});
+
+// Export for HTML onclick
 function switchTab(event, tabName) {
   event.preventDefault();
 
@@ -64,13 +151,8 @@ function switchTab(event, tabName) {
   }
 
   // Add active class to clicked menu item
-  event.target.closest(".settings-menu-item").classList.add("active");
+  const menuItem = event.target.closest(".settings-menu-item");
+  if(menuItem) menuItem.classList.add("active");
 }
 
-// Global functions for inline onclick handlers (if still used)
 window.switchTab = switchTab;
-
-window.updateUsername = async () => {
-  const input = document.getElementById("usernameInput");
-  alert(`Update request for "${input.value}" sent. Note: Backend update API is missing.`);
-};

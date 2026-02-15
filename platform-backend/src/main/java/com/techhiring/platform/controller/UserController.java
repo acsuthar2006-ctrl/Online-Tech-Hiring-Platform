@@ -35,11 +35,49 @@ public class UserController {
         .role(user.getRole());
 
     if (user instanceof Candidate) {
-      // Candidate-specific fields can be added here if needed
+      Candidate candidate = (Candidate) user;
+      builder.phone(candidate.getPhone())
+             .bio(candidate.getBio())
+             .profilePhotoUrl(candidate.getProfilePhotoUrl());
     } else if (user instanceof Interviewer) {
-       // company name removed
+       Interviewer interviewer = (Interviewer) user;
+       builder.phone(interviewer.getPhone())
+              .bio(interviewer.getBio())
+              .profilePhotoUrl(interviewer.getProfilePhotoUrl())
+              .hourlyRate(interviewer.getHourlyRate())
+              .availabilityStatus(interviewer.getAvailabilityStatus());
     }
 
     return ResponseEntity.ok(builder.build());
+  }
+
+  @org.springframework.web.bind.annotation.PutMapping("/profile")
+  public ResponseEntity<UserProfileDTO> updateProfile(@org.springframework.web.bind.annotation.RequestBody com.techhiring.platform.dto.UpdateProfileRequest request) {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      String currentEmail = authentication.getName();
+
+      User user = userRepository.findByEmail(currentEmail)
+          .orElseThrow(() -> new RuntimeException("User not found"));
+
+      if (request.getFullName() != null) user.setFullName(request.getFullName());
+      
+      if (user instanceof Candidate) {
+          Candidate candidate = (Candidate) user;
+          if (request.getPhone() != null) candidate.setPhone(request.getPhone());
+          if (request.getBio() != null) candidate.setBio(request.getBio());
+          if (request.getProfilePhotoUrl() != null) candidate.setProfilePhotoUrl(request.getProfilePhotoUrl());
+      } else if (user instanceof Interviewer) {
+          Interviewer interviewer = (Interviewer) user;
+          if (request.getPhone() != null) interviewer.setPhone(request.getPhone());
+          if (request.getBio() != null) interviewer.setBio(request.getBio());
+          if (request.getProfilePhotoUrl() != null) interviewer.setProfilePhotoUrl(request.getProfilePhotoUrl());
+          if (request.getHourlyRate() != null) interviewer.setHourlyRate(request.getHourlyRate());
+          if (request.getAvailabilityStatus() != null) interviewer.setAvailabilityStatus(request.getAvailabilityStatus());
+      }
+
+      userRepository.save(user);
+
+      // Return updated profile
+      return getUserProfile();
   }
 }

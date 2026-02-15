@@ -43,6 +43,7 @@ export class Recorder extends EventEmitter {
     this.transports = [];
     this.consumers = [];
     this.process = null;
+    this.recordingChunks = []; // Track chunks
   }
 
   // New start method accepts an array of producer configs: [{ producerId: '...', kind: 'audio|video' }, ...]
@@ -115,6 +116,13 @@ a=rtcp-mux
     const timestamp = Date.now();
     const filename = `${this.roomId}-${timestamp}.mp4`; // MP4 output
     const filepath = path.join(RECORD_DIR, filename);
+    
+    // Store chunk with full path
+    this.recordingChunks.push(filepath);
+
+    // Append to manifest file for reliability
+    const manifestPath = path.join(RECORD_DIR, `${this.roomId}-manifest.txt`);
+    fs.appendFileSync(manifestPath, `file '${path.resolve(filepath)}'\n`);
 
     // FFmpeg Filter Complex for merging
     // [0:a][2:a]amix=inputs=2[a]
@@ -215,14 +223,99 @@ a=rtcp-mux
     }
   }
 
-  stop() {
-    console.log("[Recorder] Stopping...");
+  async stop() {
+    console.log("[Recorder] Stopping current process...");
     this.consumers.forEach((c) => c.close());
     this.transports.forEach((t) => t.close());
     this.consumers = [];
     this.transports = []; // Clear arrays
+
     if (this.process) {
-      this.process.kill("SIGINT");
+      return new Promise((resolve) => {
+          const proc = this.process;
+          this.process = null; // Clear reference immediately
+          
+          // Set a fallback timeout in case FFmpeg hangs
+          const timeout = setTimeout(() => {
+              console.warn("[Recorder] Force killing FFmpeg after timeout");
+              proc.kill("SIGKILL");
+              resolve();
+          }, 5000);
+
+          proc.on('close', (code) => {
+              clearTimeout(timeout);
+              console.log(`[Recorder] FFmpeg process closed (code ${code}). Ready to merge.`);
+              resolve();
+          });
+          
+          // Send SIGINT to allow FFmpeg to write trailer (MOOV atom)
+          proc.kill("SIGINT");
+      });
+    }
+    return Promise.resolve();
+  }
+
+  async saveRecording(customFilename) {
+    const manifestPath = path.join(RECORD_DIR, `${this.roomId}-manifest.txt`);
+    
+    if (!fs.existsSync(manifestPath)) {
+        console.log("[Recorder] No manifest found, nothing to save.");
+        return;
+    }
+
+    console.log(`[Recorder] Merging chunks from manifest...`);
+
+    const outputName = customFilename || `${this.roomId}.mp4`;
+    const finalOutputPath = path.join(RECORD_DIR, outputName);
+
+    try {
+        // Run FFmpeg concat
+        // ffmpeg -f concat -safe 0 -i list.txt -c copy output.mp4
+        const args = [
+            "-f", "concat",
+            "-safe", "0",
+            "-i", manifestPath,
+            "-c", "copy",
+            "-y",
+            finalOutputPath
+        ];
+
+        console.log(`[Recorder] Spawning FFmpeg Merge: ${args.join(" ")}`);
+        
+        await new Promise((resolve, reject) => {
+            const proc = child_process.spawn(ffmpegPath, args);
+            
+            proc.stderr.on('data', d => console.log(`[FFmpeg Merge] ${d}`));
+            
+            proc.on('close', (code) => {
+                if (code === 0) resolve();
+                else reject(new Error(`FFmpeg merge exited with code ${code}`));
+            });
+        });
+
+        console.log(`[Recorder] Merge complete: ${finalOutputPath}`);
+
+        // Cleanup chunks
+        console.log("[Recorder] Cleaning up chunks...");
+        // Read manifest to preserve file paths for deletion
+        if (fs.existsSync(manifestPath)) {
+            const content = fs.readFileSync(manifestPath, 'utf-8');
+            const lines = content.split('\n').filter(l => l.trim());
+            for (const line of lines) {
+                // line format: file '/path/to/file'
+                const match = line.match(/file '(.*)'/);
+                if (match && match[1]) {
+                    try { fs.unlinkSync(match[1]); } catch(e) { }
+                }
+            }
+            try { fs.unlinkSync(manifestPath); } catch(e) {}
+        }
+        
+        // Reset state
+        this.recordingChunks = [];
+
+    } catch (e) {
+        console.error("[Recorder] Merge failed:", e);
     }
   }
 }

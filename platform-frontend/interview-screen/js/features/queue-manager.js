@@ -72,20 +72,79 @@ window.callCandidate = async function (id) {
   if (!confirm("Pull this candidate into the session?")) return;
 
   try {
-    await fetch(`/api/interviews/${id}/start`, { method: 'POST' });
+    const token = sessionStorage.getItem('jwt_token');
+    await fetch(`/api/interviews/${id}/start`, { 
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
     fetchQueue(); // Refresh
   } catch (e) {
     alert("Error starting interview");
+    console.error(e);
   }
 }
 
 window.completeCandidate = async function (id) {
-  if (!confirm("Finish this interview? Next candidate (if any) will be set to IN_PROGRESS.")) return;
+  if (!confirm("Finish this interview?")) return;
+
+  let recordingUrl = null;
+
+  // Attempt to stop recording and get filename
+  if (window.getMediaSocket) {
+      const socket = window.getMediaSocket();
+      if (socket && socket.readyState === 1) { // OPEN
+          console.log("Stopping recording for candidate " + id);
+          
+          try {
+              const filename = await new Promise((resolve) => {
+                  const timeout = setTimeout(() => resolve(null), 3000); // 3s timeout
+                  
+                  const activeListener = (event) => {
+                      const msg = JSON.parse(event.data);
+                      if (msg.type === 'recordingSaved') {
+                          clearTimeout(timeout);
+                          socket.removeEventListener('message', activeListener); // clean up (tricky with wrapper, but generic logic)
+                          // Actually, we can't easily remove specific listeners if they are wrapped.
+                          // But we can just use a one-time handler logic if we had a proper event emitter.
+                          // Since we are using raw socket (or wrapper?), let's assume raw WebSocket for now based on `state.socket`.
+                          // `state.socket` is a WebSocket instance.
+                          resolve(msg.filename);
+                      }
+                  };
+                  socket.addEventListener('message', activeListener);
+                  socket.send(JSON.stringify({
+                      type: 'stopRecording',
+                      recordingName: `interview-${id}`
+                  }));
+              });
+              
+              if (filename) recordingUrl = filename;
+
+          } catch (e) {
+              console.warn("Failed to stop recording cleanly:", e);
+          }
+      }
+  }
 
   try {
-    await fetch(`/api/interviews/${id}/complete`, { method: 'POST' });
+    const token = sessionStorage.getItem('jwt_token');
+    await fetch(`/api/interviews/${id}/complete`, { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            feedback: "Allocated via Queue",
+            score: 0,
+            recordingUrl: recordingUrl // Send the filename!
+        })
+    });
     fetchQueue();
   } catch (e) {
     alert("Error completing interview");
+    console.error(e);
   }
 }
