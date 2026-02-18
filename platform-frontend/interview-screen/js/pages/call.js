@@ -62,7 +62,10 @@ async function init() {
           remoteName = data.timeline[0].candidate?.fullName || 'Candidate';
         } else if (state.role === 'candidate' && userEmail && data.timeline) {
           // For candidate, find their interview
-          const myInterview = data.timeline.find(i => i.candidate.email === userEmail);
+          // For candidate, find their interview (Prioritize active ones)
+          const myInterview = data.timeline.find(i => i.candidate.email === userEmail && i.status === 'IN_PROGRESS')
+                           || data.timeline.find(i => i.candidate.email === userEmail && i.status === 'SCHEDULED')
+                           || data.timeline.find(i => i.candidate.email === userEmail);
           if (myInterview) {
             localName = myInterview.candidate?.fullName || 'Candidate';
             remoteName = myInterview.interviewer?.fullName || 'Interviewer';
@@ -261,7 +264,10 @@ init().then(() => {
         const res = await fetch(`/api/interviews/session/${state.roomId}/queue`);
         const data = await res.json();
 
-        const myInterview = data.timeline.find(i => i.candidate.email === email);
+        // Find the most relevant interview: Prioritize IN_PROGRESS, then SCHEDULED, then fallback to any (e.g. COMPLETED)
+        const myInterview = data.timeline.find(i => i.candidate.email === email && i.status === 'IN_PROGRESS') 
+                         || data.timeline.find(i => i.candidate.email === email && i.status === 'SCHEDULED')
+                         || data.timeline.find(i => i.candidate.email === email);
 
         const overlay = document.getElementById("candidate-overlay");
 
@@ -287,6 +293,13 @@ init().then(() => {
                 "Scheduled for: " + myInterview.scheduledTime;
             }
           }
+        } else {
+            // Not found in this session
+             if (overlay) {
+              overlay.style.display = "flex";
+              document.getElementById("candidate-status-text").innerText =
+                "Error: Interview not found or you are not authorized for this session.";
+            }
         }
       } catch (e) {
         console.error("Polling error", e);

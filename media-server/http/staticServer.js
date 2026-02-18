@@ -127,8 +127,7 @@ export default function handleHttp(req, res) {
     res.writeHead(200, {
       "Content-Type": contentType,
       "Content-Length": stat.size,
-      // Optional: Force download if query param ?download=true, else play in browser
-      // "Content-Disposition": `attachment; filename="${filename}"`, 
+      "Content-Disposition": `attachment; filename="${filename}"`, 
     });
 
     const readStream = fs.createReadStream(filePath);

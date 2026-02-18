@@ -49,7 +49,7 @@ async function initializeDashboard() {
     }
 
     // Render dashboard
-    renderDashboard();
+    await renderDashboard();
   } catch (error) {
     console.error('Dashboard initialization error:', error);
     const contentDiv = document.getElementById('dashboard-content');
@@ -59,7 +59,7 @@ async function initializeDashboard() {
   }
 }
 
-function renderDashboard() {
+async function renderDashboard() {
   // Add styles for empty state if not present
   if (!document.getElementById('dashboard-styles')) {
     const style = document.createElement('style');
@@ -86,6 +86,9 @@ function renderDashboard() {
   const activeCompanies = interviewerProfile.activeCompanies || companySet.size
   const totalEarnings = interviewerProfile.totalEarnings ? `$${interviewerProfile.totalEarnings}` : '$0'
 
+
+  // Pre-render schedule list to handle async fetching
+  const scheduleListHtml = await renderScheduleList(scheduledInterviews);
 
   const html = `
     <!-- Header -->
@@ -137,7 +140,7 @@ function renderDashboard() {
           <h2 style="margin: 0; font-size: 18px;">Interview Schedule</h2>
         </div>
         <div class="schedule-list" style="padding: 20px;">
-           ${renderScheduleList(scheduledInterviews)}
+           ${scheduleListHtml}
         </div>
       </div>
 
@@ -175,7 +178,8 @@ function renderCompanyList(companies) {
   `).join('')
 }
 
-function renderScheduleList(interviews) {
+// Make this async to fetch recordings
+async function renderScheduleList(interviews) {
   if (!interviews || interviews.length === 0) {
     return `
       <div class="empty-state">
@@ -186,7 +190,23 @@ function renderScheduleList(interviews) {
     `;
   }
 
-  return interviews.map(createScheduleItem).join('');
+  // Fetch recordings for completed interviews
+  const interviewsWithRecordings = await Promise.all(interviews.map(async (interview) => {
+    if (interview.status === 'COMPLETED') {
+        try {
+            const recordings = await api.getRecordings(interview.id);
+            // recordings is a List<Recording>
+            // We'll attach it to the interview object
+            return { ...interview, recordings: recordings || [] };
+        } catch (e) {
+            console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
+            return interview;
+        }
+    }
+    return interview;
+  }));
+
+  return interviewsWithRecordings.map(createScheduleItem).join('');
 }
 
 
@@ -220,7 +240,21 @@ function createActionButtons(interview) {
   if (interview.status === 'SCHEDULED' || interview.status === 'IN_PROGRESS') {
     return `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Start</button>`;
   } else if (interview.status === 'COMPLETED') {
-    return `<button class="btn btn-outline btn-sm" disabled>Completed</button>`;
+    let buttons = `<button class="btn btn-outline btn-sm" disabled>Completed</button>`;
+    
+    if (interview.recordings && interview.recordings.length > 0) {
+        // Use the first recording for now, or list them? Let's just button for the first one or a generic "Download"
+        const rec = interview.recordings[0];
+        // The URL in DB might be relative or absolute. Media Server serves at /recordings/filename
+        // If rec.url is just the filename or path, we might need to prepend media server URL.
+        // For now, assuming standard setup:
+        // If running locally, media server is likely on port 3000. 
+        // We can try to use the generic /recordings/ endpoint if on same domain, or full URL.
+        
+        // Use a function to trigger download or open in new tab
+        buttons += ` <a href="http://localhost:3000/recordings/${rec.filename}" download="${rec.filename}" class="btn btn-secondary btn-sm" style="margin-left: 5px;">Download Recording</a>`;
+    }
+    return buttons;
   }
   return '';
 }

@@ -25,7 +25,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadSchedule() {
     try {
         const userInfo = api.getUserInfo();
-        allInterviews = await api.getUpcomingInterviews(userInfo.email);
+        let interviews = await api.getUpcomingInterviews(userInfo.email);
+        
+        // Fetch recordings for completed interviews
+        allInterviews = await Promise.all(interviews.map(async (interview) => {
+            if (interview.status === 'COMPLETED') {
+                try {
+                    const recordings = await api.getRecordings(interview.id);
+                    return { ...interview, recordings: recordings || [] };
+                } catch (e) {
+                    console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
+                    return interview;
+                }
+            }
+            return interview;
+        }));
+
         renderSchedule('all');
     } catch (error) {
         console.error("Failed to load schedule", error);
@@ -158,6 +173,9 @@ function renderInterviewList(interviews) {
               <div class="interview-actions">
                 <button class="btn-secondary btn-sm" onclick="alert('Viewing Details...')">View Details</button>
                 ${isJoinable ? `<button class="btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join Interview</button>` : ''}
+                ${interview.status === 'COMPLETED' && interview.recordings && interview.recordings.length > 0 
+                    ? `<a href="http://localhost:3000/recordings/${interview.recordings[0].filename}" download="${interview.recordings[0].filename}" class="btn btn-primary btn-sm" style="margin-left: 5px;">Download Recording</a>` 
+                    : ''}
               </div>
             </div>
           </div>

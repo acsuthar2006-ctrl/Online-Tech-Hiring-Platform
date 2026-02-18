@@ -39,9 +39,9 @@ export function initSocket() {
           const savedInstance = localStorage.getItem("serverInstance");
           if (savedInstance && savedInstance !== data.instanceId) {
             console.log(
-              "[Socket] Server instance changed. Clearing localStorage.",
+              "[Socket] Server instance changed. Updating session info.",
             );
-            localStorage.clear();
+            // localStorage.clear(); // DO NOT CLEAR - wipes auth tokens!
             localStorage.setItem("serverInstance", data.instanceId);
             // Optional: Notify user
             // setStatus("Session reset (Server restarted)");

@@ -48,7 +48,13 @@ export async function exitCall() {
     endCall();
 
     setTimeout(() => {
-      window.location.href = "lobby.html";
+      if (state.role === 'interviewer') {
+        window.location.href = "/interviewer/interviewer-dashboard.html";
+      } else if (state.role === 'candidate') {
+        window.location.href = "/candidate/my_schedule.html";
+      } else {
+        window.location.href = "/lobby.html";
+      }
     }, 50);
   }
 }

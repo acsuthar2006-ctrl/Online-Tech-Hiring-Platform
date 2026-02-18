@@ -44,6 +44,7 @@ export class Recorder extends EventEmitter {
     this.consumers = [];
     this.process = null;
     this.recordingChunks = []; // Track chunks
+    this.manifestPath = null; // Track current session manifest
   }
 
   // New start method accepts an array of producer configs: [{ producerId: '...', kind: 'audio|video' }, ...]
@@ -121,8 +122,10 @@ a=rtcp-mux
     this.recordingChunks.push(filepath);
 
     // Append to manifest file for reliability
-    const manifestPath = path.join(RECORD_DIR, `${this.roomId}-manifest.txt`);
-    fs.appendFileSync(manifestPath, `file '${path.resolve(filepath)}'\n`);
+    if (!this.manifestPath) {
+        this.manifestPath = path.join(RECORD_DIR, `${this.roomId}-${timestamp}-manifest.txt`);
+    }
+    fs.appendFileSync(this.manifestPath, `file '${path.resolve(filepath)}'\n`);
 
     // FFmpeg Filter Complex for merging
     // [0:a][2:a]amix=inputs=2[a]
@@ -225,13 +228,9 @@ a=rtcp-mux
 
   async stop() {
     console.log("[Recorder] Stopping current process...");
-    this.consumers.forEach((c) => c.close());
-    this.transports.forEach((t) => t.close());
-    this.consumers = [];
-    this.transports = []; // Clear arrays
 
     if (this.process) {
-      return new Promise((resolve) => {
+      await new Promise((resolve) => {
           const proc = this.process;
           this.process = null; // Clear reference immediately
           
@@ -252,14 +251,32 @@ a=rtcp-mux
           proc.kill("SIGINT");
       });
     }
+
+    // Close transports after FFmpeg has finished
+    this.consumers.forEach((c) => c.close());
+    this.transports.forEach((t) => t.close());
+    this.consumers = [];
+    this.transports = []; // Clear arrays
+
     return Promise.resolve();
   }
 
   async saveRecording(customFilename) {
-    const manifestPath = path.join(RECORD_DIR, `${this.roomId}-manifest.txt`);
+    // If no manifest path tracked, try default or fail
+    if (!this.manifestPath) {
+        console.log("[Recorder] No manifest session tracked, nothing to save.");
+        // Try fallback to legacy path if this.manifestPath wasn't set (shouldn't happen with new logic but safe)
+        const legacyPath = path.join(RECORD_DIR, `${this.roomId}-manifest.txt`);
+        if (fs.existsSync(legacyPath)) {
+             console.log("[Recorder] Falling back to legacy manifest path.");
+             this.manifestPath = legacyPath;
+        } else {
+             return;
+        }
+    }
     
-    if (!fs.existsSync(manifestPath)) {
-        console.log("[Recorder] No manifest found, nothing to save.");
+    if (!fs.existsSync(this.manifestPath)) {
+        console.log("[Recorder] Manifest file not found on disk.");
         return;
     }
 
@@ -274,7 +291,7 @@ a=rtcp-mux
         const args = [
             "-f", "concat",
             "-safe", "0",
-            "-i", manifestPath,
+            "-i", this.manifestPath,
             "-c", "copy",
             "-y",
             finalOutputPath
@@ -298,8 +315,8 @@ a=rtcp-mux
         // Cleanup chunks
         console.log("[Recorder] Cleaning up chunks...");
         // Read manifest to preserve file paths for deletion
-        if (fs.existsSync(manifestPath)) {
-            const content = fs.readFileSync(manifestPath, 'utf-8');
+        if (fs.existsSync(this.manifestPath)) {
+            const content = fs.readFileSync(this.manifestPath, 'utf-8');
             const lines = content.split('\n').filter(l => l.trim());
             for (const line of lines) {
                 // line format: file '/path/to/file'
@@ -308,11 +325,12 @@ a=rtcp-mux
                     try { fs.unlinkSync(match[1]); } catch(e) { }
                 }
             }
-            try { fs.unlinkSync(manifestPath); } catch(e) {}
+            try { fs.unlinkSync(this.manifestPath); } catch(e) {}
         }
         
         // Reset state
         this.recordingChunks = [];
+        this.manifestPath = null;
 
     } catch (e) {
         console.error("[Recorder] Merge failed:", e);

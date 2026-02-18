@@ -223,6 +223,10 @@ class ApiService {
   async sendManualReminder(id) {
     return this.request(`/interviews/${id}/remind`, { method: 'POST' });
   }
+
+  async getRecordings(interviewId) {
+    return this.request(`/recordings/${interviewId}`);
+  }
 }
 
 export const api = new ApiService();
