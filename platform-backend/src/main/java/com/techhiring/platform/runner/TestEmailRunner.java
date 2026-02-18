@@ -41,7 +41,7 @@ public class TestEmailRunner implements CommandLineRunner {
     String interviewerEmail = "interviewer@test.com";
 
     // 2. Ensure Interviewer exists
-    userRepository.findByEmail(interviewerEmail)
+    Interviewer interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
         .orElseGet(() -> {
           Interviewer i = Interviewer.builder()
               .fullName("Test Interviewer")
@@ -68,34 +68,12 @@ public class TestEmailRunner implements CommandLineRunner {
     log.info("--- TestEmailRunner: Ensure Interviewer 2 ({}) exists ---", interviewer2.getEmail());
 
     // 3. Ensure Candidate exists (User's email)
+    // This creates "sutharaarya793@gmail.com" as a Candidate
     userRepository.findByEmail(targetEmail)
         .orElseGet(() -> {
           Candidate c = new Candidate("Aarya Suthar", targetEmail, passwordEncoder.encode("pass"));
           return candidateRepository.save(c);
         });
 
-    // 4. Create Interview - DISABLED per user request (clean state)
-    /*
-    LocalDateTime scheduledDateTime = LocalDateTime.now().plusMinutes(27);
-
-    Interview interview = Interview.builder()
-        .title("Test Auto-Email Interview")
-        .interviewer(interviewer)
-        .candidate(candidate)
-        .scheduledDate(scheduledDateTime.toLocalDate())
-        .scheduledTime(scheduledDateTime.toLocalTime())
-        .meetingLink("test-link-" + System.currentTimeMillis())
-        .status(Interview.InterviewStatus.SCHEDULED)
-        .interviewType(InterviewType.TECHNICAL)
-        .description("This is a test interview to verify email notifications.")
-        .build();
-
-    interviewRepository.save(interview);
-
-    log.info("--- TestEmailRunner: Created Interview ID {} for {} at {} {} ---",
-        interview.getId(), targetEmail, scheduledDateTime.toLocalDate(), scheduledDateTime.toLocalTime());
-    log.info("--- TestEmailRunner: Scheduler should pick this up in ~1 minute ---");
-    */
-    log.info("--- TestEmailRunner: Skipped creating dummy interview per configuration ---");
   }
 }

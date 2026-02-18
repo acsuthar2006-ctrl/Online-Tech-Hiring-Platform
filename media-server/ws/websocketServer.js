@@ -189,6 +189,24 @@ async function initWebSocket(server) {
 
         // 4. Produce
         if (data.type === "produce") {
+          // Check for existing screen share in this channel if this is a screen share request
+          if (data.appData && data.appData.source === "screen") {
+             const roomProducers = [...producers.values()].filter(
+                (p) => p.appData.channel === socket.channel
+             );
+             const existingScreen = roomProducers.find((p) => p.appData.source === "screen");
+             
+             if (existingScreen) {
+                console.warn(`[WebSocket] Screen share rejected for ${socket.uid}: Screen already shared by ${existingScreen.appData.uid}`);
+                socket.send(JSON.stringify({
+                    type: "error",
+                    message: "Screen share already active"
+                }));
+                // We must return here to prevent creating the transport producer
+                return;
+             }
+          }
+
           const transport = transports.get(data.transportId);
           if (transport) {
             const producer = await transport.produce({
