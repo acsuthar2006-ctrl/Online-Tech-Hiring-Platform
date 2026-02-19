@@ -92,7 +92,9 @@ async function init() {
       if (waitingText)
         waitingText.innerText = "The Interviewer will join shortly...";
 
-      // Candidate only features
+    }
+
+    // Screen Share Feature (For both roles)
       if (screenShareBtn) {
         screenShareBtn.style.display = "flex";
 
@@ -102,6 +104,8 @@ async function init() {
         let isSharing = false;
 
         screenShareBtn.addEventListener("click", async () => {
+          if (screenShareBtn.disabled) return; // Prevent clicking if disabled
+
           if (isSharing) {
             stopScreenShare();
             isSharing = false;
@@ -110,6 +114,12 @@ async function init() {
           }
 
           try {
+            // Check if already sharing (double safety)
+            if (screenShareBtn.classList.contains("disabled")) {
+                 alert("Someone is already sharing their screen.");
+                 return;
+            }
+
             const stream = await navigator.mediaDevices.getDisplayMedia({
               video: {
                 width: { ideal: 1920 },
@@ -131,11 +141,14 @@ async function init() {
               };
             }
           } catch (err) {
-            console.error("Screen share cancelled:", err);
+            console.error("Screen share cancelled/failed:", err);
+            if (err.message && err.message.includes("Screen share already active")) {
+                alert("Cannot share screen: Another user is already sharing.");
+            }
           }
         });
       }
-    }
+
 
     // Get camera + mic (echo-safe)
     state.localStream = await navigator.mediaDevices.getUserMedia({

@@ -111,6 +111,20 @@ export function setScreenShareMode(active) {
   } else {
     wrapper.classList.remove("screen-share-active");
   }
+
+  // Mutual Exclusion UI: Disable local screen share button if remote is sharing
+  if (screenShareBtn) {
+    screenShareBtn.disabled = active;
+    if (active) {
+        screenShareBtn.classList.add("disabled");
+        screenShareBtn.title = "Screen sharing unavailable (Remote user is sharing)";
+        // Optional: Change icon or style
+    } else {
+        screenShareBtn.classList.remove("disabled");
+        screenShareBtn.title = "Share Screen";
+    }
+  }
+
   console.log(`[UI] Screen Share Mode: ${active}`);
 }
 

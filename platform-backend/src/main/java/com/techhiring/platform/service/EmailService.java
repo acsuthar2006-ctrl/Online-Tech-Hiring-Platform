@@ -85,13 +85,13 @@ public class EmailService {
       MimeMessage message = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-      helper.setFrom(fromEmail != null ? fromEmail : "noreply@techhiring.com");
+      helper.setFrom(fromEmail != null ? fromEmail : "noreply@techhiring.com", "TechHiring Platform");
       helper.setTo(to);
       helper.setSubject(subject);
       helper.setText(content, true);
 
       mailSender.send(message);
-    } catch (MessagingException e) {
+    } catch (MessagingException | java.io.UnsupportedEncodingException e) {
       // Log error but don't crash flow
       System.err.println("Failed to send email to " + to + ": " + e.getMessage());
     }
