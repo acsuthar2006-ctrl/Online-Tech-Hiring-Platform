@@ -93,4 +93,10 @@ public class InterviewController {
         "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail());
     return ResponseEntity.ok("Reminder sent");
   }
+
+  @PutMapping("/{id}/presence")
+  public ResponseEntity<?> updatePresence(@PathVariable Long id) {
+    interviewService.updatePresence(id);
+    return ResponseEntity.ok().build();
+  }
 }

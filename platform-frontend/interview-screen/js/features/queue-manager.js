@@ -1,16 +1,28 @@
 
-// Queue Manager
+// Queue Manager — Interviewer Modal + Sidebar Refresh
+
+// ─── Sidebar refresh helper ──────────────────────────────────────────────────
+// Called after any queue-mutating action so the sidebar updates immediately
+// instead of waiting for the next 5-second poll tick.
+function _refreshSidebar() {
+  if (typeof window.refreshQueue === 'function') {
+    window.refreshQueue();
+  }
+}
+
+// ─── Interviewer Modal Toggle ─────────────────────────────────────────────────
 window.toggleQueueModal = function () {
   const modal = document.getElementById('queue-modal');
   if (modal.style.display === 'none') {
     modal.style.display = 'block';
-    fetchQueue();
+    _fetchModalQueue();
   } else {
     modal.style.display = 'none';
   }
 }
 
-async function fetchQueue() {
+// ─── Fetch & render the interviewer modal queue list ──────────────────────────
+async function _fetchModalQueue() {
   const list = document.getElementById('queue-modal-list');
   list.innerHTML = '<p>Loading...</p>';
 
@@ -20,7 +32,7 @@ async function fetchQueue() {
   try {
     const res = await fetch(`/api/interviews/session/${room}/queue`);
 
-    // Logic to force Auth Prompt if 401
+    // Force auth prompt on 401
     if (res.status === 401) {
       list.innerHTML = `<p style="color:red">Authentication Required.</p>
                          <button onclick="window.location.reload()" style="padding: 10px; cursor: pointer;">Log In</button>`;
@@ -37,8 +49,10 @@ async function fetchQueue() {
 
         if (item.status === 'SCHEDULED') {
           statusColor = 'orange';
-          if (!data.current || true) {
+          if (item.inLobby) {
             actionBtn = `<button onclick="callCandidate(${item.id})" style="padding: 5px 10px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Call In</button>`;
+          } else {
+            actionBtn = `<button onclick="remindCandidate(${item.id})" style="padding: 5px 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Remind</button>`;
           }
         } else if (item.status === 'IN_PROGRESS') {
           statusColor = 'green';
@@ -73,13 +87,14 @@ window.callCandidate = async function (id) {
 
   try {
     const token = sessionStorage.getItem('jwt_token');
-    await fetch(`/api/interviews/${id}/start`, { 
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+    await fetch(`/api/interviews/${id}/start`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
-    fetchQueue(); // Refresh
+    _fetchModalQueue(); // Refresh interviewer modal
+    _refreshSidebar();  // Immediately refresh sidebar for all viewers
   } catch (e) {
     alert("Error starting interview");
     console.error(e);
@@ -93,58 +108,77 @@ window.completeCandidate = async function (id) {
 
   // Attempt to stop recording and get filename
   if (window.getMediaSocket) {
-      const socket = window.getMediaSocket();
-      if (socket && socket.readyState === 1) { // OPEN
-          console.log("Stopping recording for candidate " + id);
-          
-          try {
-              const filename = await new Promise((resolve) => {
-                  const timeout = setTimeout(() => resolve(null), 3000); // 3s timeout
-                  
-                  const activeListener = (event) => {
-                      const msg = JSON.parse(event.data);
-                      if (msg.type === 'recordingSaved') {
-                          clearTimeout(timeout);
-                          socket.removeEventListener('message', activeListener); // clean up (tricky with wrapper, but generic logic)
-                          // Actually, we can't easily remove specific listeners if they are wrapped.
-                          // But we can just use a one-time handler logic if we had a proper event emitter.
-                          // Since we are using raw socket (or wrapper?), let's assume raw WebSocket for now based on `state.socket`.
-                          // `state.socket` is a WebSocket instance.
-                          resolve(msg.filename);
-                      }
-                  };
-                  socket.addEventListener('message', activeListener);
-                  socket.send(JSON.stringify({
-                      type: 'stopRecording',
-                      recordingName: `interview-${id}`
-                  }));
-              });
-              
-              if (filename) recordingUrl = filename;
+    const socket = window.getMediaSocket();
+    if (socket && socket.readyState === 1) { // OPEN
+      console.log("Stopping recording for candidate " + id);
 
-          } catch (e) {
-              console.warn("Failed to stop recording cleanly:", e);
-          }
+      try {
+        const filename = await new Promise((resolve) => {
+          const timeout = setTimeout(() => resolve(null), 3000); // 3s timeout
+
+          const activeListener = (event) => {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'recordingSaved') {
+              clearTimeout(timeout);
+              socket.removeEventListener('message', activeListener); // clean up (tricky with wrapper, but generic logic)
+              // Actually, we can't easily remove specific listeners if they are wrapped.
+              // But we can just use a one-time handler logic if we had a proper event emitter.
+              // Since we are using raw socket (or wrapper?), let's assume raw WebSocket for now based on `state.socket`.
+              // `state.socket` is a WebSocket instance.
+              resolve(msg.filename);
+            }
+          };
+          socket.addEventListener('message', activeListener);
+          socket.send(JSON.stringify({
+            type: 'stopRecording',
+            recordingName: `interview-${id}`
+          }));
+        });
+
+        if (filename) recordingUrl = filename;
+
+      } catch (e) {
+        console.warn("Failed to stop recording cleanly:", e);
       }
+    }
   }
 
   try {
     const token = sessionStorage.getItem('jwt_token');
-    await fetch(`/api/interviews/${id}/complete`, { 
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            feedback: "Allocated via Queue",
-            score: 0,
-            recordingUrl: recordingUrl // Send the filename!
-        })
+    await fetch(`/api/interviews/${id}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        feedback: "Allocated via Queue",
+        score: 0,
+        recordingUrl: recordingUrl // Send the filename!
+      })
     });
-    fetchQueue();
+    _fetchModalQueue(); // Refresh interviewer modal
+    _refreshSidebar();  // Immediately refresh sidebar for all viewers
   } catch (e) {
     alert("Error completing interview");
+    console.error(e);
+  }
+}
+
+window.remindCandidate = async function (id) {
+  if (!confirm("Send an email reminder to this candidate?")) return;
+
+  try {
+    const token = sessionStorage.getItem('jwt_token');
+    await fetch(`/api/interviews/${id}/remind`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    alert("Reminder sent!");
+  } catch (e) {
+    alert("Error sending reminder");
     console.error(e);
   }
 }
