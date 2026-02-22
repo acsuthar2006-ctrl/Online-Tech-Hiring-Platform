@@ -1,0 +1,352 @@
+/* =========================================================
+   queue-sidebar.css
+   Sidebar panel showing interview queue to all participants.
+   Candidates see their name clearly; others are masked.
+   ========================================================= */
+
+/* -------------------------------------------------------
+   Sidebar Container
+------------------------------------------------------- */
+.queue-sidebar {
+    position: fixed;
+    top: 80px;
+    /* below the app-header */
+    right: 0;
+    width: 280px;
+    max-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    background: rgba(10, 14, 26, 0.88);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px 0 0 16px;
+    backdrop-filter: blur(18px);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+    z-index: 10001; /* Set high to be above candidate waiting overlay (9999) */
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.35s ease;
+    overflow: hidden;
+}
+
+/* Collapsed state */
+.queue-sidebar.collapsed {
+    width: 48px;
+}
+
+/* -------------------------------------------------------
+   Header
+------------------------------------------------------- */
+.queue-sidebar__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.queue-sidebar__header i.queue-icon {
+    font-size: 16px;
+    color: var(--accent, #00d4ff);
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+}
+
+.queue-sidebar__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main, #fff);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    flex: 1;
+    transition: opacity 0.25s ease;
+}
+
+.queue-sidebar.collapsed .queue-sidebar__title {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.queue-sidebar__toggle {
+    background: none;
+    border: none;
+    color: var(--text-muted, #8899ac);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: color 0.2s ease, background 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.queue-sidebar__toggle:hover {
+    color: var(--text-main, #fff);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Rotate toggle arrow when collapsed */
+.queue-sidebar.collapsed .queue-sidebar__toggle i {
+    transform: rotate(180deg);
+}
+
+.queue-sidebar__toggle i {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* -------------------------------------------------------
+   Subtitle / count
+------------------------------------------------------- */
+.queue-sidebar__subtitle {
+    font-size: 11px;
+    color: var(--text-muted, #8899ac);
+    padding: 6px 16px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.25s ease;
+    flex-shrink: 0;
+}
+
+.queue-sidebar.collapsed .queue-sidebar__subtitle {
+    opacity: 0;
+    pointer-events: none;
+    padding: 0;
+    height: 0;
+}
+
+/* -------------------------------------------------------
+   Queue List
+------------------------------------------------------- */
+.queue-sidebar__list {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    padding: 8px 0 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.queue-sidebar__list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.queue-sidebar__list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.queue-sidebar__list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.queue-sidebar.collapsed .queue-sidebar__list {
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* -------------------------------------------------------
+   Queue Item
+------------------------------------------------------- */
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    margin: 3px 8px;
+    border-radius: 10px;
+    border-left: 3px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.2s ease, border-color 0.2s ease;
+    cursor: default;
+    position: relative;
+}
+
+.queue-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Own candidate highlight (subtle accent glow) */
+.queue-item--self {
+    background: rgba(99, 102, 241, 0.12);
+    border-left-color: var(--primary, #6366f1) !important;
+}
+
+/* IN_PROGRESS — green */
+.queue-item--in-progress {
+    border-left-color: var(--success, #00ffaa);
+    background: rgba(0, 255, 170, 0.07);
+}
+
+/* COMPLETED — red */
+.queue-item--completed {
+    border-left-color: var(--danger, #ff3366);
+    background: rgba(255, 51, 102, 0.07);
+    opacity: 0.75;
+}
+
+/* SCHEDULED — default/muted */
+.queue-item--scheduled {
+    border-left-color: rgba(255, 255, 255, 0.15);
+}
+
+/* -------------------------------------------------------
+   Queue Item — Number Badge
+------------------------------------------------------- */
+.queue-item__number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted, #8899ac);
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.queue-item--in-progress .queue-item__number {
+    background: rgba(0, 255, 170, 0.15);
+    color: var(--success, #00ffaa);
+}
+
+.queue-item--completed .queue-item__number {
+    background: rgba(255, 51, 102, 0.15);
+    color: var(--danger, #ff3366);
+}
+
+.queue-item--self .queue-item__number {
+    background: rgba(99, 102, 241, 0.25);
+    color: var(--primary, #6366f1);
+}
+
+/* -------------------------------------------------------
+   Queue Item — Info
+------------------------------------------------------- */
+.queue-item__info {
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.queue-item__name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main, #fff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-item--completed .queue-item__name {
+    color: var(--text-muted, #8899ac);
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 51, 102, 0.5);
+}
+
+.queue-item__status {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-item--in-progress .queue-item__status {
+    color: var(--success, #00ffaa);
+}
+
+.queue-item--completed .queue-item__status {
+    color: var(--danger, #ff3366);
+}
+
+.queue-item--scheduled .queue-item__status {
+    color: var(--text-muted, #8899ac);
+}
+
+/* "YOU" badge */
+.queue-item__self-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary, #6366f1);
+    background: rgba(99, 102, 241, 0.18);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 20px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+    letter-spacing: 0.04em;
+}
+
+/* -------------------------------------------------------
+   Loading / Empty / Error states
+------------------------------------------------------- */
+.queue-sidebar__state {
+    padding: 20px 16px;
+    text-align: center;
+    color: var(--text-muted, #8899ac);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.queue-sidebar__state i {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: var(--accent, #00d4ff);
+}
+
+/* Pulse animation for loading */
+@keyframes qs-pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.queue-sidebar--loading .queue-sidebar__state i {
+    animation: qs-pulse 1.4s ease infinite;
+}
+
+/* -------------------------------------------------------
+   Collapsed — only the icon + toggle are visible
+------------------------------------------------------- */
+.queue-sidebar.collapsed .queue-sidebar__list,
+.queue-sidebar.collapsed .queue-sidebar__subtitle {
+    display: none;
+}
+
+/* -------------------------------------------------------
+   Responsive — auto-collapse on small screens
+------------------------------------------------------- */
+@media (max-width: 900px) {
+    .queue-sidebar {
+        width: 240px;
+        top: 70px;
+    }
+}
+
+@media (max-width: 600px) {
+    .queue-sidebar {
+        width: 48px;
+        /* start collapsed on mobile */
+    }
+
+    .queue-sidebar.mobile-open {
+        width: 240px;
+    }
+}

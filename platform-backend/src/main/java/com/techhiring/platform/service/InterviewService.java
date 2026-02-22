@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +29,13 @@ public class InterviewService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final EmailService emailService;
+  
+  // Track candidate lobby presence (interviewId -> lastPingTime)
+  private final Map<Long, LocalDateTime> candidatePresence = new ConcurrentHashMap<>();
+
+  public void updatePresence(Long interviewId) {
+    candidatePresence.put(interviewId, LocalDateTime.now());
+  }
 
   @Transactional
   public Interview scheduleInterview(String interviewerEmail, String candidateEmail, String candidateName,
@@ -122,17 +130,46 @@ public class InterviewService {
   public Map<String, Object> getSessionQueue(String meetingLink) {
     List<Interview> allInterviews = interviewRepository.findByMeetingLink(meetingLink);
 
-    // sort by time
-    allInterviews.sort(Comparator.comparing(Interview::getScheduledTime));
+    // Sort by scheduledTime first, then by id (insertion order) as tiebreaker.
+    // This ensures deterministic queue ordering even when all candidates have
+    // the same scheduled time — id reflects the order the interviewer sent emails.
+    allInterviews.sort(Comparator.comparing(Interview::getScheduledTime)
+        .thenComparing(Interview::getId));
 
     Interview current = allInterviews.stream()
         .filter(i -> i.getStatus() == Interview.InterviewStatus.IN_PROGRESS)
         .findFirst()
         .orElse(null);
 
+    // Map the timeline to include the inLobby flat
+    List<Map<String, Object>> timeline = allInterviews.stream().map(i -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", i.getId());
+      map.put("title", i.getTitle());
+      map.put("interviewer", i.getInterviewer());
+      map.put("candidate", i.getCandidate());
+      map.put("scheduledDate", i.getScheduledDate());
+      map.put("scheduledTime", i.getScheduledTime());
+      map.put("actualStartTime", i.getActualStartTime());
+      map.put("actualEndTime", i.getActualEndTime());
+      map.put("status", i.getStatus());
+      map.put("meetingLink", i.getMeetingLink());
+      map.put("description", i.getDescription());
+      map.put("interviewType", i.getInterviewType());
+
+      // Determine inLobby status (pinged within last 30 seconds)
+      LocalDateTime lastPing = candidatePresence.get(i.getId());
+      boolean inLobby = false;
+      if (lastPing != null && lastPing.isAfter(LocalDateTime.now().minusSeconds(30))) {
+        inLobby = true;
+      }
+      map.put("inLobby", inLobby);
+      return map;
+    }).collect(Collectors.toList());
+
     Map<String, Object> response = new HashMap<>();
     response.put("current", current);
-    response.put("timeline", allInterviews);
+    response.put("timeline", timeline);
     // Connect status would be real-time via Socket, here we return static data
 
     return response;
@@ -156,7 +193,8 @@ public class InterviewService {
     List<Interview> sessionInterviews = interviewRepository.findByMeetingLinkAndStatus(
         current.getMeetingLink(), Interview.InterviewStatus.SCHEDULED);
 
-    sessionInterviews.sort(Comparator.comparing(Interview::getScheduledTime));
+    sessionInterviews.sort(Comparator.comparing(Interview::getScheduledTime)
+        .thenComparing(Interview::getId));
 
     if (!sessionInterviews.isEmpty()) {
       Interview next = sessionInterviews.get(0);
@@ -175,6 +213,20 @@ public class InterviewService {
   @Transactional
   public void startInterview(Long id) {
     Interview i = getInterview(id);
+
+    // Auto-complete any active interview in the same meeting room
+    List<Interview> existingActive = interviewRepository.findByMeetingLink(i.getMeetingLink())
+        .stream()
+        .filter(intv -> intv.getStatus() == Interview.InterviewStatus.IN_PROGRESS && !intv.getId().equals(id))
+        .collect(Collectors.toList());
+
+    for (Interview active : existingActive) {
+      active.setStatus(Interview.InterviewStatus.COMPLETED);
+      active.setActualEndTime(LocalDateTime.now());
+      active.setFeedback("Auto-completed by starting another interview in queue");
+      interviewRepository.save(active);
+    }
+
     i.setStatus(Interview.InterviewStatus.IN_PROGRESS);
     i.setActualStartTime(LocalDateTime.now());
     interviewRepository.save(i);

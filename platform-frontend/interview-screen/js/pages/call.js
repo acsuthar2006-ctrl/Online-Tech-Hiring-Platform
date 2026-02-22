@@ -2,6 +2,7 @@
 import { state } from "../core/state.js";
 import { initSocket } from "../core/socket.js";
 import { startCall, joinCall, exitCall } from "../modules/callControls.js";
+import { initQueueSidebar } from "../../queue/queue-sidebar.js";
 import {
   micBtn,
   cameraBtn,
@@ -64,8 +65,8 @@ async function init() {
           // For candidate, find their interview
           // For candidate, find their interview (Prioritize active ones)
           const myInterview = data.timeline.find(i => i.candidate.email === userEmail && i.status === 'IN_PROGRESS')
-                           || data.timeline.find(i => i.candidate.email === userEmail && i.status === 'SCHEDULED')
-                           || data.timeline.find(i => i.candidate.email === userEmail);
+            || data.timeline.find(i => i.candidate.email === userEmail && i.status === 'SCHEDULED')
+            || data.timeline.find(i => i.candidate.email === userEmail);
           if (myInterview) {
             localName = myInterview.candidate?.fullName || 'Candidate';
             remoteName = myInterview.interviewer?.fullName || 'Interviewer';
@@ -83,7 +84,7 @@ async function init() {
       if (waitingText)
         waitingText.innerText = "The Candidate will join shortly...";
 
-      // Show Queue Button
+      // Show Queue Button (interviewer modal)
       const queueBtn = document.getElementById("queue-btn");
       if (queueBtn) queueBtn.style.display = "flex";
     } else {
@@ -94,60 +95,70 @@ async function init() {
 
     }
 
+    // ── Candidate Queue Sidebar ── visible to all roles ──────────────────────
+    // Email: prefer URL param, then sessionStorage (already resolved above)
+    const sidebarEmail = urlParams.get("email") || sessionStorage.getItem("userEmail");
+    initQueueSidebar({
+      roomId: state.roomId,
+      userEmail: sidebarEmail,
+      userRole: state.role,
+    });
+    // ─────────────────────────────────────────────────────────────────────────
+
     // Screen Share Feature (For both roles)
-      if (screenShareBtn) {
-        screenShareBtn.style.display = "flex";
+    if (screenShareBtn) {
+      screenShareBtn.style.display = "flex";
 
-        // Dynamic import
-        const { startScreenShare, stopScreenShare } =
-          await import("../features/screen-share.js");
-        let isSharing = false;
+      // Dynamic import
+      const { startScreenShare, stopScreenShare } =
+        await import("../features/screen-share.js");
+      let isSharing = false;
 
-        screenShareBtn.addEventListener("click", async () => {
-          if (screenShareBtn.disabled) return; // Prevent clicking if disabled
+      screenShareBtn.addEventListener("click", async () => {
+        if (screenShareBtn.disabled) return; // Prevent clicking if disabled
 
-          if (isSharing) {
-            stopScreenShare();
-            isSharing = false;
-            screenShareBtn.classList.remove("active");
+        if (isSharing) {
+          stopScreenShare();
+          isSharing = false;
+          screenShareBtn.classList.remove("active");
+          return;
+        }
+
+        try {
+          // Check if already sharing (double safety)
+          if (screenShareBtn.classList.contains("disabled")) {
+            alert("Someone is already sharing their screen.");
             return;
           }
 
-          try {
-            // Check if already sharing (double safety)
-            if (screenShareBtn.classList.contains("disabled")) {
-                 alert("Someone is already sharing their screen.");
-                 return;
-            }
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              frameRate: { ideal: 30 },
+            },
+            audio: false,
+          });
+          const producer = await startScreenShare(stream);
 
-            const stream = await navigator.mediaDevices.getDisplayMedia({
-              video: {
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-                frameRate: { ideal: 30 },
-              },
-              audio: false,
-            });
-            const producer = await startScreenShare(stream);
+          if (producer) {
+            isSharing = true;
+            screenShareBtn.classList.add("active");
 
-            if (producer) {
-              isSharing = true;
-              screenShareBtn.classList.add("active");
-
-              stream.getVideoTracks()[0].onended = () => {
-                stopScreenShare();
-                isSharing = false;
-                screenShareBtn.classList.remove("active");
-              };
-            }
-          } catch (err) {
-            console.error("Screen share cancelled/failed:", err);
-            if (err.message && err.message.includes("Screen share already active")) {
-                alert("Cannot share screen: Another user is already sharing.");
-            }
+            stream.getVideoTracks()[0].onended = () => {
+              stopScreenShare();
+              isSharing = false;
+              screenShareBtn.classList.remove("active");
+            };
           }
-        });
-      }
+        } catch (err) {
+          console.error("Screen share cancelled/failed:", err);
+          if (err.message && err.message.includes("Screen share already active")) {
+            alert("Cannot share screen: Another user is already sharing.");
+          }
+        }
+      });
+    }
 
 
     // Get camera + mic (echo-safe)
@@ -278,9 +289,9 @@ init().then(() => {
         const data = await res.json();
 
         // Find the most relevant interview: Prioritize IN_PROGRESS, then SCHEDULED, then fallback to any (e.g. COMPLETED)
-        const myInterview = data.timeline.find(i => i.candidate.email === email && i.status === 'IN_PROGRESS') 
-                         || data.timeline.find(i => i.candidate.email === email && i.status === 'SCHEDULED')
-                         || data.timeline.find(i => i.candidate.email === email);
+        const myInterview = data.timeline.find(i => i.candidate.email === email && i.status === 'IN_PROGRESS')
+          || data.timeline.find(i => i.candidate.email === email && i.status === 'SCHEDULED')
+          || data.timeline.find(i => i.candidate.email === email);
 
         const overlay = document.getElementById("candidate-overlay");
 
@@ -305,14 +316,23 @@ init().then(() => {
               document.getElementById("candidate-status-text").innerText =
                 "Scheduled for: " + myInterview.scheduledTime;
             }
+            
+            // Ping presence to backend if scheduled so interviewer knows candidate is in lobby
+            if (myInterview.status === "SCHEDULED" && myInterview.id) {
+              try {
+                await fetch(`/api/interviews/${myInterview.id}/presence`, { method: "PUT" });
+              } catch (e) {
+                console.warn("Could not ping presence", e);
+              }
+            }
           }
         } else {
-            // Not found in this session
-             if (overlay) {
-              overlay.style.display = "flex";
-              document.getElementById("candidate-status-text").innerText =
-                "Error: Interview not found or you are not authorized for this session.";
-            }
+          // Not found in this session
+          if (overlay) {
+            overlay.style.display = "flex";
+            document.getElementById("candidate-status-text").innerText =
+              "Error: Interview not found or you are not authorized for this session.";
+          }
         }
       } catch (e) {
         console.error("Polling error", e);
