@@ -61,11 +61,12 @@
     white-space: nowrap;
     overflow: hidden;
     flex: 1;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.25s ease, display 0.25s ease;
 }
 
 .queue-sidebar.collapsed .queue-sidebar__title {
     opacity: 0;
+    display: none;
     pointer-events: none;
 }
 
@@ -98,6 +99,14 @@
 
 .queue-sidebar__toggle i {
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.queue-sidebar.collapsed {
+    cursor: pointer; /* make the whole bar clickable when collapsed */
+}
+
+.queue-sidebar.collapsed:hover {
+    background: rgba(10, 14, 26, 0.95);
 }
 
 /* -------------------------------------------------------

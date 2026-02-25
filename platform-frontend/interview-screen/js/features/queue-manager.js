@@ -61,11 +61,19 @@ async function _fetchModalQueue() {
           statusColor = 'blue';
         }
 
+        let timeDisplayStr = item.scheduledTime;
+        if (item.status === 'SCHEDULED' && item.expectedStartTime) {
+          const ed = new Date(item.expectedStartTime);
+          if (!isNaN(ed.getTime())) {
+            timeDisplayStr = ed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' (Expected)';
+          }
+        }
+
         html += `
                 <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
                     <div>
                         <strong>${item.candidate.fullName}</strong><br/>
-                        <span style="font-size: 0.8rem; color: ${statusColor}">${item.status} - ${item.scheduledTime}</span>
+                        <span style="font-size: 0.8rem; color: ${statusColor}">${item.status} - ${timeDisplayStr}</span>
                     </div>
                     <div>${actionBtn}</div>
                 </li>

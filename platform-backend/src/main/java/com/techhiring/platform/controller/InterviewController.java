@@ -37,6 +37,7 @@ public class InterviewController {
         request.getTitle(),
         request.getMeetingLink(),
         request.getDescription(),
+        request.getDurationMinutes(),
         request.getInterviewType());
     return ResponseEntity.ok(interview);
   }

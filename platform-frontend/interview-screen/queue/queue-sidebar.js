@@ -107,12 +107,22 @@ function _buildSidebarDOM() {
 // ─── Toggle (Collapse / Expand) ───────────────────────────────────────────────
 
 function _attachToggleListener() {
-  // Use event delegation so it works even if DOM isn't fully ready
   document.addEventListener('click', (e) => {
-    const btn = e.target.closest('#queue-toggle-btn');
-    if (!btn) return;
     const sidebar = document.getElementById('queue-sidebar');
-    if (sidebar) sidebar.classList.toggle('collapsed');
+    if (!sidebar) return;
+
+    const btn = e.target.closest('#queue-toggle-btn');
+
+    // If the button was clicked explicitly, toggle state
+    if (btn) {
+      sidebar.classList.toggle('collapsed');
+      return;
+    }
+
+    // If the sidebar is currently collapsed and the user clicked anywhere *on* the sidebar
+    if (sidebar.classList.contains('collapsed') && sidebar.contains(e.target)) {
+      sidebar.classList.remove('collapsed');
+    }
   });
 }
 
@@ -207,11 +217,22 @@ function _renderQueue(listEl, subtitleEl, timeline) {
     item.className = `queue-item ${statusClass}${selfClass}`;
     item.setAttribute('aria-label', `Position ${position}: ${displayName} — ${statusLabel}`);
 
+    // Format expected time if this candidate is not currently in progress or completed
+    let timingHtml = '';
+    if (status === 'SCHEDULED' && interview.expectedStartTime) {
+      const expectedDate = new Date(interview.expectedStartTime);
+      if (!isNaN(expectedDate.getTime())) {
+        const timeStr = expectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        timingHtml = `<div class="queue-item__timing" style="font-size: 10px; color: var(--text-muted, #8899ac); margin-top: 2px;">Expected begin time - ${timeStr}</div>`;
+      }
+    }
+
     item.innerHTML = `
       <div class="queue-item__number" aria-hidden="true">${position}</div>
       <div class="queue-item__info">
         <div class="queue-item__name">${_escapeHtml(displayName)}</div>
         <div class="queue-item__status">${_escapeHtml(statusLabel)}</div>
+        ${timingHtml}
       </div>
       ${isSelf ? '<span class="queue-item__self-badge" aria-label="You">YOU</span>' : ''}
     `;

@@ -14,5 +14,6 @@ public class ScheduleRequest {
   private String title;
   private String meetingLink;
   private String description;
+  private Integer durationMinutes;
   private InterviewType interviewType;
 }
