@@ -40,7 +40,7 @@ public class InterviewService {
   @Transactional
   public Interview scheduleInterview(String interviewerEmail, String candidateEmail, String candidateName,
       LocalDateTime scheduledTime, String title, String customMeetingLink, String description,
-      com.techhiring.platform.entity.InterviewType type) {
+      Integer durationMinutes, com.techhiring.platform.entity.InterviewType type) {
     Interviewer interviewer;
     
     // Try to find by email first, if that fails, try to parse as ID
@@ -104,6 +104,7 @@ public class InterviewService {
         .meetingLink(meetingLink)
         .status(Interview.InterviewStatus.SCHEDULED)
         .description(description)
+        .durationMinutes(durationMinutes != null ? durationMinutes : 30) // Default to 30 mins
         .interviewType(type)
         .build();
 
@@ -141,8 +142,20 @@ public class InterviewService {
         .findFirst()
         .orElse(null);
 
-    // Map the timeline to include the inLobby flat
-    List<Map<String, Object>> timeline = allInterviews.stream().map(i -> {
+    // Calculate rolling expected time
+    LocalDateTime rollingExpectedFinishTime = LocalDateTime.now();
+    
+    if (current != null && current.getActualStartTime() != null) {
+      int duration = current.getDurationMinutes() != null ? current.getDurationMinutes() : 30;
+      LocalDateTime expectedCurrentFinish = current.getActualStartTime().plusMinutes(duration);
+      if (expectedCurrentFinish.isAfter(rollingExpectedFinishTime)) {
+        rollingExpectedFinishTime = expectedCurrentFinish;
+      }
+    }
+
+    // Map the timeline to include the inLobby flag
+    List<Map<String, Object>> timeline = new ArrayList<>();
+    for (Interview i : allInterviews) {
       Map<String, Object> map = new HashMap<>();
       map.put("id", i.getId());
       map.put("title", i.getTitle());
@@ -155,7 +168,19 @@ public class InterviewService {
       map.put("status", i.getStatus());
       map.put("meetingLink", i.getMeetingLink());
       map.put("description", i.getDescription());
+      map.put("durationMinutes", i.getDurationMinutes());
       map.put("interviewType", i.getInterviewType());
+
+      // If scheduled, calculate expectedStartTime
+      if (i.getStatus() == Interview.InterviewStatus.SCHEDULED) {
+         LocalDateTime schLocal = LocalDateTime.of(i.getScheduledDate(), i.getScheduledTime());
+         // Expected start is the maximum of scheduled time or the rolling finish time
+         LocalDateTime expectedStart = schLocal.isAfter(rollingExpectedFinishTime) ? schLocal : rollingExpectedFinishTime;
+         map.put("expectedStartTime", expectedStart);
+         // Advance the rolling finish time for the next candidate in line
+         int dur = i.getDurationMinutes() != null ? i.getDurationMinutes() : 30;
+         rollingExpectedFinishTime = expectedStart.plusMinutes(dur);
+      }
 
       // Determine inLobby status (pinged within last 30 seconds)
       LocalDateTime lastPing = candidatePresence.get(i.getId());
@@ -164,8 +189,8 @@ public class InterviewService {
         inLobby = true;
       }
       map.put("inLobby", inLobby);
-      return map;
-    }).collect(Collectors.toList());
+      timeline.add(map);
+    }
 
     Map<String, Object> response = new HashMap<>();
     response.put("current", current);
