@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interviewers - TechHiring</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/company-admin.css">
+  <link rel="stylesheet" href="css/company-interviewers.css">
+  <script src="../common/auth.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>Interviewers</h1>
+        <p class="text-muted">18 part-time interviewers</p>
+      </div>
+      <button class="btn-primary">Hire Interviewer</button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="search-bar">
+        <input type="text" class="form-input" placeholder="Search interviewers by name or expertise...">
+        <select class="form-input" style="flex: 0.5;">
+          <option>All Expertise</option>
+          <option>Backend</option>
+          <option>Frontend</option>
+          <option>Full Stack</option>
+          <option>Data Science</option>
+        </select>
+        <select class="form-input" style="flex: 0.5;">
+          <option>All Status</option>
+          <option>Active</option>
+          <option>Inactive</option>
+          <option>On Leave</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Interviewers Grid -->
+    <div class="interviewers-grid">
+      <!-- Interviewer 1 -->
+      <div class="card interviewer-card">
+        <div class="interviewer-header">
+          <div class="avatar-large"
+            style="background: linear-gradient(135deg, var(--blue-600), var(--blue-400)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 28px;">
+            SJ</div>
+          <div class="interviewer-status"><span class="badge" style="background: #dcfce7; color: #166534;">Active</span>
+          </div>
+        </div>
+        <h3 class="interviewer-name">Sarah Johnson</h3>
+        <p class="text-muted" style="margin-bottom: 12px;">5+ years experience</p>
+        <div class="expertise-tags">
+          <span class="tag">Backend</span>
+          <span class="tag">System Design</span>
+          <span class="tag">DevOps</span>
+        </div>
+        <div class="stats-mini">
+          <div class="stat">
+            <p class="stat-value">42</p>
+            <p class="stat-label">Interviews</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">4.8</p>
+            <p class="stat-label">Rating</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">18</p>
+            <p class="stat-label">Scheduled</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-outline btn-sm btn-full">View Profile</button>
+          <button class="btn-primary btn-sm btn-full">Schedule</button>
+        </div>
+      </div>
+
+      <!-- Interviewer 2 -->
+      <div class="card interviewer-card">
+        <div class="interviewer-header">
+          <div class="avatar-large"
+            style="background: linear-gradient(135deg, var(--blue-500), var(--blue-300)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 28px;">
+            MT</div>
+          <div class="interviewer-status"><span class="badge" style="background: #dcfce7; color: #166534;">Active</span>
+          </div>
+        </div>
+        <h3 class="interviewer-name">Mike Thompson</h3>
+        <p class="text-muted" style="margin-bottom: 12px;">7+ years experience</p>
+        <div class="expertise-tags">
+          <span class="tag">Full Stack</span>
+          <span class="tag">React</span>
+          <span class="tag">Node.js</span>
+        </div>
+        <div class="stats-mini">
+          <div class="stat">
+            <p class="stat-value">58</p>
+            <p class="stat-label">Interviews</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">4.9</p>
+            <p class="stat-label">Rating</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">12</p>
+            <p class="stat-label">Scheduled</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-outline btn-sm btn-full">View Profile</button>
+          <button class="btn-primary btn-sm btn-full">Schedule</button>
+        </div>
+      </div>
+
+      <!-- Interviewer 3 -->
+      <div class="card interviewer-card">
+        <div class="interviewer-header">
+          <div class="avatar-large"
+            style="background: linear-gradient(135deg, var(--blue-400), var(--blue-200)); display: flex; align-items: center; justify-content: center; color: var(--blue-900); font-weight: bold; font-size: 28px;">
+            ED</div>
+          <div class="interviewer-status"><span class="badge" style="background: #fef3c7; color: #92400e;">On
+              Leave</span></div>
+        </div>
+        <h3 class="interviewer-name">Emily Davis</h3>
+        <p class="text-muted" style="margin-bottom: 12px;">4+ years experience</p>
+        <div class="expertise-tags">
+          <span class="tag">Data Science</span>
+          <span class="tag">Python</span>
+          <span class="tag">ML</span>
+        </div>
+        <div class="stats-mini">
+          <div class="stat">
+            <p class="stat-value">35</p>
+            <p class="stat-label">Interviews</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">4.7</p>
+            <p class="stat-label">Rating</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">0</p>
+            <p class="stat-label">Scheduled</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-outline btn-sm btn-full">View Profile</button>
+          <button class="btn-outline btn-sm btn-full">View Availability</button>
+        </div>
+      </div>
+
+      <!-- Interviewer 4 -->
+      <div class="card interviewer-card">
+        <div class="interviewer-header">
+          <div class="avatar-large"
+            style="background: linear-gradient(135deg, var(--blue-700), var(--blue-500)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 28px;">
+            JL</div>
+          <div class="interviewer-status"><span class="badge" style="background: #dcfce7; color: #166534;">Active</span>
+          </div>
+        </div>
+        <h3 class="interviewer-name">James Lee</h3>
+        <p class="text-muted" style="margin-bottom: 12px;">8+ years experience</p>
+        <div class="expertise-tags">
+          <span class="tag">Frontend</span>
+          <span class="tag">Vue</span>
+          <span class="tag">UX</span>
+        </div>
+        <div class="stats-mini">
+          <div class="stat">
+            <p class="stat-value">64</p>
+            <p class="stat-label">Interviews</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">4.9</p>
+            <p class="stat-label">Rating</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">24</p>
+            <p class="stat-label">Scheduled</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-outline btn-sm btn-full">View Profile</button>
+          <button class="btn-primary btn-sm btn-full">Schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/company-interviewers.js"></script>
+  <script src="../common/admin-sidebar.js"></script>
+</body>
+
+</html>

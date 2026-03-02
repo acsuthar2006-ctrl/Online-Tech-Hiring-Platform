@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Schedule - TechHiring</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/company-admin.css">
+  <link rel="stylesheet" href="css/company-interviews-schedule.css">
+  <script src="../common/auth.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>Interview Schedule</h1>
+        <p class="text-muted">Manage all company interviews</p>
+      </div>
+      <button class="btn-primary">Schedule Interview</button>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <button class="filter-btn active" onclick="filterSchedule('all')">All Interviews</button>
+      <button class="filter-btn" onclick="filterSchedule('upcoming')">Upcoming</button>
+      <button class="filter-btn" onclick="filterSchedule('completed')">Completed</button>
+      <button class="filter-btn" onclick="filterSchedule('cancelled')">Cancelled</button>
+    </div>
+
+    <!-- Schedule Timeline -->
+    <div class="schedule-container">
+      <!-- Interview 1 -->
+      <div class="interview-card">
+        <div class="card-date">Dec 15, 2024</div>
+        <div class="card-content">
+          <div class="interview-header">
+            <h3>John Doe - Technical Round</h3>
+            <span class="badge" style="background: var(--blue-100); color: var(--blue-800);">Upcoming</span>
+          </div>
+          <div class="interview-details">
+            <p><strong>Interviewer:</strong> Sarah Johnson</p>
+            <p><strong>Time:</strong> 2:30 PM - 3:30 PM</p>
+            <p><strong>Type:</strong> Technical Assessment - Coding</p>
+            <p><strong>Position:</strong> Senior Software Engineer</p>
+          </div>
+          <div class="card-actions">
+            <button class="btn-primary btn-sm">Start Interview</button>
+            <button class="btn-outline btn-sm">Reschedule</button>
+            <button class="btn-outline btn-sm">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interview 2 -->
+      <div class="interview-card">
+        <div class="card-date">Dec 14, 2024</div>
+        <div class="card-content">
+          <div class="interview-header">
+            <h3>Jane Smith - Video Interview</h3>
+            <span class="badge badge-blue">Completed</span>
+          </div>
+          <div class="interview-details">
+            <p><strong>Interviewer:</strong> Mike Thompson</p>
+            <p><strong>Time:</strong> 10:00 AM - 11:00 AM</p>
+            <p><strong>Type:</strong> Video Interview</p>
+            <p><strong>Position:</strong> Product Manager</p>
+            <p><strong>Result:</strong> Passed - Recommended for next round</p>
+          </div>
+          <div class="card-actions">
+            <button class="btn-outline btn-sm">View Recording</button>
+            <button class="btn-outline btn-sm">View Feedback</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interview 3 -->
+      <div class="interview-card">
+        <div class="card-date">Dec 13, 2024</div>
+        <div class="card-content">
+          <div class="interview-header">
+            <h3>Mike Johnson - Analytical Round</h3>
+            <span class="badge" style="background: #fee2e2; color: #991b1b;">Cancelled</span>
+          </div>
+          <div class="interview-details">
+            <p><strong>Interviewer:</strong> Emily Davis</p>
+            <p><strong>Time:</strong> 3:00 PM - 4:00 PM (Rescheduled)</p>
+            <p><strong>Type:</strong> Analytical Assessment</p>
+            <p><strong>Position:</strong> Data Analyst</p>
+            <p><strong>Reason:</strong> Candidate requested reschedule</p>
+          </div>
+          <div class="card-actions">
+            <button class="btn-outline btn-sm">Reschedule</button>
+            <button class="btn-outline btn-sm">Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interview 4 -->
+      <div class="interview-card">
+        <div class="card-date">Dec 12, 2024</div>
+        <div class="card-content">
+          <div class="interview-header">
+            <h3>Lisa Brown - Technical Round</h3>
+            <span class="badge badge-blue">Completed</span>
+          </div>
+          <div class="interview-details">
+            <p><strong>Interviewer:</strong> Sarah Johnson</p>
+            <p><strong>Time:</strong> 1:00 PM - 2:00 PM</p>
+            <p><strong>Type:</strong> Technical Assessment - System Design</p>
+            <p><strong>Position:</strong> Infrastructure Engineer</p>
+            <p><strong>Result:</strong> Passed - Ready for offer</p>
+          </div>
+          <div class="card-actions">
+            <button class="btn-outline btn-sm">View Feedback</button>
+            <button class="btn-primary btn-sm">Send Offer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/company-interviews-schedule.js"></script>
+  <script src="../common/admin-sidebar.js"></script>
+</body>
+
+</html>

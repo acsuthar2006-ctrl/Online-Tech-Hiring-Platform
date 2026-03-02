@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - TechHiring</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/company-admin.css">
+  <script src="../common/auth.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>Company Profile</h1>
+        <p class="text-muted">Manage your company information</p>
+      </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="card" style="max-width: 900px;">
+      <div class="profile-header">
+        <div class="profile-avatar-large"
+          style="background: linear-gradient(135deg, var(--blue-600), var(--blue-400)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 48px;">
+          TC</div>
+        <div class="profile-info">
+          <h2 id="companyName">TechCorp Inc.</h2>
+          <p class="text-muted" id="companyEmail">contact@techcorp.com</p>
+          <p class="text-muted">Admin since Jan 2024</p>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">Company Information</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input type="text" class="form-input" id="companyNameInput" value="TechCorp Inc.">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Industry</label>
+            <input type="text" class="form-input" value="Technology/Software">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="companyEmailInput" value="contact@techcorp.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-input" value="+1 (555) 123-4567">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-input" value="San Francisco, CA">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website</label>
+            <input type="text" class="form-input" value="www.techcorp.com">
+          </div>
+        </div>
+
+        <h3 class="section-title" style="margin-top: 32px;">Admin Information</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Admin Name</label>
+            <input type="text" class="form-input" id="adminNameInput" value="Admin">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Admin Email</label>
+            <input type="email" class="form-input" value="admin@techcorp.com">
+          </div>
+        </div>
+
+        <div class="button-group" style="margin-top: 24px;">
+          <button class="btn-primary" onclick="updateProfile()">Save Changes</button>
+          <button class="btn-outline">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/company-admin.js"></script>
+  <script src="../common/admin-sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidates - Company Admin</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="css/company-admin.css">
+  <link rel="stylesheet" href="css/company-candidates.css">
+  <script src="../common/auth.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>Candidates</h1>
+        <p class="text-muted">156 total candidates applied</p>
+      </div>
+      <button class="btn-primary">Export List</button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="search-bar">
+        <input type="text" class="form-input" placeholder="Search candidates by name, email, or position...">
+        <select class="form-input" style="flex: 0.5;">
+          <option>All Positions</option>
+          <option>Software Engineer</option>
+          <option>Product Manager</option>
+          <option>Data Analyst</option>
+        </select>
+        <select class="form-input" style="flex: 0.5;">
+          <option>All Status</option>
+          <option>Applied</option>
+          <option>Interview Scheduled</option>
+          <option>Passed</option>
+          <option>Rejected</option>
+          <option>Offered</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Candidates Table -->
+    <div class="card">
+      <table class="candidates-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Position</th>
+            <th>Applied Date</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>John Doe</td>
+            <td>john@example.com</td>
+            <td>Senior Software Engineer</td>
+            <td>Dec 10, 2024</td>
+            <td><span class="badge" style="background: var(--blue-100); color: var(--blue-800);">In Progress</span></td>
+            <td>8.5/10</td>
+            <td>
+              <button class="btn-text" onclick="viewCandidate()">View</button>
+              <button class="btn-text">Schedule</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Jane Smith</td>
+            <td>jane@example.com</td>
+            <td>Product Manager</td>
+            <td>Dec 9, 2024</td>
+            <td><span class="badge badge-blue">Passed</span></td>
+            <td>9.0/10</td>
+            <td>
+              <button class="btn-text">View</button>
+              <button class="btn-primary btn-sm">Send Offer</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Mike Johnson</td>
+            <td>mike@example.com</td>
+            <td>Data Analyst</td>
+            <td>Dec 8, 2024</td>
+            <td><span class="badge" style="background: #fee2e2; color: #991b1b;">Rejected</span></td>
+            <td>5.5/10</td>
+            <td>
+              <button class="btn-text">View</button>
+              <button class="btn-text">Feedback</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Lisa Brown</td>
+            <td>lisa@example.com</td>
+            <td>Senior Software Engineer</td>
+            <td>Dec 7, 2024</td>
+            <td><span class="badge" style="background: #dbeafe; color: #1e40af;">Applied</span></td>
+            <td>-</td>
+            <td>
+              <button class="btn-text">View</button>
+              <button class="btn-text">Schedule</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Robert Wilson</td>
+            <td>robert@example.com</td>
+            <td>Product Manager</td>
+            <td>Dec 6, 2024</td>
+            <td><span class="badge" style="background: #dcfce7; color: #166534;">Offered</span></td>
+            <td>8.8/10</td>
+            <td>
+              <button class="btn-text">View</button>
+              <button class="btn-text">Details</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/company-candidates.js"></script>
+  <script src="../common/admin-sidebar.js"></script>
+</body>
+
+</html>
