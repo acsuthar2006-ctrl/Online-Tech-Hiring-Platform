@@ -7,11 +7,23 @@ function selectRole(role) {
   document.getElementById("roleSelection").style.display = "none"
   document.getElementById("loginFormContainer").style.display = "block"
 
-  const formTitle = document.getElementById("formTitle")
-  formTitle.textContent = `Sign Up as ${role.charAt(0).toUpperCase() + role.slice(1)}`
+  let label = role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ')
+  if (role === 'company_admin') label = 'Company Admin'
 
-  // No role-specific fields requested during signup anymore
-  // Keep the area empty in case older markup expects it
+  const formTitle = document.getElementById("formTitle")
+  formTitle.textContent = `Sign Up as ${label}`
+
+  // Show company name field only for company_admin
+  const companyNameGroup = document.getElementById("companyNameGroup")
+  const companyNameInput = document.getElementById("companyName")
+  if (role === 'company_admin') {
+    companyNameGroup.style.display = "block"
+    companyNameInput.required = true
+  } else {
+    companyNameGroup.style.display = "none"
+    companyNameInput.required = false
+  }
+
   const roleSpecificFields = document.getElementById("roleSpecificFields")
   if (roleSpecificFields) roleSpecificFields.innerHTML = ''
 }
@@ -21,7 +33,10 @@ function backToRoleSelection() {
   document.getElementById("loginFormContainer").style.display = "none"
   selectedRole = ""
   document.getElementById("signupForm").reset()
-  document.getElementById("roleSpecificFields").innerHTML = ""
+  const companyNameGroup = document.getElementById("companyNameGroup")
+  if (companyNameGroup) companyNameGroup.style.display = "none"
+  const roleSpecificFields = document.getElementById("roleSpecificFields")
+  if (roleSpecificFields) roleSpecificFields.innerHTML = ""
 }
 
 async function handleSignup(event) {
@@ -43,18 +58,26 @@ async function handleSignup(event) {
     return
   }
 
+  // Validate company name for company admin
+  let companyName = null
+  if (selectedRole === 'company_admin') {
+    companyName = document.getElementById("companyName").value
+    if (!companyName || !companyName.trim()) {
+      alert("Please enter your company name.")
+      return
+    }
+  }
+
   // Show loading state
   const originalText = signupButton.textContent
   signupButton.disabled = true
   signupButton.textContent = "Creating account..."
 
   try {
-    // Send only the basic signup fields; backend will create the appropriate user type
-    const response = await api.signup(email, password, fullName, selectedRole)
+    const additionalData = companyName ? { companyName: companyName.trim() } : {}
+    const response = await api.signup(email, password, fullName, selectedRole, additionalData)
 
     alert("Account created successfully! Please login to continue.")
-
-    // Redirect to login page to login and get JWT token
     window.location.href = "./login.html"
   } catch (error) {
     alert(`Signup failed: ${error.message}`)

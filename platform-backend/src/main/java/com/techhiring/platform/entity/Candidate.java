@@ -28,6 +28,9 @@ public class Candidate extends User {
   @Column(columnDefinition = "TEXT")
   private String bio;
 
+  private String location;
+
+
   @Builder.Default
   private Integer totalInterviewsAttended = 0;
 

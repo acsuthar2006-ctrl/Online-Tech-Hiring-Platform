@@ -12,4 +12,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
   List<Application> findByPositionId(Long positionId);
   List<Application> findByStatus(String status);
   List<Application> findByCandidateIdAndPositionId(Long candidateId, Long positionId);
+  List<Application> findByPosition_CompanyId(Long companyId);
+  List<Application> findByPosition_Id(Long positionId);
 }
+

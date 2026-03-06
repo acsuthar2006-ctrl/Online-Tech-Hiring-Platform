@@ -19,6 +19,7 @@ public class UserProfileDTO {
   private String phone;
   private String bio;
   private String profilePhotoUrl;
+  private String location; // Candidate-specific
 
   // Interviewer specific
   private String companyName;

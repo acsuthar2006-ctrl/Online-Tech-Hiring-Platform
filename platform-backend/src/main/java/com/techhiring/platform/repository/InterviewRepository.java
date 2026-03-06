@@ -21,4 +21,9 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
   List<Interview> findByCandidate_Email(String email);
 
   List<Interview> findByInterviewer_Email(String email);
+
+  List<Interview> findByCompanyId(Long companyId);
+
+  List<Interview> findByInterviewerIdAndStatus(Long interviewerId, Interview.InterviewStatus status);
 }
+

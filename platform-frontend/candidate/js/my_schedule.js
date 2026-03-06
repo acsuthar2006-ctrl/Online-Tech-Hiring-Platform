@@ -7,8 +7,8 @@ let allInterviews = [];
 document.addEventListener("DOMContentLoaded", async () => {
   const userInfo = api.getUserInfo();
   if (!userInfo) {
-      window.location.href = '../../login/login.html';
-      return;
+    window.location.href = '../../login/login.html';
+    return;
   }
 
   // Update headers
@@ -23,28 +23,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loadSchedule() {
-    try {
-        const userInfo = api.getUserInfo();
-        let interviews = await api.getUpcomingInterviews(userInfo.email);
-        
-        // Fetch recordings for completed interviews
-        allInterviews = await Promise.all(interviews.map(async (interview) => {
-            if (interview.status === 'COMPLETED') {
-                try {
-                    const recordings = await api.getRecordings(interview.id);
-                    return { ...interview, recordings: recordings || [] };
-                } catch (e) {
-                    console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
-                    return interview;
-                }
-            }
-            return interview;
-        }));
+  try {
+    const userInfo = api.getUserInfo();
+    let interviews = await api.getUpcomingInterviews(userInfo.email);
 
-        renderSchedule('all');
-    } catch (error) {
-        console.error("Failed to load schedule", error);
-    }
+    // Fetch recordings for completed interviews
+    allInterviews = await Promise.all(interviews.map(async (interview) => {
+      if (interview.status === 'COMPLETED') {
+        try {
+          const recordings = await api.getRecordings(interview.id);
+          return { ...interview, recordings: recordings || [] };
+        } catch (e) {
+          console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
+          return interview;
+        }
+      }
+      return interview;
+    }));
+
+    renderSchedule('all');
+  } catch (error) {
+    console.error("Failed to load schedule", error);
+  }
 }
 
 function setupFilters() {
@@ -60,62 +60,62 @@ function setupFilters() {
 }
 
 function renderSchedule(filterType) {
-    const videoList = document.getElementById('videoInterviewList');
-    const technicalList = document.getElementById('technicalInterviewList');
-    const completedList = document.getElementById('completedInterviewList');
-    
-    // Counts
-    const videoCount = document.getElementById('videoCount');
-    const technicalCount = document.getElementById('technicalCount');
-    const completedCount = document.getElementById('completedCount');
+  const videoList = document.getElementById('videoInterviewList');
+  const technicalList = document.getElementById('technicalInterviewList');
+  const completedList = document.getElementById('completedInterviewList');
 
-    // Filter Logic
-    const completed = allInterviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
-    
-    // Upcoming: Split into Video vs Technical based on type
-    const upcoming = allInterviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
-    
-    const technical = upcoming.filter(i => 
-        i.interviewType === 'TECHNICAL' || 
-        i.interviewType === 'SYSTEM_DESIGN' || 
-        i.interviewType === 'CODING'
-    );
-    
-    const video = upcoming.filter(i => !technical.includes(i));
+  // Counts
+  const videoCount = document.getElementById('videoCount');
+  const technicalCount = document.getElementById('technicalCount');
+  const completedCount = document.getElementById('completedCount');
 
-    // Render Lists
-    if (videoList) videoList.innerHTML = renderInterviewList(video);
-    if (technicalList) technicalList.innerHTML = renderInterviewList(technical);
-    if (completedList) completedList.innerHTML = renderInterviewList(completed);
+  // Filter Logic
+  const completed = allInterviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
 
-    // Update Counts
-    if (videoCount) videoCount.innerText = video.length;
-    if (technicalCount) technicalCount.innerText = technical.length;
-    if (completedCount) completedCount.innerText = completed.length;
+  // Upcoming: Split into Video vs Technical based on type
+  const upcoming = allInterviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
 
-    // Handle Section Visibility
-    const videoSection = document.getElementById('videoSection');
-    const technicalSection = document.getElementById('technicalSection');
-    const completedSection = document.getElementById('completedSection');
+  const technical = upcoming.filter(i =>
+    i.interviewType === 'TECHNICAL' ||
+    i.interviewType === 'SYSTEM_DESIGN' ||
+    i.interviewType === 'CODING'
+  );
 
-    if (filterType === 'all') {
-        if(videoSection) videoSection.style.display = 'block';
-        if(technicalSection) technicalSection.style.display = 'block';
-        if(completedSection) completedSection.style.display = 'block';
-    } else if (filterType === 'upcoming') {
-        if(videoSection) videoSection.style.display = 'block';
-        if(technicalSection) technicalSection.style.display = 'block';
-        if(completedSection) completedSection.style.display = 'none';
-    } else if (filterType === 'completed') {
-        if(videoSection) videoSection.style.display = 'none';
-        if(technicalSection) technicalSection.style.display = 'none';
-        if(completedSection) completedSection.style.display = 'block';
-    }
+  const video = upcoming.filter(i => !technical.includes(i));
+
+  // Render Lists
+  if (videoList) videoList.innerHTML = renderInterviewList(video);
+  if (technicalList) technicalList.innerHTML = renderInterviewList(technical);
+  if (completedList) completedList.innerHTML = renderInterviewList(completed);
+
+  // Update Counts
+  if (videoCount) videoCount.innerText = video.length;
+  if (technicalCount) technicalCount.innerText = technical.length;
+  if (completedCount) completedCount.innerText = completed.length;
+
+  // Handle Section Visibility
+  const videoSection = document.getElementById('videoSection');
+  const technicalSection = document.getElementById('technicalSection');
+  const completedSection = document.getElementById('completedSection');
+
+  if (filterType === 'all') {
+    if (videoSection) videoSection.style.display = 'block';
+    if (technicalSection) technicalSection.style.display = 'block';
+    if (completedSection) completedSection.style.display = 'block';
+  } else if (filterType === 'upcoming') {
+    if (videoSection) videoSection.style.display = 'block';
+    if (technicalSection) technicalSection.style.display = 'block';
+    if (completedSection) completedSection.style.display = 'none';
+  } else if (filterType === 'completed') {
+    if (videoSection) videoSection.style.display = 'none';
+    if (technicalSection) technicalSection.style.display = 'none';
+    if (completedSection) completedSection.style.display = 'block';
+  }
 }
 
 function renderInterviewList(interviews) {
-    if (!interviews || interviews.length === 0) {
-        return `
+  if (!interviews || interviews.length === 0) {
+    return `
         <div class="empty-state">
             <svg class="empty-state-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -124,23 +124,30 @@ function renderInterviewList(interviews) {
             <p>You don't have any interviews in this category yet. Check your dashboard for new invitations.</p>
         </div>
         `;
-    }
-    return interviews.map(interview => {
-        // Parse date for badge
-        // dateTime string format typically "YYYY-MM-DD" + "HH:mm:ss"
-        const dateObj = new Date(interview.scheduledDate + 'T' + interview.scheduledTime);
-        const month = dateObj.toLocaleString('default', { month: 'short' });
-        const day = dateObj.getDate().toString().padStart(2, '0');
-        
-        // Time range (mock end time +1h for now)
-        const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const endDateObj = new Date(dateObj.getTime() + 60*60000);
-        const endTime = endDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  return interviews.map(interview => {
+    // Parse date for badge
+    // dateTime string format typically "YYYY-MM-DD" + "HH:mm:ss"
+    const dateObj = new Date(interview.scheduledDate + 'T' + interview.scheduledTime);
+    const month = dateObj.toLocaleString('default', { month: 'short' });
+    const day = dateObj.getDate().toString().padStart(2, '0');
 
-        const isJoinable = ['SCHEDULED', 'IN_PROGRESS'].includes(interview.status);
-        const statusClass = interview.status === 'COMPLETED' ? 'status-completed' : 'status-upcoming';
-        
-        return `
+    // Time range (mock end time +1h for now)
+    const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const endDateObj = new Date(dateObj.getTime() + 60 * 60000);
+    const endTime = endDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const isJoinable = ['SCHEDULED', 'IN_PROGRESS'].includes(interview.status);
+    const statusClass = interview.status === 'COMPLETED' ? 'status-completed' : 'status-upcoming';
+
+    let outcomeHtml = '';
+    if (interview.status === 'COMPLETED' && interview.candidateOutcome && interview.candidateOutcome !== 'PENDING') {
+      let outcomeClass = interview.candidateOutcome === 'ACCEPTED' ? 'status-completed' : 'status-upcoming'; // reusing existing colors or generic
+      let bgClass = interview.candidateOutcome === 'ACCEPTED' ? 'background:#dcfce7;color:#166534' : 'background:#fee2e2;color:#991b1b';
+      outcomeHtml = `<span class="status-badge" style="margin-left: 8px; border:1px solid currentColor; ${bgClass}">${interview.candidateOutcome}</span>`;
+    }
+
+    return `
           <div class="timeline-item">
             <div class="timeline-date">
               <div class="date-badge">${month}</div>
@@ -149,7 +156,10 @@ function renderInterviewList(interviews) {
             <div class="interview-card">
               <div class="interview-header">
                 <h3>${interview.title || 'Technical Interview'}</h3>
-                <span class="status-badge ${statusClass}">${interview.status}</span>
+                <div>
+                  <span class="status-badge ${statusClass}">${interview.status}</span>
+                  ${outcomeHtml}
+                </div>
               </div>
               <div class="interview-details">
                 <p class="company-name">${interview.description || 'Tech Company'}</p>
@@ -173,24 +183,24 @@ function renderInterviewList(interviews) {
               <div class="interview-actions">
                 <button class="btn-secondary btn-sm" onclick="alert('Viewing Details...')">View Details</button>
                 ${isJoinable ? `<button class="btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join Interview</button>` : ''}
-                ${interview.status === 'COMPLETED' && interview.recordings && interview.recordings.length > 0 
-                    ? `<a href="http://localhost:3000/recordings/${interview.recordings[0].filename}" download="${interview.recordings[0].filename}" class="btn btn-primary btn-sm" style="margin-left: 5px;">Download Recording</a>` 
-                    : ''}
+                ${interview.status === 'COMPLETED' && interview.recordings && interview.recordings.length > 0
+        ? `<a href="http://localhost:3000/recordings/${interview.recordings[0].filename}" download="${interview.recordings[0].filename}" class="btn btn-primary btn-sm" style="margin-left: 5px;">Download Recording</a>`
+        : ''}
               </div>
             </div>
           </div>
         `;
-    }).join('');
+  }).join('');
 }
 
 async function joinInterview(interviewId, meetingLink) {
   try {
     console.log(`Joining interview ${interviewId}`);
     // await api.startInterview(interviewId); // Candidate doesn't start it, they just join
-    
+
     const userInfo = api.getUserInfo();
     const email = userInfo ? userInfo.email : '';
-    
+
     window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(meetingLink)}&role=candidate&email=${encodeURIComponent(email)}`;
   } catch (error) {
     alert(`Failed to join interview: ${error.message}`);
@@ -201,7 +211,7 @@ window.joinInterview = joinInterview;
 // Notification button
 const notificationBtn = document.getElementById("notificationBtn");
 if (notificationBtn) {
-notificationBtn.addEventListener("click", () => {
+  notificationBtn.addEventListener("click", () => {
     alert("No new notifications");
-});
+  });
 }

@@ -2,7 +2,7 @@
 // Backend uses JWT tokens with Bearer authentication
 const API_BASE_URL = '/api';
 const TOKEN_KEY = 'jwt_token';
-const USER_INFO_KEY = 'user_info'; 
+const USER_INFO_KEY = 'user_info';
 
 class ApiService {
   constructor() {
@@ -14,15 +14,15 @@ class ApiService {
     this.token = token;
     sessionStorage.setItem(TOKEN_KEY, token);
   }
-  
+
   // Store user info
   setUserInfo(user) {
-      sessionStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
+    sessionStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
   }
 
   getUserInfo() {
-      const data = sessionStorage.getItem(USER_INFO_KEY);
-      return data ? JSON.parse(data) : null;
+    const data = sessionStorage.getItem(USER_INFO_KEY);
+    return data ? JSON.parse(data) : null;
   }
 
   // Clear token on logout or expiry
@@ -34,7 +34,7 @@ class ApiService {
   // Get Authorization header with Bearer token
   getAuthHeader() {
     if (!this.token) {
-      this.token = sessionStorage.getItem(TOKEN_KEY); 
+      this.token = sessionStorage.getItem(TOKEN_KEY);
     }
     return this.token ? `Bearer ${this.token}` : null;
   }
@@ -124,15 +124,20 @@ class ApiService {
       this.setToken(data.token);
       // Store basic user info if returned
       if (data.userId) {
-          this.setUserInfo({
-              id: data.userId,
-              email: email, 
-              role: data.role,
-              fullName: data.fullName
-          });
+        this.setUserInfo({
+          id: data.userId,
+          email: email,
+          role: data.role,
+          fullName: data.fullName,
+          companyId: data.companyId || null
+        });
+      }
+      // Store companyId separately for easy access
+      if (data.companyId) {
+        sessionStorage.setItem('companyId', data.companyId);
       }
     }
-    return data; 
+    return data;
   }
 
   // ===== USER ENDPOINTS =====
@@ -141,33 +146,33 @@ class ApiService {
   }
 
   async updateUserProfile(data) {
-      return this.request('/users/profile', {
-          method: 'PUT',
-          body: JSON.stringify(data)
-      });
+    return this.request('/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
   }
 
   // ===== SETTINGS ENDPOINTS =====
   async getCandidateSettings(candidateId) {
-      return this.request(`/settings/candidate/${candidateId}`);
+    return this.request(`/settings/candidate/${candidateId}`);
   }
 
   async updateCandidateSettings(candidateId, settings) {
-      return this.request(`/settings/candidate/${candidateId}`, {
-          method: 'PUT',
-          body: JSON.stringify(settings)
-      });
+    return this.request(`/settings/candidate/${candidateId}`, {
+      method: 'PUT',
+      body: JSON.stringify(settings)
+    });
   }
 
   async getInterviewerSettings(interviewerId) {
-      return this.request(`/settings/interviewer/${interviewerId}`);
+    return this.request(`/settings/interviewer/${interviewerId}`);
   }
 
   async updateInterviewerSettings(interviewerId, settings) {
-      return this.request(`/settings/interviewer/${interviewerId}`, {
-          method: 'PUT',
-          body: JSON.stringify(settings)
-      });
+    return this.request(`/settings/interviewer/${interviewerId}`, {
+      method: 'PUT',
+      body: JSON.stringify(settings)
+    });
   }
 
   // ===== COMPANY ENDPOINTS =====
@@ -193,14 +198,21 @@ class ApiService {
   }
 
   async getUpcomingInterviewsForInterviewer(email) {
-    return this.request(`/interviews/interviewer/upcoming?email=${encodeURIComponent(email)}`);
+    return this.request(`/interviews/interviewer/upcoming?email=${encodeURIComponent(email)}`, {
+      method: 'GET',
+    });
   }
 
   async scheduleInterview(data) {
-    // data should match ScheduleRequest DTO
-    return this.request('/interviews/schedule', {
+    return this.request(`/interviews/schedule`, {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  async updateInterviewOutcome(interviewId, outcome) {
+    return this.request(`/interviews/${interviewId}/outcome?result=${outcome}`, {
+      method: 'PATCH',
     });
   }
 
@@ -226,6 +238,122 @@ class ApiService {
 
   async getRecordings(interviewId) {
     return this.request(`/recordings/${interviewId}`);
+  }
+
+  // ===== COMPANY ADMIN ENDPOINTS =====
+  async getCompanyDashboard(companyId) {
+    return this.request(`/company-admin/dashboard?companyId=${companyId}`);
+  }
+
+  async getCompanyPositions(companyId) {
+    return this.request(`/company-admin/positions?companyId=${companyId}`, {
+      method: 'GET',
+    });
+  }
+
+  // ===== APPLICATION ENDPOINTS =====
+  async applyToPosition(candidateId, positionId) {
+    return this.request('/applications', {
+      method: 'POST',
+      body: JSON.stringify({
+        candidate: { id: candidateId },
+        position: { id: positionId }
+      })
+    });
+  }
+
+  async getCandidateApplications(candidateId) {
+    return this.request(`/applications/candidate/${candidateId}`);
+  }
+
+  // ===== INTERVIEWER APPLICATION ENDPOINTS =====
+  async applyToCompanyAsInterviewer(interviewerId, companyId) {
+    return this.request(`/interviewer-applications`, {
+      method: 'POST',
+      body: JSON.stringify({
+        interviewer: { id: interviewerId },
+        company: { id: companyId },
+        applicationDate: new Date().toISOString(),
+        status: 'APPLIED' // Default status
+      })
+    });
+  }
+
+  async getInterviewerApplicationsByInterviewer(interviewerId) {
+    return this.request(`/interviewer-applications/interviewer/${interviewerId}`, {
+      method: 'GET',
+    });
+  }
+
+  async getApprovedCompanies(interviewerId) {
+    return this.request(`/company-admin/approved-companies?interviewerId=${interviewerId}`, {
+      method: 'GET',
+    });
+  }
+
+  async getCandidatesForPosition(positionId) {
+    return this.request(`/company-admin/positions/${positionId}/applications`, {
+      method: 'GET',
+    });
+  }
+
+  // ===== COMPANY ADMIN PROFILE =====
+  async getCompanyProfile(companyId) {
+    return this.request(`/company-admin/profile?companyId=${companyId}`, {
+      method: 'GET',
+    });
+  }
+
+  async updateCompanyProfile(data) {
+    return this.request(`/company-admin/profile`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createPosition(data) {
+    return this.request('/company-admin/positions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePositionStatus(positionId, status) {
+    return this.request(`/company-admin/positions/${positionId}/status?status=${encodeURIComponent(status)}`, {
+      method: 'PATCH',
+    });
+  }
+
+  async deleteCompanyPosition(positionId) {
+    return this.request(`/company-admin/positions/${positionId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getCompanyCandidates(companyId) {
+    return this.request(`/company-admin/candidates?companyId=${companyId}`);
+  }
+
+  async getPositionCandidates(positionId) {
+    return this.request(`/company-admin/positions/${positionId}/applications`);
+  }
+
+  async getCompanyInterviewers(companyId) {
+    return this.request(`/company-admin/interviewers?companyId=${companyId}`);
+  }
+
+  async getPositionInterviewers(positionId) {
+    return this.request(`/company-admin/positions/${positionId}/interviewer-applications`);
+  }
+
+  async updateInterviewerApplicationStatus(applicationId, status) {
+    return this.request(`/company-admin/interviewer-applications/${applicationId}/status?status=${encodeURIComponent(status)}`, {
+      method: 'PATCH',
+    });
+  }
+
+  async getCompanyInterviews(companyId) {
+    return this.request(`/company-admin/interviews?companyId=${companyId}`);
   }
 }
 

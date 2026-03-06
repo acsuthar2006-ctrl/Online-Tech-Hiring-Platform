@@ -100,4 +100,10 @@ public class InterviewController {
     interviewService.updatePresence(id);
     return ResponseEntity.ok().build();
   }
+
+  @PatchMapping("/{id}/outcome")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
+  public ResponseEntity<Interview> updateOutcome(@PathVariable Long id, @RequestParam String result) {
+      return ResponseEntity.ok(interviewService.updateCandidateOutcome(id, result));
+  }
 }

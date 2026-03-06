@@ -38,7 +38,8 @@ public class UserController {
       Candidate candidate = (Candidate) user;
       builder.phone(candidate.getPhone())
              .bio(candidate.getBio())
-             .profilePhotoUrl(candidate.getProfilePhotoUrl());
+             .profilePhotoUrl(candidate.getProfilePhotoUrl())
+             .location(candidate.getLocation());
     } else if (user instanceof Interviewer) {
        Interviewer interviewer = (Interviewer) user;
        builder.phone(interviewer.getPhone())
@@ -66,6 +67,7 @@ public class UserController {
           if (request.getPhone() != null) candidate.setPhone(request.getPhone());
           if (request.getBio() != null) candidate.setBio(request.getBio());
           if (request.getProfilePhotoUrl() != null) candidate.setProfilePhotoUrl(request.getProfilePhotoUrl());
+          if (request.getLocation() != null) candidate.setLocation(request.getLocation());
       } else if (user instanceof Interviewer) {
           Interviewer interviewer = (Interviewer) user;
           if (request.getPhone() != null) interviewer.setPhone(request.getPhone());

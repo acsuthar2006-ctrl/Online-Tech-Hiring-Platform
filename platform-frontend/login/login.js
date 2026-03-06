@@ -5,89 +5,97 @@ let selectedRole = "";
 
 // Function to handle role selection
 function selectRole(role) {
-  console.log("Role selected:", role);
-  selectedRole = role;
-  
-  // Update UI
-  const roleSection = document.getElementById("roleSelection");
-  const formContainer = document.getElementById("loginFormContainer");
-  
-  if (roleSection) roleSection.style.display = "none";
-  if (formContainer) formContainer.style.display = "block";
-  
-  // Update form title
-  const title = role === 'interviewer' ? 'Login as Interviewer' : 'Login as Candidate';
-  const titleEl = document.getElementById("formTitle");
-  if(titleEl) titleEl.textContent = title;
+    console.log("Role selected:", role);
+    selectedRole = role;
+
+    // Update UI
+    const roleSection = document.getElementById("roleSelection");
+    const formContainer = document.getElementById("loginFormContainer");
+
+    if (roleSection) roleSection.style.display = "none";
+    if (formContainer) formContainer.style.display = "block";
+
+    // Update form title
+    let title = 'Login as Candidate';
+    if (role === 'interviewer') title = 'Login as Interviewer';
+    else if (role === 'company-admin') title = 'Login as Company Admin';
+    const titleEl = document.getElementById("formTitle");
+    if (titleEl) titleEl.textContent = title;
 }
 
 // Function to handle login submission
 async function handleLogin(e) {
-  e.preventDefault();
-  console.log("Handle Login Called");
+    e.preventDefault();
+    console.log("Handle Login Called");
 
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  
-  if (!emailInput || !passwordInput) {
-      console.error("Email or Password input not found");
-      return;
-  }
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
 
-  const email = emailInput.value;
-  const password = passwordInput.value;
-  const errorMessage = document.getElementById('error-message') || createErrorElement();
-  const loginBtn = document.querySelector('button[type="submit"]');
-  const originalBtnText = loginBtn ? loginBtn.textContent : 'Login';
-
-  try {
-    // Disable button and show loading state
-    if(loginBtn) {
-        loginBtn.disabled = true;
-        loginBtn.textContent = 'Logging in...';
-    }
-    
-    if(errorMessage) {
-        errorMessage.textContent = '';
-        errorMessage.style.display = 'none';
-        errorMessage.classList.remove('api-error');
+    if (!emailInput || !passwordInput) {
+        console.error("Email or Password input not found");
+        return;
     }
 
-    // Call API
-    console.log("Attempting login with:", email);
-    const response = await api.login(email, password);
-    console.log("Login success, response:", response);
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    const errorMessage = document.getElementById('error-message') || createErrorElement();
+    const loginBtn = document.querySelector('button[type="submit"]');
+    const originalBtnText = loginBtn ? loginBtn.textContent : 'Login';
 
-    // Redirect based on role received from backend
-    if (response.role === 'INTERVIEWER') {
-       sessionStorage.setItem('userRole', 'INTERVIEWER');
-       window.location.href = '../interviewer/interviewer-dashboard.html';
-    } else {
-       sessionStorage.setItem('userRole', 'CANDIDATE');
-       window.location.href = '../candidate/candidate-dashboard.html';
-    }
+    try {
+        // Disable button and show loading state
+        if (loginBtn) {
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+        }
 
-  } catch (error) {
-    console.error('Login error:', error);
-    
-    if(errorMessage) {
-        errorMessage.textContent = error.message || 'Invalid email or password';
-        errorMessage.style.display = 'block';
-        errorMessage.style.color = '#dc2626'; // Red-600
-        errorMessage.style.backgroundColor = '#fee2e2'; // Red-100
-        errorMessage.style.padding = '10px';
-        errorMessage.style.borderRadius = '6px';
-        errorMessage.style.marginTop = '16px';
-        errorMessage.style.fontSize = '14px';
-        errorMessage.style.border = '1px solid #fecaca';
-        errorMessage.style.textAlign = 'center';
+        if (errorMessage) {
+            errorMessage.textContent = '';
+            errorMessage.style.display = 'none';
+            errorMessage.classList.remove('api-error');
+        }
+
+        // Call API
+        console.log("Attempting login with:", email);
+        const response = await api.login(email, password);
+        console.log("Login success, response:", response);
+
+        // Redirect based on role received from backend
+        if (response.role === 'INTERVIEWER') {
+            sessionStorage.setItem('userRole', 'INTERVIEWER');
+            window.location.href = '../interviewer/interviewer-dashboard.html';
+        } else if (response.role === 'COMPANY_ADMIN') {
+            sessionStorage.setItem('userRole', 'COMPANY_ADMIN');
+            if (response.companyId) {
+                sessionStorage.setItem('companyId', response.companyId);
+            }
+            window.location.href = '../company-admin/company-admin-dashboard.html';
+        } else {
+            sessionStorage.setItem('userRole', 'CANDIDATE');
+            window.location.href = '../candidate/candidate-dashboard.html';
+        }
+
+    } catch (error) {
+        console.error('Login error:', error);
+
+        if (errorMessage) {
+            errorMessage.textContent = error.message || 'Invalid email or password';
+            errorMessage.style.display = 'block';
+            errorMessage.style.color = '#dc2626';
+            errorMessage.style.backgroundColor = '#fee2e2';
+            errorMessage.style.padding = '10px';
+            errorMessage.style.borderRadius = '6px';
+            errorMessage.style.marginTop = '16px';
+            errorMessage.style.fontSize = '14px';
+            errorMessage.style.border = '1px solid #fecaca';
+            errorMessage.style.textAlign = 'center';
+        }
+    } finally {
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = originalBtnText;
+        }
     }
-  } finally {
-    if(loginBtn) {
-        loginBtn.disabled = false;
-        loginBtn.textContent = originalBtnText;
-    }
-  }
 }
 
 // Clear error on input
@@ -123,10 +131,15 @@ document.addEventListener('DOMContentLoaded', () => {
         interviewerBtn.addEventListener('click', () => selectRole('interviewer'));
     }
 
+    const companyAdminBtn = document.getElementById('btn-role-company-admin');
+    if (companyAdminBtn) {
+        companyAdminBtn.addEventListener('click', () => selectRole('company-admin'));
+    }
+
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
-        
+
         // Clear errors on typing
         const inputs = loginForm.querySelectorAll('input');
         inputs.forEach(input => {
