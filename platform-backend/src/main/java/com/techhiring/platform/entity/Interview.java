@@ -97,4 +97,12 @@ public class Interview {
   public enum InterviewStatus {
     SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
   }
+
+  public enum CandidateOutcome {
+    PENDING, ACCEPTED, REJECTED
+  }
+
+  @Enumerated(EnumType.STRING)
+  @Builder.Default
+  private CandidateOutcome candidateOutcome = CandidateOutcome.PENDING;
 }

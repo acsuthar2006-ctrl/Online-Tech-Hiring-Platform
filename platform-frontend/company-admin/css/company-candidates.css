@@ -1,0 +1,71 @@
+/* Company Candidates Styles */
+
+.search-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-bar .form-input {
+  flex: 1;
+  min-width: 250px;
+}
+
+.candidates-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.candidates-table thead {
+  background: var(--blue-50);
+  border-bottom: 2px solid var(--blue-200);
+}
+
+.candidates-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.candidates-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--blue-200);
+  font-size: 14px;
+  color: var(--gray-800);
+}
+
+.candidates-table tbody tr:hover {
+  background: var(--blue-50);
+}
+
+.candidates-table .btn-text {
+  margin-right: 12px;
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .search-bar .form-input {
+    min-width: auto;
+  }
+
+  .candidates-table {
+    font-size: 12px;
+  }
+
+  .candidates-table th,
+  .candidates-table td {
+    padding: 8px 12px;
+  }
+
+  .candidates-table .badge {
+    font-size: 11px;
+  }
+}

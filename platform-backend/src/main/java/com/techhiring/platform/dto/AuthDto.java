@@ -15,11 +15,8 @@ public class AuthDto {
     private String fullName;
     private String role;
 
-    // Candidate Specific
-    // Fields can be added here if needed
-
-    // Interviewer Specific
-    // companyName removed
+    // Company Admin Specific
+    private String companyName;
   }
 
   @Data
@@ -39,5 +36,6 @@ public class AuthDto {
     private Long userId;
     private String role;
     private String fullName;
+    private Long companyId;
   }
 }

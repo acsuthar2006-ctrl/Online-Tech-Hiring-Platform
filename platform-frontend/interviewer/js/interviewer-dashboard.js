@@ -10,10 +10,9 @@ import {
 } from '../../common/dashboard-utils.js';
 
 // Global state
-// Global state
 let interviewerProfile = null
 let scheduledInterviews = []
-let hiringCompanies = []
+let approvedCompanies = []
 
 
 // Initialize dashboard on page load
@@ -39,13 +38,13 @@ async function initializeDashboard() {
     scheduledInterviews = await api.getUpcomingInterviewsForInterviewer(interviewerProfile.email)
     console.log('Scheduled interviews loaded:', scheduledInterviews)
 
-    // Load hiring companies
+    // Load approved companies
     try {
-      hiringCompanies = await api.getAllCompanies()
-      console.log('Companies loaded:', hiringCompanies)
+      approvedCompanies = await api.getApprovedCompanies(interviewerProfile.id)
+      console.log('Approved Companies loaded:', approvedCompanies)
     } catch (e) {
-      console.warn('Failed to load companies:', e)
-      hiringCompanies = []
+      console.warn('Failed to load approved companies:', e)
+      approvedCompanies = []
     }
 
     // Render dashboard
@@ -144,39 +143,184 @@ async function renderDashboard() {
         </div>
       </div>
 
-     <!-- Companies Hiring (Static Placeholder to match look) -->
+      <!-- Approved Companies -->
       <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
         <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
-          <h2 style="margin: 0; font-size: 18px;">Companies Hiring Interviewers</h2>
+          <h2 style="margin: 0; font-size: 18px;">My Approved Companies</h2>
         </div>
-        <div class="company-list" style="padding: 20px;">
-           ${renderCompanyList(hiringCompanies)}
+        <div class="company-list" style="padding: 20px;" id="companyListContainer">
+           ${renderApprovedCompanyList(approvedCompanies)}
         </div>
       </div>
     </div>
+    
+    <!-- Candidates Modal -->
+    <div id="candidatesModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 8px; padding: 24px; min-width: 500px; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 id="modalTitle" style="margin: 0;">Candidates</h2>
+                <button onclick="closeCandidatesModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <div id="candidatesList">
+                <p>Loading candidates...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Schedule Modal -->
+    <div id="scheduleModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 101; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 8px; padding: 24px; min-width: 400px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="margin: 0;">Schedule Interview</h2>
+                <button onclick="closeScheduleModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <form id="scheduleForm" onsubmit="handleScheduleSubmit(event)">
+                <input type="hidden" id="schedCandidateEmail" required>
+                <input type="hidden" id="schedCandidateName" required>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px;">Candidate Name</label>
+                    <input type="text" id="schedCandidateNameDisp" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" disabled required>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px;">Interview Title</label>
+                    <input type="text" id="schedTitle" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" required value="Technical Interview">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px;">Date & Time</label>
+                    <input type="datetime-local" id="schedDate" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" required>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px;">Duration (Minutes)</label>
+                    <input type="number" id="schedDuration" value="60" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%">Confirm Schedule</button>
+            </form>
+        </div>
+    </div>
+
   `;
 
   contentDiv.innerHTML = html;
 }
 
-function renderCompanyList(companies) {
+function renderApprovedCompanyList(companies) {
   if (!companies || companies.length === 0) {
-    return '<p class="text-muted">No hiring companies found at the moment.</p>'
+    return '<p class="text-muted">You have not been approved for any companies yet.</p>'
   }
 
-  return companies.map(company => `
-    <div class="company-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 10px;">
-      <div class="company-info">
-        <h4 style="margin: 0 0 5px 0; font-size: 16px;">${company.name}</h4>
-        <p style="margin: 0 0 5px 0; font-size: 14px; color: #6b7280;">${company.industry || 'Technology'}</p>
-        <div class="company-meta" style="font-size: 13px; color: #1d4ed8;">
-          <span>${company.location || 'Remote'}</span>
-        </div>
+  return companies.map(company => {
+    let positionsHtml = '';
+    if (company.positions && company.positions.length > 0) {
+      positionsHtml = company.positions.map(p =>
+        `<button class="btn btn-outline btn-sm" style="margin-right: 8px; margin-top: 8px;" onclick="viewCandidates(${company.companyId}, ${p.positionId}, '${p.positionTitle}')">
+                ${p.positionTitle} (View Candidates)
+            </button>`
+      ).join('');
+    } else {
+      positionsHtml = `<p class="text-muted" style="font-size: 12px;">No open positions.</p>`;
+    }
+
+    return `
+    <div class="company-item" style="padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; margin-bottom: 10px;">
+      <div class="company-info" style="margin-bottom: 10px;">
+        <h4 style="margin: 0 0 5px 0; font-size: 16px;">${company.companyName}</h4>
+        <p style="margin: 0; font-size: 14px; color: #166534;">Approved Interviewer</p>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="alert('Applications for ${company.name} coming soon!')">View</button>
+      <div>
+        ${positionsHtml}
+      </div>
     </div>
-  `).join('')
+  `}).join('')
 }
+
+window.viewCandidates = async (companyId, positionId, positionTitle) => {
+  const modal = document.getElementById('candidatesModal');
+  const title = document.getElementById('modalTitle');
+  const list = document.getElementById('candidatesList');
+
+  title.textContent = `Candidates for ${positionTitle}`;
+  list.innerHTML = `<p>Loading candidates...</p>`;
+  modal.style.display = 'flex';
+
+  try {
+    const candidates = await api.getCandidatesForPosition(positionId);
+    if (!candidates || candidates.length === 0) {
+      list.innerHTML = `<p class="text-muted">No candidates have applied for this position yet.</p>`;
+      return;
+    }
+
+    list.innerHTML = candidates.map(c => `
+            <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0 0 4px 0">${c.fullName}</h4>
+                    <p style="margin: 0; font-size: 13px; color: #6b7280;">${c.email} | Status: ${c.status}</p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="openScheduleModal('${c.email}', '${c.fullName}')">Schedule Interview</button>
+            </div>
+        `).join('');
+  } catch (e) {
+    list.innerHTML = `<p style="color: red;">Failed to load candidates: ${e.message}</p>`;
+  }
+};
+
+window.closeCandidatesModal = () => {
+  document.getElementById('candidatesModal').style.display = 'none';
+};
+
+window.openScheduleModal = (email, name) => {
+  // Close candidate modal to avoid overlapping modals (or keep it open)
+  window.closeCandidatesModal();
+
+  document.getElementById('schedCandidateEmail').value = email;
+  document.getElementById('schedCandidateName').value = name;
+  document.getElementById('schedCandidateNameDisp').value = name;
+  document.getElementById('scheduleModal').style.display = 'flex';
+};
+
+window.closeScheduleModal = () => {
+  document.getElementById('scheduleModal').style.display = 'none';
+};
+
+window.handleScheduleSubmit = async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = "Scheduling...";
+
+  // Generate random meet link
+  const randomStr = Math.random().toString(36).substring(2, 10);
+  const meetingLink = `meet-${randomStr}`;
+
+  const requestData = {
+    candidateEmail: document.getElementById('schedCandidateEmail').value,
+    candidateName: document.getElementById('schedCandidateName').value,
+    interviewerEmail: interviewerProfile.email,
+    interviewerId: interviewerProfile.id,
+    scheduledTime: document.getElementById('schedDate').value,
+    title: document.getElementById('schedTitle').value,
+    meetingLink: meetingLink,
+    description: "Technical Interview generated via Dashboard",
+    durationMinutes: parseInt(document.getElementById('schedDuration').value),
+    interviewType: "TECHNICAL"
+  };
+
+  try {
+    await api.scheduleInterview(requestData);
+    alert('Interview scheduled successfully!');
+    window.closeScheduleModal();
+    // Reload dashboard
+    initializeDashboard();
+  } catch (err) {
+    alert('Failed to schedule: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = "Confirm Schedule";
+  }
+};
 
 // Make this async to fetch recordings
 async function renderScheduleList(interviews) {
@@ -193,15 +337,15 @@ async function renderScheduleList(interviews) {
   // Fetch recordings for completed interviews
   const interviewsWithRecordings = await Promise.all(interviews.map(async (interview) => {
     if (interview.status === 'COMPLETED') {
-        try {
-            const recordings = await api.getRecordings(interview.id);
-            // recordings is a List<Recording>
-            // We'll attach it to the interview object
-            return { ...interview, recordings: recordings || [] };
-        } catch (e) {
-            console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
-            return interview;
-        }
+      try {
+        const recordings = await api.getRecordings(interview.id);
+        // recordings is a List<Recording>
+        // We'll attach it to the interview object
+        return { ...interview, recordings: recordings || [] };
+      } catch (e) {
+        console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
+        return interview;
+      }
     }
     return interview;
   }));
@@ -240,24 +384,36 @@ function createActionButtons(interview) {
   if (interview.status === 'SCHEDULED' || interview.status === 'IN_PROGRESS') {
     return `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Start</button>`;
   } else if (interview.status === 'COMPLETED') {
-    let buttons = `<button class="btn btn-outline btn-sm" disabled>Completed</button>`;
-    
+    let buttons = ``;
+
+    // Add Accept/Reject buttons if outcome not yet set
+    if (!interview.candidateOutcome || interview.candidateOutcome === 'PENDING') {
+      buttons += `<button class="btn btn-sm" style="background:#16a34a;color:white;margin-right:4px;" onclick="window.markOutcome(${interview.id}, 'ACCEPTED')">✓ Accept</button>`;
+      buttons += `<button class="btn btn-sm" style="background:#dc2626;color:white;margin-right:4px;" onclick="window.markOutcome(${interview.id}, 'REJECTED')">✕ Reject</button>`;
+    } else {
+      let outcomeClass = interview.candidateOutcome === 'ACCEPTED' ? 'badge-green' : 'badge-red';
+      buttons += `<span class="badge ${outcomeClass}" style="margin-right:4px;">${interview.candidateOutcome}</span>`;
+    }
+
     if (interview.recordings && interview.recordings.length > 0) {
-        // Use the first recording for now, or list them? Let's just button for the first one or a generic "Download"
-        const rec = interview.recordings[0];
-        // The URL in DB might be relative or absolute. Media Server serves at /recordings/filename
-        // If rec.url is just the filename or path, we might need to prepend media server URL.
-        // For now, assuming standard setup:
-        // If running locally, media server is likely on port 3000. 
-        // We can try to use the generic /recordings/ endpoint if on same domain, or full URL.
-        
-        // Use a function to trigger download or open in new tab
-        buttons += ` <a href="http://localhost:3000/recordings/${rec.filename}" download="${rec.filename}" class="btn btn-secondary btn-sm" style="margin-left: 5px;">Download Recording</a>`;
+      const rec = interview.recordings[0];
+      buttons += ` <a href="http://localhost:3000/recordings/${rec.filename}" download="${rec.filename}" class="btn btn-secondary btn-sm" style="margin-left: 5px;">Recording</a>`;
     }
     return buttons;
   }
   return '';
 }
+
+window.markOutcome = async (interviewId, outcome) => {
+  if (!confirm(`Mark this candidate as ${outcome}?`)) return;
+  try {
+    await api.updateInterviewOutcome(interviewId, outcome);
+    // Refresh dashboard to show the badge
+    initializeDashboard();
+  } catch (e) {
+    alert('Failed to update candidate outcome: ' + e.message);
+  }
+};
 
 // Join/Start interview call
 
@@ -266,7 +422,7 @@ async function joinInterview(interviewId, meetingLink) {
     console.log(`Joining interview ${interviewId} with meeting link: ${meetingLink}`);
     // Do not auto-start. Let the interviewer "Call In" from the video room.
     // await api.startInterview(interviewId); 
-    
+
     // Get email for direct access
     const email = interviewerProfile ? interviewerProfile.email : '';
     window.location.href = `../../interview-screen/video-interview.html?room=${encodeURIComponent(meetingLink)}&role=interviewer&email=${encodeURIComponent(email)}`;

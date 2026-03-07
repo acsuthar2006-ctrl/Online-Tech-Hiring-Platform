@@ -4,16 +4,16 @@ import { createErrorState, createEmptyState } from '../../common/dashboard-utils
 document.addEventListener('DOMContentLoaded', () => {
 
     const userInfo = api.getUserInfo();
-      if (!userInfo) {
-          window.location.href = '../../login/login.html';
-          return;
-      }
+    if (!userInfo) {
+        window.location.href = '../../login/login.html';
+        return;
+    }
 
-      // Update headers
-      const userNameElements = document.querySelectorAll("#userName, #profileName");
-      userNameElements.forEach((element) => {
+    // Update headers
+    const userNameElements = document.querySelectorAll("#userName, #profileName");
+    userNameElements.forEach((element) => {
         element.textContent = userInfo.fullName;
-      });
+    });
 
     initializeCompanies();
 });
@@ -22,9 +22,11 @@ async function initializeCompanies() {
     const grid = document.getElementById('companiesGrid');
 
     try {
-        const [companies, positions] = await Promise.all([
+        const userInfo = api.getUserInfo();
+        const [companies, positions, rawApplications] = await Promise.all([
             api.getAllCompanies(),
-            api.getAllPositions()
+            api.getAllPositions(),
+            api.getCandidateApplications(userInfo.id).catch(() => [])
         ]);
 
         if (!companies || companies.length === 0) {
@@ -42,14 +44,14 @@ async function initializeCompanies() {
             companyPositions[companyId].push(pos);
         });
 
-        renderCompanies(companies, companyPositions);
+        renderCompanies(companies, companyPositions, rawApplications || []);
     } catch (error) {
         console.error('Failed to load companies:', error);
         grid.innerHTML = createErrorState('Failed to load companies and positions. Please try again later.');
     }
 }
 
-function renderCompanies(companies, companyPositions) {
+function renderCompanies(companies, companyPositions, myApplications) {
     const grid = document.getElementById('companiesGrid');
     grid.innerHTML = '';
 
@@ -94,7 +96,16 @@ function renderCompanies(companies, companyPositions) {
                 </span>
             </div>
             <div class="positions-list">
-                ${positions.slice(0, 2).map(pos => `
+                ${positions.slice(0, 2).map(pos => {
+            const existingApp = myApplications.find(app => app.position && app.position.id === pos.id);
+            let actionHtml = '';
+            if (existingApp) {
+                actionHtml = `<span class="badge badge-green" style="padding:4px 8px;">Applied (${existingApp.status})</span>`;
+            } else {
+                actionHtml = `<button class="btn-primary btn-sm" onclick="applyForPosition(${pos.id})">Apply</button>`;
+            }
+
+            return `
                     <div class="position-item">
                         <div class="position-info">
                             <h4>${pos.positionTitle}</h4>
@@ -103,9 +114,9 @@ function renderCompanies(companies, companyPositions) {
                                 <span class="badge badge-green">${pos.salaryRange || 'Competitive'}</span>
                             </div>
                         </div>
-                        <button class="btn-primary btn-sm" onclick="applyForPosition(${pos.id})">Apply</button>
+                        ${actionHtml}
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
             ${positions.length > 2 ? `<button class="btn-outline btn-full">View All ${positions.length} Positions</button>` : ''}
         `;
@@ -113,6 +124,22 @@ function renderCompanies(companies, companyPositions) {
     });
 }
 
-window.applyForPosition = (positionId) => {
-    alert(`Application submitted for position ID: ${positionId}. (Integration in progress)`);
+window.applyForPosition = async (positionId) => {
+    try {
+        const userInfo = api.getUserInfo();
+        if (!userInfo || !userInfo.id) {
+            alert('User ID not found. Please log in again.');
+            return;
+        }
+
+        const btn = event.currentTarget;
+        if (btn) btn.disabled = true;
+
+        await api.applyToPosition(userInfo.id, positionId);
+        alert(`Successfully applied for position!`);
+        initializeCompanies();
+    } catch (error) {
+        alert('Failed to apply for position: ' + error.message);
+        if (event && event.currentTarget) event.currentTarget.disabled = false;
+    }
 };

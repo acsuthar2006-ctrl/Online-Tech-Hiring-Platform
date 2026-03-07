@@ -1,6 +1,7 @@
 package com.techhiring.platform.controller;
 
 import com.techhiring.platform.dto.AuthDto;
+import com.techhiring.platform.entity.CompanyAdmin;
 import com.techhiring.platform.entity.User;
 import com.techhiring.platform.service.UserService;
 
@@ -24,9 +25,13 @@ public class AuthController {
   public ResponseEntity<?> registerUser(@RequestBody AuthDto.SignupRequest signupRequest) {
     try {
       User user = userService.registerUser(signupRequest);
+      Long companyId = null;
+      if (user instanceof CompanyAdmin) {
+        companyId = ((CompanyAdmin) user).getCompany().getId();
+      }
       return ResponseEntity.ok(
           new AuthDto.JwtResponse(null, "User registered successfully!", user.getId(), user.getRole(),
-              user.getFullName()));
+              user.getFullName(), companyId));
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -44,16 +49,23 @@ public class AuthController {
 
       org.springframework.security.core.userdetails.UserDetails userDetails = (org.springframework.security.core.userdetails.UserDetails) authentication
           .getPrincipal();
-      User user = userService.findByEmail(userDetails.getUsername()); // We need to fetch the entity to get ID and Role
+      User user = userService.findByEmail(userDetails.getUsername());
+
+      Long companyId = null;
+      if (user instanceof CompanyAdmin) {
+        companyId = ((CompanyAdmin) user).getCompany().getId();
+      }
 
       return ResponseEntity.ok(new AuthDto.JwtResponse(
           jwt,
           "Login successful",
           user.getId(),
           user.getRole(),
-          user.getFullName()));
+          user.getFullName(),
+          companyId));
     } catch (org.springframework.security.core.AuthenticationException e) {
       return ResponseEntity.status(401).body("Error: Invalid email or password");
     }
   }
 }
+

@@ -21,8 +21,9 @@ public class Position {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "company_id", nullable = false)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "positions"})
   private Company company;
 
   @Column(nullable = false)

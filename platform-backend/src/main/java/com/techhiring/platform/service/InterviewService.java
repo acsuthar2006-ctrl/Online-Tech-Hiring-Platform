@@ -278,4 +278,17 @@ public class InterviewService {
   public Interview getInterview(Long id) {
     return interviewRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
   }
+
+  @Transactional
+  public Interview updateCandidateOutcome(Long interviewId, String outcomeStr) {
+    Interview interview = interviewRepository.findById(interviewId)
+        .orElseThrow(() -> new RuntimeException("Interview not found"));
+    try {
+        Interview.CandidateOutcome outcome = Interview.CandidateOutcome.valueOf(outcomeStr.toUpperCase());
+        interview.setCandidateOutcome(outcome);
+        return interviewRepository.save(interview);
+    } catch (IllegalArgumentException e) {
+        throw new RuntimeException("Invalid outcome status. Must be PENDING, ACCEPTED, or REJECTED.");
+    }
+  }
 }

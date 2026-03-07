@@ -19,13 +19,13 @@ async function initializeProfile() {
 
             populateProfileFields(profile);
 
-            // Fetch expertise separately
-            try {
-                const expertise = await api.getInterviewerExpertise(profile.id);
-                renderExpertise(expertise);
-            } catch (expError) {
-                console.error('Failed to load expertise:', expError);
-            }
+            // Expertise not yet supported by backend
+            // try {
+            //     const expertise = await api.getInterviewerExpertise(profile.id);
+            //     renderExpertise(expertise);
+            // } catch (expError) {
+            //     console.error('Failed to load expertise:', expError);
+            // }
         }
     } catch (error) {
         console.error("Failed to load profile", error);
@@ -40,7 +40,7 @@ function populateProfileFields(profile) {
     const emailInput = document.querySelector('input[type="email"]');
     const phoneInput = document.querySelector('input[type="tel"]');
     const bioTextarea = document.querySelector('textarea');
-    
+
     // Interviewer specific
     const rateInput = document.querySelector('input[type="number"][min="0"]'); // Hourly rate
     const availabilitySelect = document.querySelector('.profile-section select'); // Availability
@@ -58,7 +58,7 @@ function populateProfileFields(profile) {
     if (emailInput && profile.email) emailInput.value = profile.email;
     if (phoneInput && profile.phone) phoneInput.value = profile.phone;
     if (bioTextarea && profile.bio) bioTextarea.value = profile.bio;
-    
+
     if (rateInput && profile.hourlyRate) rateInput.value = profile.hourlyRate;
     if (availabilitySelect && profile.availabilityStatus) availabilitySelect.value = profile.availabilityStatus;
 }
@@ -70,16 +70,16 @@ function setupEventListeners() {
     if (savePersonalInfoBtn) {
         savePersonalInfoBtn.addEventListener('click', async (e) => {
             // e.preventDefault(); // If form
-            
+
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
-            
+
             const data = {
                 fullName: `${firstName} ${lastName}`.trim(),
                 phone: document.querySelector('input[type="tel"]')?.value || null,
                 bio: document.querySelector('textarea')?.value || null
             };
-            
+
             updateInterviewerProfile(data);
         });
     }
@@ -88,15 +88,15 @@ function setupEventListeners() {
     const saveProfessionalBtn = document.querySelector('.profile-section:nth-of-type(3) .btn-primary');
     if (saveProfessionalBtn) {
         saveProfessionalBtn.addEventListener('click', async (e) => {
-             const rateInput = document.querySelector('input[type="number"][min="0"]');
-             const availabilitySelect = document.querySelector('.profile-section select');
-             
-             const data = {
-                 hourlyRate: rateInput ? parseFloat(rateInput.value) : null,
-                 availabilityStatus: availabilitySelect ? availabilitySelect.value : null
-             };
-             
-             updateInterviewerProfile(data);
+            const rateInput = document.querySelector('input[type="number"][min="0"]');
+            const availabilitySelect = document.querySelector('.profile-section select');
+
+            const data = {
+                hourlyRate: rateInput ? parseFloat(rateInput.value) : null,
+                availabilityStatus: availabilitySelect ? availabilitySelect.value : null
+            };
+
+            updateInterviewerProfile(data);
         });
     }
 }
@@ -113,9 +113,9 @@ async function updateInterviewerProfile(data) {
                 currentUser.fullName = data.fullName;
                 api.setUserInfo(currentUser);
             }
-             // Refresh header name
-             const profileNameEl = document.getElementById("profileName");
-             if (profileNameEl) profileNameEl.textContent = data.fullName;
+            // Refresh header name
+            const profileNameEl = document.getElementById("profileName");
+            if (profileNameEl) profileNameEl.textContent = data.fullName;
         }
 
     } catch (error) {

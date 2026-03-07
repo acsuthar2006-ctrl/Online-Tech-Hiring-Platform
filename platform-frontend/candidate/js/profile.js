@@ -1,31 +1,31 @@
 import { api } from '../../common/api.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const userInfo = api.getUserInfo();
-  if (userInfo) {
-       const profileName = document.getElementById("profileUsername");
-       if(profileName) profileName.textContent = userInfo.fullName;
-  }
+    const userInfo = api.getUserInfo();
+    if (userInfo) {
+        const profileName = document.getElementById("profileUsername");
+        if (profileName) profileName.textContent = userInfo.fullName;
+    }
     // Update headers
     const userNameElements = document.querySelectorAll("#userName, #profileName");
     userNameElements.forEach((element) => {
-      element.textContent = userInfo.fullName;
+        element.textContent = userInfo.fullName;
     });
 
-  try {
-      const profile = await api.getUserProfile();
-      populateForm(profile);
-  } catch (error) {
-      console.error("Failed to load profile", error);
-  }
+    try {
+        const profile = await api.getUserProfile();
+        populateForm(profile);
+    } catch (error) {
+        console.error("Failed to load profile", error);
+    }
 });
 
 function populateForm(profile) {
-   if (profile.fullName) document.getElementById("fullName").value = profile.fullName;
-   if (profile.email) document.getElementById("email").value = profile.email;
-   if (profile.phone) document.getElementById("phone").value = profile.phone;
-   if (profile.bio) document.getElementById("bio").value = profile.bio;
-   // Location might not be in basic profile yet
+    if (profile.fullName) document.getElementById("fullName").value = profile.fullName;
+    if (profile.email) document.getElementById("email").value = profile.email;
+    if (profile.phone) document.getElementById("phone").value = profile.phone;
+    if (profile.bio) document.getElementById("bio").value = profile.bio;
+    if (profile.location) document.getElementById("location").value = profile.location;
 }
 
 // Save profile data
@@ -39,7 +39,7 @@ const saveBtn = document.querySelector('.btn-text'); // The "Edit" button in Per
 
 // Re-reading profile.html: There is a "Edit Profile" button in header (.btn-primary) and "Edit" button in card (.btn-text).
 // I'll make the "Edit" button in the card a "Save Changes" button for the form.
-const personalInfoSaveBtn = document.querySelector('.card-header .btn-text'); 
+const personalInfoSaveBtn = document.querySelector('.card-header .btn-text');
 
 if (personalInfoSaveBtn) {
     personalInfoSaveBtn.textContent = "Save Changes"; // Change text to indicate action
@@ -48,8 +48,9 @@ if (personalInfoSaveBtn) {
             fullName: document.getElementById("fullName").value,
             phone: document.getElementById("phone").value,
             bio: document.getElementById("bio").value,
+            location: document.getElementById("location").value,
         };
-        
+
         try {
             await api.updateUserProfile(data);
             alert("Profile updated successfully");
@@ -59,9 +60,9 @@ if (personalInfoSaveBtn) {
                 currentUser.fullName = data.fullName;
                 api.setUserInfo(currentUser);
             }
-             // Update header name
+            // Update header name
             const profileName = document.getElementById("profileUsername");
-            if(profileName) profileName.textContent = data.fullName;
+            if (profileName) profileName.textContent = data.fullName;
 
         } catch (error) {
             alert("Failed to update profile: " + error.message);

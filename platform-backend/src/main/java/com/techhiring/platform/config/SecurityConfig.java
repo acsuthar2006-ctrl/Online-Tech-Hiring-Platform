@@ -63,6 +63,9 @@ public class SecurityConfig {
             .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/positions/**").permitAll()
             .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/companies/**").permitAll()
             
+            // Company admin endpoints (authenticated)
+            .requestMatchers("/api/company-admin/**").authenticated()
+            
             // Test endpoints (for development/testing)
             .requestMatchers("/api/test/**").permitAll()
             
