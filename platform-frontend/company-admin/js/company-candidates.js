@@ -119,19 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const tbody = document.querySelector('.candidates-table tbody');
   if (tbody) tbody.id = 'candidatesTableBody';
 
-  // Give selects ids for filter access
-  const selects = document.querySelectorAll('.search-bar select');
-  if (selects[0]) selects[0].id = 'positionFilter';
-  if (selects[1]) selects[1].id = 'statusFilter';
-
-  const searchInput = document.querySelector('.search-bar input');
+  const searchInput = document.getElementById('searchInput');
   if (searchInput) {
-    searchInput.id = 'searchInput';
     searchInput.addEventListener('input', applyFilters);
   }
 
-  if (selects[0]) selects[0].addEventListener('change', applyFilters);
-  if (selects[1]) selects[1].addEventListener('change', applyFilters);
+  const posFilter = document.getElementById('positionFilter');
+  if (posFilter) posFilter.addEventListener('change', applyFilters);
+
+  const statusFilter = document.getElementById('statusFilter');
+  if (statusFilter) statusFilter.addEventListener('change', applyFilters);
 
   loadCandidates();
 });

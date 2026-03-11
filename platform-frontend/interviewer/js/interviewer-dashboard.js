@@ -77,8 +77,10 @@ async function renderDashboard() {
   }
 
   // Calculate Stats
-  const todayCount = scheduledInterviews.length
-  const completedCount = interviewerProfile.totalInterviewsConducted || 0
+  const upcomingCount = scheduledInterviews.filter(i => i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS').length;
+  const totalCompletedCount = scheduledInterviews.filter(i => i.status === 'COMPLETED').length;
+  // Also keep the profile count if needed, but the user requested local accurate counts based on the list
+  const completedCount = totalCompletedCount;
 
   // Derive active companies from scheduled interviews
   const companySet = new Set(scheduledInterviews.map(i => i.companyName).filter(Boolean))
@@ -125,10 +127,18 @@ async function renderDashboard() {
         </div>
         <div class="stat-info">
           <h3>Upcoming</h3>
-          <p class="stat-number">${todayCount}</p>
+          <p class="stat-number">${upcomingCount}</p>
         </div>
       </div>
-      <!-- Other stats hidden until backend support exists -->
+      <div class="stat-card">
+        <div class="stat-icon" style="background-color: #dcfce7; color: #16a34a;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="stat-info">
+          <h3>Completed</h3>
+          <p class="stat-number">${completedCount}</p>
+        </div>
+      </div>
     </div>
 
     <!-- Content Grid -->
@@ -167,41 +177,7 @@ async function renderDashboard() {
         </div>
     </div>
     
-    <!-- Schedule Modal -->
-    <div id="scheduleModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 101; align-items: center; justify-content: center;">
-        <div class="modal-content" style="background: white; border-radius: 8px; padding: 24px; min-width: 400px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h2 style="margin: 0;">Schedule Interview</h2>
-                <button onclick="closeScheduleModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
-            </div>
-            <form id="scheduleForm" onsubmit="handleScheduleSubmit(event)">
-                <input type="hidden" id="schedCandidateEmail" required>
-                <input type="hidden" id="schedCandidateName" required>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 4px;">Candidate Name</label>
-                    <input type="text" id="schedCandidateNameDisp" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" disabled required>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 4px;">Interview Title</label>
-                    <input type="text" id="schedTitle" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" required value="Technical Interview">
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 4px;">Date & Time</label>
-                    <input type="datetime-local" id="schedDate" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" required>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 4px;">Duration (Minutes)</label>
-                    <input type="number" id="schedDuration" value="60" class="form-input" style="width: 100%; border:1px solid #ccc; padding:8px; border-radius:4px" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%">Confirm Schedule</button>
-            </form>
-        </div>
-    </div>
+
 
   `;
 
@@ -217,7 +193,7 @@ function renderApprovedCompanyList(companies) {
     let positionsHtml = '';
     if (company.positions && company.positions.length > 0) {
       positionsHtml = company.positions.map(p =>
-        `<button class="btn btn-outline btn-sm" style="margin-right: 8px; margin-top: 8px;" onclick="viewCandidates(${company.companyId}, ${p.positionId}, '${p.positionTitle}')">
+        `<button class="btn btn-outline btn-sm" style="margin-right: 8px; margin-top: 8px;" onclick="viewCandidates(${company.companyId}, ${p.positionId}, '${p.positionTitle.replace(/'/g, "\\'")}', '${company.companyName.replace(/'/g, "\\'")}')">
                 ${p.positionTitle} (View Candidates)
             </button>`
       ).join('');
@@ -238,7 +214,7 @@ function renderApprovedCompanyList(companies) {
   `}).join('')
 }
 
-window.viewCandidates = async (companyId, positionId, positionTitle) => {
+window.viewCandidates = async (companyId, positionId, positionTitle, companyName) => {
   const modal = document.getElementById('candidatesModal');
   const title = document.getElementById('modalTitle');
   const list = document.getElementById('candidatesList');
@@ -254,15 +230,25 @@ window.viewCandidates = async (companyId, positionId, positionTitle) => {
       return;
     }
 
-    list.innerHTML = candidates.map(c => `
+    list.innerHTML = candidates.map(c => {
+      let actionHTML = '';
+      if (c.status === 'APPLIED' || c.status === 'SHORTLISTED' || c.status === 'PENDING') {
+        actionHTML = `<button class="btn btn-primary btn-sm" onclick="openSchedulePage('${c.email}', '${c.fullName.replace(/'/g, "\\'")}', '${positionTitle.replace(/'/g, "\\'")}', '${companyName.replace(/'/g, "\\'")}')">Schedule Interview</button>`;
+      } else {
+        const badgeClass = c.status === 'REJECTED' ? 'badge-red' : (c.status === 'OFFERED' || c.status === 'ACCEPTED' ? 'badge-green' : 'badge-blue');
+        actionHTML = `<span class="badge ${badgeClass}" style="font-size: 12px; font-weight: 500;">${c.status.replace('_', ' ')}</span>`;
+      }
+
+      return `
             <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h4 style="margin: 0 0 4px 0">${c.fullName}</h4>
                     <p style="margin: 0; font-size: 13px; color: #6b7280;">${c.email} | Status: ${c.status}</p>
                 </div>
-                <button class="btn btn-primary btn-sm" onclick="openScheduleModal('${c.email}', '${c.fullName}')">Schedule Interview</button>
+                ${actionHTML}
             </div>
-        `).join('');
+        `;
+    }).join('');
   } catch (e) {
     list.innerHTML = `<p style="color: red;">Failed to load candidates: ${e.message}</p>`;
   }
@@ -272,14 +258,14 @@ window.closeCandidatesModal = () => {
   document.getElementById('candidatesModal').style.display = 'none';
 };
 
-window.openScheduleModal = (email, name) => {
-  // Close candidate modal to avoid overlapping modals (or keep it open)
-  window.closeCandidatesModal();
-
-  document.getElementById('schedCandidateEmail').value = email;
-  document.getElementById('schedCandidateName').value = name;
-  document.getElementById('schedCandidateNameDisp').value = name;
-  document.getElementById('scheduleModal').style.display = 'flex';
+window.openSchedulePage = (email, name, positionTitle, companyName) => {
+  const params = new URLSearchParams({
+    email,
+    name,
+    positionTitle,
+    companyName
+  });
+  window.location.href = `schedule-an-interview.html?${params.toString()}`;
 };
 
 window.closeScheduleModal = () => {
@@ -446,5 +432,6 @@ async function logout() {
 
 window.joinInterview = joinInterview
 window.logout = logout
+window.refreshQueue = initializeDashboard
 
 document.addEventListener('DOMContentLoaded', initializeDashboard)

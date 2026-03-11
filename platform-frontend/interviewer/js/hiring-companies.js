@@ -90,7 +90,7 @@ function renderCompanyGrid(companies, positionsByCompany, applicationMap) {
             let statusClass = appStatus === 'APPROVED' ? 'status-accepted' : (appStatus === 'REJECTED' ? 'status-rejected' : 'status-pending');
             actionHtml = `<div class="company-action-status ${statusClass}" style="width:100%;text-align:center;padding:10px;border-radius:6px;font-weight:500;">Status: ${appStatus}</div>`;
         } else {
-            actionHtml = `<button class="btn-primary" style="width:100%" onclick="applyToCompany(${company.id})">Apply to Interview</button>`;
+            actionHtml = `<button class="btn-primary" style="width:100%" onclick="applyToCompany(event, ${company.id})">Apply to Interview</button>`;
         }
 
         card.innerHTML = `
@@ -122,7 +122,7 @@ function renderCompanyGrid(companies, positionsByCompany, applicationMap) {
     });
 }
 
-window.applyToCompany = async (companyId) => {
+window.applyToCompany = async (event, companyId) => {
     if (!currentUser) {
         alert("Please log in to apply.");
         return;
@@ -140,7 +140,9 @@ window.applyToCompany = async (companyId) => {
     } catch (error) {
         alert('Failed to apply: ' + error.message);
         const btn = event.target;
-        btn.disabled = false;
-        btn.textContent = "Apply to Interview";
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Apply to Interview";
+        }
     }
 };
