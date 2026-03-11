@@ -202,7 +202,7 @@ function createInterviewItem(interview, type) {
       actionBtn = `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>`;
   } else if (interview.recordingUrl) {
       // Use media server port 3000
-      const downloadLink = `http://localhost:3000/recordings/${interview.recordingUrl}`;
+      const downloadLink = '../../interview-screen/lobby.html';
       actionBtn = `<a href="${downloadLink}" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none; display: inline-block;">Download Recording</a>`;
   } else {
       actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;

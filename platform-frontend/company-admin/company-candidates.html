@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../common/common.css">
   <link rel="stylesheet" href="css/company-admin.css">
   <link rel="stylesheet" href="css/company-candidates.css">
-  <script src="../common/auth.js"></script>
+  <script type="module" src="../common/auth.js"></script>
 </head>
 
 <body>
@@ -29,20 +29,17 @@
     <!-- Search and Filter -->
     <div class="card" style="margin-bottom: 24px;">
       <div class="search-bar">
-        <input type="text" class="form-input" placeholder="Search candidates by name, email, or position...">
-        <select class="form-input" style="flex: 0.5;">
-          <option>All Positions</option>
-          <option>Software Engineer</option>
-          <option>Product Manager</option>
-          <option>Data Analyst</option>
+        <input type="text" id="searchInput" class="form-input" placeholder="Search candidates by name, email, or position...">
+        <select id="positionFilter" class="form-input" style="flex: 0.5;">
+          <option value="all">All Positions</option>
         </select>
-        <select class="form-input" style="flex: 0.5;">
-          <option>All Status</option>
-          <option>Applied</option>
-          <option>Interview Scheduled</option>
-          <option>Passed</option>
-          <option>Rejected</option>
-          <option>Offered</option>
+        <select id="statusFilter" class="form-input" style="flex: 0.5;">
+          <option value="all">All Status</option>
+          <option value="APPLIED">Applied</option>
+          <option value="INTERVIEW_SCHEDULED">Interview Scheduled</option>
+          <option value="SHORTLISTED">Shortlisted</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="OFFERED">Offered</option>
         </select>
       </div>
     </div>

@@ -3,7 +3,29 @@ import { api } from '../../common/api.js';
 document.addEventListener('DOMContentLoaded', () => {
   loadUserInfo();
   setupFormListeners();
+  populateFromUrlParams();
 });
+
+function populateFromUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const emailParam = params.get('email');
+  const positionTitleParam = params.get('positionTitle');
+  const companyNameParam = params.get('companyName');
+
+  if (emailParam) {
+    document.getElementById('candidateEmails').value = emailParam;
+  }
+  if (positionTitleParam) {
+    document.getElementById('positionTitle').value = positionTitleParam;
+  }
+  if (companyNameParam) {
+    document.getElementById('companyName').value = companyNameParam;
+  }
+
+  if (emailParam || positionTitleParam || companyNameParam) {
+    updateEmailPreview();
+  }
+}
 
 async function loadUserInfo() {
   try {
