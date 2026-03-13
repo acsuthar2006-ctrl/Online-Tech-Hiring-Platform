@@ -32,7 +32,8 @@ public class UserController {
         .id(user.getId())
         .email(user.getEmail())
         .fullName(user.getFullName())
-        .role(user.getRole());
+        .role(user.getRole())
+        .createdAt(user.getCreatedAt());
 
     if (user instanceof Candidate) {
       Candidate candidate = (Candidate) user;
@@ -46,7 +47,10 @@ public class UserController {
               .bio(interviewer.getBio())
               .profilePhotoUrl(interviewer.getProfilePhotoUrl())
               .hourlyRate(interviewer.getHourlyRate())
-              .availabilityStatus(interviewer.getAvailabilityStatus());
+              .availabilityStatus(interviewer.getAvailabilityStatus())
+              .totalInterviewsConducted(interviewer.getTotalInterviewsConducted())
+              .averageRating(interviewer.getAverageRating())
+              .totalEarnings(interviewer.getTotalEarnings());
     }
 
     return ResponseEntity.ok(builder.build());

@@ -152,6 +152,11 @@ class ApiService {
     });
   }
 
+  // ===== NOTIFICATIONS =====
+  async getNotifications() {
+    return this.request('/notifications');
+  }
+
   // ===== SETTINGS ENDPOINTS =====
   async getCandidateSettings(candidateId) {
     return this.request(`/settings/candidate/${candidateId}`);
@@ -191,6 +196,57 @@ class ApiService {
 
   async getInterviewerExpertise(interviewerId) {
     return this.request(`/interviewers/${interviewerId}/expertise`);
+  }
+
+  async addInterviewerExpertise(interviewerId, expertise) {
+    return this.request(`/interviewers/${interviewerId}/expertise`, {
+      method: 'POST',
+      body: JSON.stringify(expertise),
+    });
+  }
+
+  async deleteInterviewerExpertise(expertiseId) {
+    return this.request(`/interviewers/expertise/${expertiseId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ===== CANDIDATE PROFILE DETAILS =====
+  async getCandidateFullProfile(candidateId) {
+    return this.request(`/candidates/${candidateId}/profile`);
+  }
+
+  async addCandidateSkill(candidateId, skill) {
+    return this.request(`/candidates/${candidateId}/skills`, {
+      method: 'POST',
+      body: JSON.stringify(skill),
+    });
+  }
+
+  async deleteCandidateSkill(skillId) {
+    return this.request(`/candidates/skills/${skillId}`, { method: 'DELETE' });
+  }
+
+  async addCandidateExperience(candidateId, experience) {
+    return this.request(`/candidates/${candidateId}/experience`, {
+      method: 'POST',
+      body: JSON.stringify(experience),
+    });
+  }
+
+  async deleteCandidateExperience(experienceId) {
+    return this.request(`/candidates/experience/${experienceId}`, { method: 'DELETE' });
+  }
+
+  async addCandidateEducation(candidateId, education) {
+    return this.request(`/candidates/${candidateId}/education`, {
+      method: 'POST',
+      body: JSON.stringify(education),
+    });
+  }
+
+  async deleteCandidateEducation(educationId) {
+    return this.request(`/candidates/education/${educationId}`, { method: 'DELETE' });
   }
   // ===== INTERVIEW ENDPOINTS (No auth required) =====
   async getUpcomingInterviews(email) {
@@ -238,6 +294,36 @@ class ApiService {
 
   async getRecordings(interviewId) {
     return this.request(`/recordings/${interviewId}`);
+  }
+
+  getMediaServerBase() {
+    if (typeof window !== 'undefined' && window.location) {
+      if (window.location.port === '5173') return 'http://localhost:3000';
+      return window.location.origin;
+    }
+    return 'http://localhost:3000';
+  }
+
+  async getRoomRecordings(roomId) {
+    if (!roomId) return [];
+    const base = this.getMediaServerBase();
+    const url = `${base}/api/recordings/${encodeURIComponent(roomId)}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return data && data.recordings ? data.recordings : [];
+  }
+
+  getLobbyUrl(roomId, autoCheck = true) {
+    const base = (typeof window !== 'undefined' && window.location)
+      ? window.location.origin
+      : '';
+    const params = new URLSearchParams();
+    if (roomId) params.set('room', roomId);
+    if (autoCheck) params.set('autocheck', '1');
+    return `${base}/interview-screen/lobby.html?${params.toString()}`;
   }
 
   // ===== COMPANY ADMIN ENDPOINTS =====
@@ -332,6 +418,10 @@ class ApiService {
 
   async getCompanyCandidates(companyId) {
     return this.request(`/company-admin/candidates?companyId=${companyId}`);
+  }
+
+  async getCompanyCandidateProfile(candidateId) {
+    return this.request(`/company-admin/candidates/${candidateId}/profile`);
   }
 
   async getPositionCandidates(positionId) {

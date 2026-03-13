@@ -1,5 +1,8 @@
 import { api } from '../../common/api.js';
 
+let currentCompanyId = null;
+let currentPositionId = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   loadUserInfo();
   setupFormListeners();
@@ -11,6 +14,8 @@ function populateFromUrlParams() {
   const emailParam = params.get('email');
   const positionTitleParam = params.get('positionTitle');
   const companyNameParam = params.get('companyName');
+  currentCompanyId = params.get('companyId');
+  currentPositionId = params.get('positionId');
 
   if (emailParam) {
     document.getElementById('candidateEmails').value = emailParam;
@@ -123,7 +128,9 @@ async function scheduleInterview(event) {
       meetingLink: roomId,
       description: additionalNotes || `Interview at ${companyName}`,
       durationMinutes: parseInt(duration, 10),
-      interviewType: interviewType.toUpperCase()
+      interviewType: interviewType.toUpperCase(),
+      companyId: currentCompanyId ? parseInt(currentCompanyId, 10) : null,
+      positionId: currentPositionId ? parseInt(currentPositionId, 10) : null
     };
 
     await api.scheduleInterview(payload);

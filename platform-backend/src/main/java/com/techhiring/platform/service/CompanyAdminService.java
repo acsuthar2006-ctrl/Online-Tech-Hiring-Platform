@@ -20,6 +20,8 @@ public class CompanyAdminService {
   private final InterviewerApplicationRepository interviewerApplicationRepository;
   private final InterviewRepository interviewRepository;
   private final CandidateSkillRepository candidateSkillRepository;
+  private final CandidateExperienceRepository candidateExperienceRepository;
+  private final CandidateEducationRepository candidateEducationRepository;
   private final InterviewerExpertiseRepository interviewerExpertiseRepository;
   private final CandidateRepository candidateRepository;
   private final InterviewerRepository interviewerRepository;
@@ -68,6 +70,7 @@ public class CompanyAdminService {
         .jobDescription(req.getJobDescription())
         .salaryRange(req.getSalaryRange())
         .requiredExpertise(req.getRequiredExpertise())
+        .location(req.getLocation())
         .status("OPEN")
         .build();
     return positionRepository.save(position);
@@ -112,16 +115,33 @@ public class CompanyAdminService {
       Application app = appliedMap.get(c.getId());
       boolean applied = app != null;
 
+      Long posId = applied ? app.getPosition().getId() : null;
+      String interviewStatus = null;
+      String candidateOutcome = null;
+      if (applied) {
+        List<Interview> candidateInterviews = interviewRepository.findByCandidateId(c.getId());
+        Interview relatedInterview = candidateInterviews.stream()
+            .filter(i -> i.getPosition() != null && i.getPosition().getId().equals(posId))
+            .findFirst()
+            .orElse(null);
+        if (relatedInterview != null) {
+          interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
+          candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
+        }
+      }
+
       result.add(CompanyAdminDto.CandidateInfo.builder()
           .id(c.getId())
           .fullName(c.getFullName())
           .email(c.getEmail())
           .applicationId(applied ? app.getId() : null)
-          .positionId(applied ? app.getPosition().getId() : null)
+          .positionId(posId)
           .positionTitle(applied ? app.getPosition().getPositionTitle() : null)
           .applicationDate(applied && app.getApplicationDate() != null
               ? app.getApplicationDate().toLocalDate().toString() : null)
           .status(applied ? app.getStatus() : "NOT_APPLIED")
+          .interviewStatus(interviewStatus)
+          .candidateOutcome(candidateOutcome)
           .score(null)
           .skills(skills)
           .appliedDirectly(applied)
@@ -129,6 +149,26 @@ public class CompanyAdminService {
     }
 
     return result;
+  }
+
+  public CompanyAdminDto.CandidateProfileDetails getCandidateProfileDetails(Long candidateId) {
+    Candidate candidate = candidateRepository.findById(candidateId)
+        .orElseThrow(() -> new RuntimeException("Candidate not found"));
+
+    List<String> skills = candidateSkillRepository.findByCandidateId(candidateId)
+        .stream().map(CandidateSkill::getSkillName).collect(Collectors.toList());
+
+    return CompanyAdminDto.CandidateProfileDetails.builder()
+        .id(candidate.getId())
+        .fullName(candidate.getFullName())
+        .email(candidate.getEmail())
+        .phone(candidate.getPhone())
+        .location(candidate.getLocation())
+        .bio(candidate.getBio())
+        .skills(skills)
+        .experience(candidateExperienceRepository.findByCandidateId(candidateId))
+        .education(candidateEducationRepository.findByCandidateId(candidateId))
+        .build();
   }
 
   // ==================== INTERVIEWERS ====================
@@ -161,6 +201,7 @@ public class CompanyAdminService {
           .id(iv.getId())
           .fullName(iv.getFullName())
           .email(iv.getEmail())
+          .bio(iv.getBio())
           .hourlyRate(iv.getHourlyRate())
           .totalInterviewsConducted(iv.getTotalInterviewsConducted())
           .averageRating(iv.getAverageRating())
@@ -207,7 +248,10 @@ public class CompanyAdminService {
         .positionId(iv.getPosition() != null ? iv.getPosition().getId() : null)
         .scheduledDate(iv.getScheduledDate())
         .scheduledTime(iv.getScheduledTime())
+        .actualStartTime(iv.getActualStartTime())
+        .actualEndTime(iv.getActualEndTime())
         .status(iv.getStatus() != null ? iv.getStatus().name() : null)
+        .candidateOutcome(iv.getCandidateOutcome() != null ? iv.getCandidateOutcome().name() : null)
         .interviewRound(iv.getInterviewRound())
         .interviewType(iv.getInterviewType() != null ? iv.getInterviewType().name() : null)
         .score(iv.getScore())
@@ -225,6 +269,18 @@ public class CompanyAdminService {
           Candidate c = app.getCandidate();
           List<String> skills = candidateSkillRepository.findByCandidateId(c.getId())
               .stream().map(CandidateSkill::getSkillName).collect(Collectors.toList());
+          List<Interview> candidateInterviews = interviewRepository.findByCandidateId(c.getId());
+          Interview relatedInterview = candidateInterviews.stream()
+              .filter(i -> i.getPosition() != null && i.getPosition().getId().equals(positionId))
+              .findFirst()
+              .orElse(null);
+          String interviewStatus = null;
+          String candidateOutcome = null;
+          if (relatedInterview != null) {
+            interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
+            candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
+          }
+
           return CompanyAdminDto.CandidateInfo.builder()
               .id(c.getId())
               .fullName(c.getFullName())
@@ -235,6 +291,8 @@ public class CompanyAdminService {
               .applicationDate(app.getApplicationDate() != null
                   ? app.getApplicationDate().toLocalDate().toString() : null)
               .status(app.getStatus())
+              .interviewStatus(interviewStatus)
+              .candidateOutcome(candidateOutcome)
               .skills(skills)
               .appliedDirectly(true)
               .build();
@@ -245,7 +303,9 @@ public class CompanyAdminService {
     Position position = positionRepository.findById(positionId)
         .orElseThrow(() -> new RuntimeException("Position not found"));
     Long companyId = position.getCompany().getId();
+
     return interviewerApplicationRepository.findByCompanyId(companyId).stream()
+        .filter(ia -> "APPROVED".equals(ia.getStatus()))
         .map(ia -> {
           Interviewer iv = ia.getInterviewer();
           List<String> expertises = interviewerExpertiseRepository.findByInterviewerId(iv.getId())
@@ -254,6 +314,7 @@ public class CompanyAdminService {
               .id(iv.getId())
               .fullName(iv.getFullName())
               .email(iv.getEmail())
+              .bio(iv.getBio())
               .hourlyRate(iv.getHourlyRate())
               .totalInterviewsConducted(iv.getTotalInterviewsConducted())
               .averageRating(iv.getAverageRating())

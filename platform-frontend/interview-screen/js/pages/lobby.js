@@ -14,6 +14,20 @@ if (downloadBtn && recordingSection) {
   downloadBtn.style.display = "block";
 }
 
+// Prefill room id from query params and optionally auto-check recordings
+const queryParams = new URLSearchParams(window.location.search);
+const prefillRoom = queryParams.get("room");
+const autoCheck = queryParams.get("autocheck") === "1";
+if (prefillRoom && roomInput) {
+  roomInput.value = prefillRoom;
+  // Trigger input event to update button text
+  roomInput.dispatchEvent(new Event("input"));
+  if (autoCheck && downloadBtn) {
+    // Wait a tick so UI is ready
+    setTimeout(() => downloadBtn.click(), 0);
+  }
+}
+
 // Join existing room
 joinForm.addEventListener("submit", async (evt) => {
   evt.preventDefault();

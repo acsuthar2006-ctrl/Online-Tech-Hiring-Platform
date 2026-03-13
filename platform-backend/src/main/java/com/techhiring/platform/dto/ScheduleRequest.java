@@ -16,4 +16,6 @@ public class ScheduleRequest {
   private String description;
   private Integer durationMinutes;
   private InterviewType interviewType;
+  private Long companyId;
+  private Long positionId;
 }

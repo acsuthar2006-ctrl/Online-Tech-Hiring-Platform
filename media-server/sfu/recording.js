@@ -65,10 +65,12 @@ export class Recorder extends EventEmitter {
       // Assign a random port within configured range
       const minPort = parseInt(process.env.RECORDER_MIN_PORT || 50000);
       const maxPort = parseInt(process.env.RECORDER_MAX_PORT || 59999);
-      const port = minPort + Math.floor(Math.random() * (maxPort - minPort));
-      ports.push(port);
+      let port = minPort + Math.floor(Math.random() * (maxPort - minPort));
+      if (port % 2 !== 0) port += 1; // ensure even RTP port
+      const rtcpPort = port + 1;
+      ports.push({ port, rtcpPort });
 
-      await transport.connect({ ip: "127.0.0.1", port });
+      await transport.connect({ ip: "127.0.0.1", port, rtcpPort });
 
       const consumer = await transport.consume({
         producerId: p.producerId,
@@ -96,7 +98,7 @@ t=0 0
 
     for (let i = 0; i < this.consumers.length; i++) {
       const consumer = this.consumers[i];
-      const port = ports[i];
+      const { port, rtcpPort } = ports[i];
       const codec = consumer.rtpParameters.codecs[0];
       const kind = consumer.kind;
 
@@ -104,12 +106,12 @@ t=0 0
         sdp += `m=audio ${port} RTP/AVP ${codec.payloadType}
 a=rtpmap:${codec.payloadType} ${codec.mimeType.split("/")[1]}/${codec.clockRate}/${codec.channels}
 a=fmtp:${codec.payloadType} sprop-stereo=1
-a=rtcp-mux
+a=rtcp:${rtcpPort}
 `;
       } else {
         sdp += `m=video ${port} RTP/AVP ${codec.payloadType}
 a=rtpmap:${codec.payloadType} ${codec.mimeType.split("/")[1]}/${codec.clockRate}
-a=rtcp-mux
+a=rtcp:${rtcpPort}
 `;
       }
     }
@@ -189,6 +191,8 @@ a=rtcp-mux
       "aac",
       "-b:a",
       "192k", // High quality audio
+      "-movflags",
+      "frag_keyframe+empty_moov",
       "-y",
       filepath,
     );
@@ -262,70 +266,56 @@ a=rtcp-mux
   }
 
   async saveRecording(customFilename) {
-    // If no manifest path tracked, try default or fail
-    if (!this.manifestPath) {
-        console.log("[Recorder] No manifest session tracked, nothing to save.");
-        // Try fallback to legacy path if this.manifestPath wasn't set (shouldn't happen with new logic but safe)
-        const legacyPath = path.join(RECORD_DIR, `${this.roomId}-manifest.txt`);
-        if (fs.existsSync(legacyPath)) {
-             console.log("[Recorder] Falling back to legacy manifest path.");
-             this.manifestPath = legacyPath;
-        } else {
-             return;
-        }
-    }
-    
-    if (!fs.existsSync(this.manifestPath)) {
-        console.log("[Recorder] Manifest file not found on disk.");
-        return;
-    }
-
-    console.log(`[Recorder] Merging chunks from manifest...`);
-
     const outputName = customFilename || `${this.roomId}.mp4`;
     const finalOutputPath = path.join(RECORD_DIR, outputName);
+    const MIN_VALID_BYTES = 10 * 1024; // Accept shorter recordings too
 
     try {
-        // Run FFmpeg concat
-        // ffmpeg -f concat -safe 0 -i list.txt -c copy output.mp4
-        const args = [
-            "-f", "concat",
-            "-safe", "0",
-            "-i", this.manifestPath,
-            "-c", "copy",
-            "-y",
-            finalOutputPath
-        ];
+        const candidates = [];
+        for (const p of this.recordingChunks) {
+            if (fs.existsSync(p)) {
+                const size = fs.statSync(p).size;
+                if (size > 0) candidates.push({ path: p, size });
+            }
+        }
 
-        console.log(`[Recorder] Spawning FFmpeg Merge: ${args.join(" ")}`);
-        
-        await new Promise((resolve, reject) => {
-            const proc = child_process.spawn(ffmpegPath, args);
-            
-            proc.stderr.on('data', d => console.log(`[FFmpeg Merge] ${d}`));
-            
-            proc.on('close', (code) => {
-                if (code === 0) resolve();
-                else reject(new Error(`FFmpeg merge exited with code ${code}`));
-            });
-        });
+        if (candidates.length === 0) {
+            const files = fs.readdirSync(RECORD_DIR)
+                .filter(f => f.startsWith(`${this.roomId}-`) && f.endsWith(".mp4"))
+                .map(f => {
+                    const p = path.join(RECORD_DIR, f);
+                    const size = fs.statSync(p).size;
+                    return { path: p, size };
+                })
+                .filter(f => f.size > 0);
+            candidates.push(...files);
+        }
 
-        console.log(`[Recorder] Merge complete: ${finalOutputPath}`);
+        if (candidates.length === 0) {
+            console.log("[Recorder] No chunk files found to save.");
+            return;
+        }
+
+        candidates.sort((a, b) => b.size - a.size);
+        const best = candidates[0];
+        if (best.size < MIN_VALID_BYTES) {
+            console.warn(`[Recorder] Largest chunk too small (${best.size} bytes). Saving anyway.`);
+        }
+
+        if (path.resolve(best.path) !== path.resolve(finalOutputPath)) {
+            fs.copyFileSync(best.path, finalOutputPath);
+        }
+        console.log(`[Recorder] Saved recording from chunk: ${finalOutputPath}`);
 
         // Cleanup chunks
         console.log("[Recorder] Cleaning up chunks...");
-        // Read manifest to preserve file paths for deletion
-        if (fs.existsSync(this.manifestPath)) {
-            const content = fs.readFileSync(this.manifestPath, 'utf-8');
-            const lines = content.split('\n').filter(l => l.trim());
-            for (const line of lines) {
-                // line format: file '/path/to/file'
-                const match = line.match(/file '(.*)'/);
-                if (match && match[1]) {
-                    try { fs.unlinkSync(match[1]); } catch(e) { }
-                }
-            }
+        if (this.manifestPath && fs.existsSync(this.manifestPath)) {
             try { fs.unlinkSync(this.manifestPath); } catch(e) {}
+        }
+        for (const c of candidates) {
+            if (path.resolve(c.path) !== path.resolve(finalOutputPath)) {
+                try { fs.unlinkSync(c.path); } catch(e) {}
+            }
         }
         
         // Reset state

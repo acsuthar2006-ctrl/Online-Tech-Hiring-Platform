@@ -61,19 +61,31 @@ async function _fetchModalQueue() {
           statusColor = 'blue';
         }
 
-        let timeDisplayStr = item.scheduledTime;
-        if (item.status === 'SCHEDULED' && item.expectedStartTime) {
-          const ed = new Date(item.expectedStartTime);
-          if (!isNaN(ed.getTime())) {
-            timeDisplayStr = ed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' (Expected)';
+        let timeDisplayStr = '';
+        if (item.status === 'SCHEDULED') {
+          timeDisplayStr = item.scheduledTime || '';
+          if (item.expectedStartTime) {
+            const ed = new Date(item.expectedStartTime);
+            if (!isNaN(ed.getTime())) {
+              timeDisplayStr = ed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' (Expected)';
+            }
+          }
+        } else if (item.status === 'COMPLETED' && item.actualEndTime) {
+          const endDate = new Date(item.actualEndTime);
+          if (!isNaN(endDate.getTime())) {
+            timeDisplayStr = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           }
         }
+
+        const statusLine = timeDisplayStr
+          ? `${item.status} - ${timeDisplayStr}`
+          : `${item.status}`;
 
         html += `
                 <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
                     <div>
                         <strong>${item.candidate.fullName}</strong><br/>
-                        <span style="font-size: 0.8rem; color: ${statusColor}">${item.status} - ${timeDisplayStr}</span>
+                        <span style="font-size: 0.8rem; color: ${statusColor}">${statusLine}</span>
                     </div>
                     <div>${actionBtn}</div>
                 </li>
@@ -137,9 +149,12 @@ window.completeCandidate = async function (id) {
             }
           };
           socket.addEventListener('message', activeListener);
+          const params = new URLSearchParams(window.location.search);
+          const roomParam = params.get('room');
+          const recordingName = roomParam ? `${roomParam}-interview-${id}` : `interview-${id}`;
           socket.send(JSON.stringify({
             type: 'stopRecording',
-            recordingName: `interview-${id}`
+            recordingName: recordingName
           }));
         });
 

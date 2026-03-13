@@ -1,4 +1,5 @@
-import { api } from '../../common/api.js';
+﻿import { api } from '../../common/api.js';
+import { initNotifications } from '../../common/notifications.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
     const userInfo = api.getUserInfo();
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         await loadProfile(userInfo.companyId);
+        await initNotifications();
     } catch (e) {
         console.error("Error loading profile:", e);
     }
@@ -28,7 +30,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             await api.updateCompanyProfile(data);
             alert('Profile updated successfully!');
-            await loadProfile(userInfo.companyId); // Reload to reflect updates
+            await loadProfile(userInfo.companyId);
+            await initNotifications();
 
             // Update session cache string if needed
             userInfo.companyName = data.companyName;
@@ -64,3 +67,4 @@ async function loadProfile(companyId) {
     document.getElementById('adminNameInput').value = profile.adminName || '';
     document.getElementById('adminEmailInput').value = profile.adminEmail || '';
 }
+

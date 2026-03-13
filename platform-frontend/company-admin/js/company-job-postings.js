@@ -4,6 +4,15 @@ const companyId = sessionStorage.getItem('companyId');
 let allPositions = [];
 let currentPositionId = null;
 
+// ===== SET ADMIN NAME =====
+function setAdminName() {
+  const userInfo = api.getUserInfo();
+  if (userInfo) {
+    const nameEl = document.getElementById('adminName');
+    if (nameEl) nameEl.textContent = userInfo.fullName || 'Admin';
+  }
+}
+
 // ===== RENDER JOBS =====
 function renderJobs(positions) {
   const container = document.getElementById('jobsContainer');
@@ -43,6 +52,7 @@ function renderJobs(positions) {
         <div class="skill-tags" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">${skillTags}</div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
           <span style="font-size:13px; color:var(--gray-500);">💰 ${pos.salaryRange || 'Salary not specified'}</span>
+          <span style="font-size:13px; color:var(--gray-500);">📍 ${pos.location || 'Location not specified'}</span>
         </div>
         <div class="card-actions" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-primary btn-sm" onclick="openJobDetails(${pos.id})">View Details</button>
@@ -76,7 +86,7 @@ async function loadJobs() {
 window.openPostJobModal = function () {
   document.getElementById('postJobModal').style.display = 'flex';
   // Clear form
-  ['positionTitle', 'jobDescription', 'salaryMin', 'salaryMax', 'requiredSkills'].forEach(id => {
+  ['positionTitle', 'jobDescription', 'salaryMin', 'salaryMax', 'requiredSkills', 'jobLocation'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -93,6 +103,7 @@ window.postJob = async function () {
   const salaryMin = document.getElementById('salaryMin').value;
   const salaryMax = document.getElementById('salaryMax').value;
   const skills = document.getElementById('requiredSkills').value.trim();
+  const location = document.getElementById('jobLocation').value.trim();
 
   if (!title) { alert('Please enter a position title.'); return; }
 
@@ -105,7 +116,8 @@ window.postJob = async function () {
       positionTitle: title,
       jobDescription: description,
       salaryRange: salaryRange,
-      requiredExpertise: skills
+      requiredExpertise: skills,
+      location: location || null
     });
     closePostJobModal();
     await loadJobs();
@@ -144,6 +156,9 @@ window.openJobDetails = async function (positionId) {
   document.getElementById('detailSalary').textContent = pos.salaryRange || 'Not specified';
   document.getElementById('detailSkills').textContent = pos.requiredExpertise || 'None specified';
   document.getElementById('detailDescription').textContent = pos.jobDescription || 'No description.';
+  // Show location if element exists
+  const detailLocation = document.getElementById('detailLocation');
+  if (detailLocation) detailLocation.textContent = pos.location || 'Not specified';
 
   document.getElementById('jobDetailsModal').style.display = 'flex';
   switchJobTab('overview');
@@ -220,4 +235,7 @@ window.addEventListener('click', (e) => {
   if (e.target.id === 'jobDetailsModal') closeJobDetailsModal();
 });
 
-document.addEventListener('DOMContentLoaded', loadJobs);
+document.addEventListener('DOMContentLoaded', () => {
+  setAdminName();
+  loadJobs();
+});

@@ -22,6 +22,26 @@
         <h1>Company Profile</h1>
         <p class="text-muted">Manage your company information</p>
       </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge" style="display:none;">0</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-avatar"
+            style="background: linear-gradient(135deg, var(--blue-600), var(--blue-400)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
+          <div>
+            <p class="profile-name" id="adminName">Admin</p>
+            <p class="profile-role">Company Admin</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Profile Card -->
@@ -29,11 +49,10 @@
       <div class="profile-header">
         <div class="profile-avatar-large"
           style="background: linear-gradient(135deg, var(--blue-600), var(--blue-400)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 48px;">
-          TC</div>
+          --</div>
         <div class="profile-info">
-          <h2 id="companyName">TechCorp Inc.</h2>
-          <p class="text-muted" id="companyEmail">contact@techcorp.com</p>
-          <p class="text-muted">Admin since Jan 2024</p>
+          <h2 id="companyName"></h2>
+          <p class="text-muted" id="companyEmail"></p>
         </div>
       </div>
 
@@ -42,47 +61,47 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Company Name</label>
-            <input type="text" class="form-input" id="companyNameInput" value="TechCorp Inc.">
+            <input type="text" class="form-input" id="companyNameInput" value="">
           </div>
           <div class="form-group">
             <label class="form-label">Industry</label>
-            <input type="text" class="form-input" id="industryInput" value="Technology/Software">
+            <input type="text" class="form-input" id="industryInput" value="">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Email</label>
-            <input type="email" class="form-input" id="companyEmailInput" value="contact@techcorp.com" disabled>
+            <input type="email" class="form-input" id="companyEmailInput" value="" disabled>
           </div>
           <div class="form-group">
             <label class="form-label">Phone</label>
-            <input type="tel" class="form-input" id="phoneInput" value="+1 (555) 123-4567">
+            <input type="tel" class="form-input" id="phoneInput" value="">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Location</label>
-            <input type="text" class="form-input" id="locationInput" value="San Francisco, CA">
+            <input type="text" class="form-input" id="locationInput" value="">
           </div>
           <div class="form-group">
             <label class="form-label">Website</label>
-            <input type="text" class="form-input" id="websiteInput" value="www.techcorp.com">
+            <input type="text" class="form-input" id="websiteInput" value="">
           </div>
         </div>
         <div class="form-group" style="margin-top: 20px;">
           <label class="form-label">Description</label>
-          <textarea class="form-input" id="descriptionInput" rows="4">Leading tech company.</textarea>
+          <textarea class="form-input" id="descriptionInput" rows="4"></textarea>
         </div>
 
         <h3 class="section-title" style="margin-top: 32px;">Admin Information</h3>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Admin Name</label>
-            <input type="text" class="form-input" id="adminNameInput" value="Admin">
+            <input type="text" class="form-input" id="adminNameInput" value="">
           </div>
           <div class="form-group">
             <label class="form-label">Admin Email</label>
-            <input type="email" class="form-input" id="adminEmailInput" value="admin@techcorp.com" disabled>
+            <input type="email" class="form-input" id="adminEmailInput" value="" disabled>
           </div>
         </div>
 
@@ -96,6 +115,7 @@
   <script type="module" src="../common/dashboard.js"></script>
   <script type="module" src="js/company-admin-profile.js"></script>
   <script type="module" src="../common/admin-sidebar.js"></script>
+  <script type="module" src="../common/notifications-init.js"></script>
 </body>
 
 </html>

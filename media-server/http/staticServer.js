@@ -143,12 +143,31 @@ export default function handleHttp(req, res) {
     try {
       const files = fs.readdirSync(RECORDINGS_DIR);
       const recordings = files
-        .filter(
-          (file) => file.startsWith(`${roomId}-`) && file.endsWith(".mp4"),
-        )
+        .filter((file) => {
+          const lower = file.toLowerCase();
+          const isVideo = lower.endsWith(".mp4") || lower.endsWith(".webm");
+          if (!isVideo) return false;
+          return file.startsWith(`${roomId}-`) || file === `${roomId}.mp4` || file === `${roomId}.webm`;
+        })
         .map((file) => {
-          const timestamp = parseInt(file.split("-")[1].split(".")[0]);
-          const date = new Date(timestamp).toLocaleString();
+          let date = null;
+          // Prefer timestamp from filename if present (roomId-<ts>.ext)
+          const parts = file.split("-");
+          if (parts.length >= 2) {
+            const tsPart = parts[1].split(".")[0];
+            const timestamp = parseInt(tsPart, 10);
+            if (!Number.isNaN(timestamp)) {
+              date = new Date(timestamp).toLocaleString();
+            }
+          }
+          if (!date) {
+            try {
+              const stat = fs.statSync(path.join(RECORDINGS_DIR, file));
+              date = stat.mtime.toLocaleString();
+            } catch {
+              date = "Unknown";
+            }
+          }
           return {
             filename: file,
             date: date,

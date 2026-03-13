@@ -1,27 +1,21 @@
-// Load username from localStorage and display it
-document.addEventListener("DOMContentLoaded", () => {
-  // Check if user is logged in
-  const isLoggedIn = sessionStorage.getItem("jwt_token");
-  
+import { api } from './api.js';
+import { initNotifications } from './notifications.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const isLoggedIn = sessionStorage.getItem('jwt_token');
   if (!isLoggedIn) {
-      window.location.href = '/login/login.html';
-      return;
+    window.location.href = '/login/login.html';
+    return;
   }
 
-  const username = sessionStorage.getItem("username") || "User"
-  const userRole = sessionStorage.getItem("userRole") || "Candidate"
+  const userInfo = api.getUserInfo();
+  const username = userInfo?.fullName || 'User';
 
-  // Update all username displays
-  const userNameElements = document.querySelectorAll("#userName, #profileName")
+  // Update all username displays where present.
+  const userNameElements = document.querySelectorAll('#userName, #profileName');
   userNameElements.forEach((element) => {
-    element.textContent = username
-  })
+    element.textContent = username;
+  });
 
-  // Notification button
-  const notificationBtn = document.getElementById("notificationBtn")
-  if (notificationBtn) {
-    notificationBtn.addEventListener("click", () => {
-      alert("You have new interview notifications!")
-    })
-  }
-})
+  await initNotifications();
+});

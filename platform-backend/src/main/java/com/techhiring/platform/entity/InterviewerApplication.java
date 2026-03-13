@@ -21,11 +21,11 @@ public class InterviewerApplication {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "interviewer_id", nullable = false)
   private Interviewer interviewer;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "company_id", nullable = false)
   private Company company;
 

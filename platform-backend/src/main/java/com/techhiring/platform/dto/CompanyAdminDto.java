@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import com.techhiring.platform.entity.CandidateEducation;
+import com.techhiring.platform.entity.CandidateExperience;
 
 public class CompanyAdminDto {
 
@@ -36,9 +38,27 @@ public class CompanyAdminDto {
     private String positionTitle;
     private String applicationDate;
     private String status;
+    private String interviewStatus;
+    private String candidateOutcome;
     private Double score;
     private List<String> skills;
     private boolean appliedDirectly;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class CandidateProfileDetails {
+    private Long id;
+    private String fullName;
+    private String email;
+    private String phone;
+    private String location;
+    private String bio;
+    private List<String> skills;
+    private List<CandidateExperience> experience;
+    private List<CandidateEducation> education;
   }
 
   @Data
@@ -49,6 +69,7 @@ public class CompanyAdminDto {
     private Long id;
     private String fullName;
     private String email;
+    private String bio;
     private Double hourlyRate;
     private Integer totalInterviewsConducted;
     private Double averageRating;
@@ -78,7 +99,10 @@ public class CompanyAdminDto {
     private Long positionId;
     private LocalDate scheduledDate;
     private LocalTime scheduledTime;
+    private LocalDateTime actualStartTime;
+    private LocalDateTime actualEndTime;
     private String status;
+    private String candidateOutcome;
     private String interviewRound;
     private String interviewType;
     private Double score;
@@ -97,6 +121,7 @@ public class CompanyAdminDto {
     private String jobDescription;
     private String salaryRange;
     private String requiredExpertise;
+    private String location;
   }
 
   @Data

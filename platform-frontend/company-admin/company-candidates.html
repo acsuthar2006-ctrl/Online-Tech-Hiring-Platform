@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -21,9 +21,27 @@
     <div class="header">
       <div class="header-left">
         <h1>Candidates</h1>
-        <p class="text-muted">156 total candidates applied</p>
+        <p class="text-muted">Total candidates applied</p>
       </div>
-      <button class="btn-primary">Export List</button>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge" style="display:none;">0</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-avatar" style="background: linear-gradient(135deg, var(--blue-600), var(--blue-400)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
+          <div>
+            <p class="profile-name" id="adminName">Admin</p>
+            <p class="profile-role">Company Admin</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Search and Filter -->
@@ -58,74 +76,48 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="candidatesTableBody">
           <tr>
-            <td>John Doe</td>
-            <td>john@example.com</td>
-            <td>Senior Software Engineer</td>
-            <td>Dec 10, 2024</td>
-            <td><span class="badge" style="background: var(--blue-100); color: var(--blue-800);">In Progress</span></td>
-            <td>8.5/10</td>
-            <td>
-              <button class="btn-text" onclick="viewCandidate()">View</button>
-              <button class="btn-text">Schedule</button>
-            </td>
-          </tr>
-          <tr>
-            <td>Jane Smith</td>
-            <td>jane@example.com</td>
-            <td>Product Manager</td>
-            <td>Dec 9, 2024</td>
-            <td><span class="badge badge-blue">Passed</span></td>
-            <td>9.0/10</td>
-            <td>
-              <button class="btn-text">View</button>
-              <button class="btn-primary btn-sm">Send Offer</button>
-            </td>
-          </tr>
-          <tr>
-            <td>Mike Johnson</td>
-            <td>mike@example.com</td>
-            <td>Data Analyst</td>
-            <td>Dec 8, 2024</td>
-            <td><span class="badge" style="background: #fee2e2; color: #991b1b;">Rejected</span></td>
-            <td>5.5/10</td>
-            <td>
-              <button class="btn-text">View</button>
-              <button class="btn-text">Feedback</button>
-            </td>
-          </tr>
-          <tr>
-            <td>Lisa Brown</td>
-            <td>lisa@example.com</td>
-            <td>Senior Software Engineer</td>
-            <td>Dec 7, 2024</td>
-            <td><span class="badge" style="background: #dbeafe; color: #1e40af;">Applied</span></td>
-            <td>-</td>
-            <td>
-              <button class="btn-text">View</button>
-              <button class="btn-text">Schedule</button>
-            </td>
-          </tr>
-          <tr>
-            <td>Robert Wilson</td>
-            <td>robert@example.com</td>
-            <td>Product Manager</td>
-            <td>Dec 6, 2024</td>
-            <td><span class="badge" style="background: #dcfce7; color: #166534;">Offered</span></td>
-            <td>8.8/10</td>
-            <td>
-              <button class="btn-text">View</button>
-              <button class="btn-text">Details</button>
-            </td>
+            <td colspan="7" style="text-align:center; padding:32px; color:var(--gray-500);">Loading...</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
+  <!-- Candidate Details Modal -->
+  <div class="modal" id="candidateModal" aria-hidden="true">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h2 id="candidateModalTitle">Candidate Details</h2>
+        <button class="modal-close" id="candidateModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <h3>Bio</h3>
+          <p id="candidateBio">Loading...</p>
+        </div>
+        <div class="modal-section">
+          <h3>Skills</h3>
+          <div id="candidateSkills">Loading...</div>
+        </div>
+        <div class="modal-section">
+          <h3>Work Experience</h3>
+          <div id="candidateExperience">Loading...</div>
+        </div>
+        <div class="modal-section">
+          <h3>Education</h3>
+          <div id="candidateEducation">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/company-candidates.js"></script>
   <script src="../common/admin-sidebar.js"></script>
+  <script type="module" src="../common/notifications-init.js"></script>
 </body>
 
 </html>
+
+

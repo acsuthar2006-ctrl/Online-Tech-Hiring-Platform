@@ -3,6 +3,15 @@ import { api } from '../../common/api.js';
 const companyId = sessionStorage.getItem('companyId');
 let allInterviewers = [];
 
+// ===== SET ADMIN NAME =====
+function setAdminName() {
+  const userInfo = api.getUserInfo();
+  if (userInfo) {
+    const nameEl = document.getElementById('adminName');
+    if (nameEl) nameEl.textContent = userInfo.fullName || 'Admin';
+  }
+}
+
 // ===== STATUS BADGE =====
 function appStatusBadge(status) {
   if (status === 'APPROVED') return `<span class="badge" style="background:#dcfce7; color:#166534;">Hired</span>`;
@@ -21,6 +30,15 @@ function availBadge(status) {
   return `<span class="badge" style="background:${s.bg}; color:${s.color};">${s.label}</span>`;
 }
 
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ===== RENDER CARDS =====
 function renderInterviewers(interviewers) {
   const grid = document.querySelector('.interviewers-grid');
@@ -37,6 +55,7 @@ function renderInterviewers(interviewers) {
   grid.innerHTML = interviewers.map(iv => {
     const initials = iv.fullName ? iv.fullName.split(' ').map(p => p[0]).join('').toUpperCase().substring(0, 2) : '??';
     const expertiseTags = (iv.expertises || []).map(e => `<span class="tag">${e}</span>`).join('');
+    const viewBtn = `<button class="btn-outline btn-sm btn-full" onclick="openInterviewerDetails(${iv.id})">View</button>`;
     const actionBtns = iv.appliedToCompany
       ? (iv.applicationStatus === 'APPLIED'
         ? `<button class="btn-primary btn-sm btn-full" onclick="approveInterviewer(${iv.applicationId})">Approve</button>
@@ -56,7 +75,7 @@ function renderInterviewers(interviewers) {
         </div>
         <h3 class="interviewer-name">${iv.fullName}</h3>
         <p class="text-muted" style="margin-bottom:4px; font-size:13px;">${iv.email}</p>
-        <p class="text-muted" style="margin-bottom:12px;">₹${iv.hourlyRate || 0}/hr ${appStatusBadge(iv.applicationStatus)}</p>
+        <div style="margin-bottom:12px; text-align:center;">${appStatusBadge(iv.applicationStatus)}</div>
         <div class="expertise-tags">${expertiseTags || '<span style="font-size:13px;color:var(--gray-400);">No expertise listed</span>'}</div>
         <div class="stats-mini">
           <div class="stat">
@@ -72,10 +91,48 @@ function renderInterviewers(interviewers) {
             <p class="stat-label">Scheduled</p>
           </div>
         </div>
-        <div class="card-actions">${actionBtns}</div>
+        <div class="card-actions">${viewBtn}${actionBtns}</div>
       </div>
     `;
   }).join('');
+}
+
+// ===== VIEW DETAILS =====
+window.openInterviewerDetails = function (interviewerId) {
+  const interviewer = allInterviewers.find(iv => iv.id === interviewerId);
+  if (!interviewer) return;
+
+  const modal = document.getElementById('interviewerDetailsModal');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('interviewerDetailsTitle');
+  const bioEl = document.getElementById('interviewerDetailsBio');
+  const expertiseEl = document.getElementById('interviewerDetailsExpertise');
+  const availabilityEl = document.getElementById('interviewerDetailsAvailability');
+  const totalInterviewsEl = document.getElementById('interviewerDetailsTotalInterviews');
+  const upcomingEl = document.getElementById('interviewerDetailsUpcoming');
+
+  if (titleEl) titleEl.textContent = interviewer.fullName || 'Interviewer Details';
+  if (bioEl) bioEl.textContent = interviewer.bio || 'No bio provided.';
+
+  if (expertiseEl) {
+    const tags = (interviewer.expertises || []).map(e => `<span class="modal-tag">${escapeHtml(e)}</span>`).join('');
+    expertiseEl.innerHTML = tags || '<span class="text-muted" style="font-size:13px;">No expertise listed.</span>';
+  }
+
+  if (availabilityEl) availabilityEl.textContent = interviewer.availabilityStatus || 'N/A';
+  if (totalInterviewsEl) totalInterviewsEl.textContent = String(interviewer.totalInterviewsConducted || 0);
+  if (upcomingEl) upcomingEl.textContent = String(interviewer.upcomingScheduled || 0);
+
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+};
+
+function closeInterviewerDetails() {
+  const modal = document.getElementById('interviewerDetailsModal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
 }
 
 // ===== APPROVE / REJECT =====
@@ -155,5 +212,16 @@ document.addEventListener('DOMContentLoaded', () => {
     statusSelect.addEventListener('change', applyFilters);
   }
 
+  const detailsClose = document.getElementById('interviewerDetailsClose');
+  if (detailsClose) detailsClose.addEventListener('click', closeInterviewerDetails);
+
+  const detailsModal = document.getElementById('interviewerDetailsModal');
+  if (detailsModal) {
+    detailsModal.addEventListener('click', (e) => {
+      if (e.target === detailsModal) closeInterviewerDetails();
+    });
+  }
+
   loadInterviewers();
+  setAdminName();
 });

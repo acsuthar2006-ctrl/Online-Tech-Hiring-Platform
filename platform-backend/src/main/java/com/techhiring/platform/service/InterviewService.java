@@ -1,13 +1,19 @@
 package com.techhiring.platform.service;
 
+import com.techhiring.platform.entity.Application;
 import com.techhiring.platform.entity.Candidate;
 import com.techhiring.platform.entity.Interview;
 import com.techhiring.platform.entity.Interviewer;
 import com.techhiring.platform.entity.User;
 import com.techhiring.platform.repository.CandidateRepository;
+import com.techhiring.platform.repository.ApplicationRepository;
 import com.techhiring.platform.repository.InterviewRepository;
 import com.techhiring.platform.repository.InterviewerRepository;
 import com.techhiring.platform.repository.UserRepository;
+import com.techhiring.platform.repository.CompanyRepository;
+import com.techhiring.platform.repository.PositionRepository;
+import com.techhiring.platform.entity.Company;
+import com.techhiring.platform.entity.Position;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,10 +31,13 @@ public class InterviewService {
 
   private final InterviewRepository interviewRepository;
   private final CandidateRepository candidateRepository;
+  private final ApplicationRepository applicationRepository;
   private final InterviewerRepository interviewerRepository;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final EmailService emailService;
+  private final CompanyRepository companyRepository;
+  private final PositionRepository positionRepository;
   
   // Track candidate lobby presence (interviewId -> lastPingTime)
   private final Map<Long, LocalDateTime> candidatePresence = new ConcurrentHashMap<>();
@@ -40,7 +49,8 @@ public class InterviewService {
   @Transactional
   public Interview scheduleInterview(String interviewerEmail, String candidateEmail, String candidateName,
       LocalDateTime scheduledTime, String title, String customMeetingLink, String description,
-      Integer durationMinutes, com.techhiring.platform.entity.InterviewType type) {
+      Integer durationMinutes, com.techhiring.platform.entity.InterviewType type,
+      Long companyId, Long positionId) {
     Interviewer interviewer;
     
     // Try to find by email first, if that fails, try to parse as ID
@@ -95,10 +105,21 @@ public class InterviewService {
       meetingLink = UUID.randomUUID().toString(); // Simple ID for room
     }
 
+    Company company = null;
+    if (companyId != null) {
+      company = companyRepository.findById(companyId).orElse(null);
+    }
+    Position position = null;
+    if (positionId != null) {
+      position = positionRepository.findById(positionId).orElse(null);
+    }
+
     Interview interview = Interview.builder()
         .title(title)
         .interviewer(interviewer)
         .candidate(candidate)
+        .company(company)
+        .position(position)
         .scheduledDate(schedDate)
         .scheduledTime(schedTime)
         .meetingLink(meetingLink)
@@ -130,6 +151,25 @@ public class InterviewService {
 
   public Map<String, Object> getSessionQueue(String meetingLink) {
     List<Interview> allInterviews = interviewRepository.findByMeetingLink(meetingLink);
+
+    // Expire scheduled candidates older than 24 hours from creation time
+    LocalDateTime cutoff = LocalDateTime.now().minusHours(24);
+    List<Interview> expired = allInterviews.stream()
+        .filter(i -> i.getStatus() == Interview.InterviewStatus.SCHEDULED)
+        .filter(i -> i.getCreatedAt() != null && i.getCreatedAt().isBefore(cutoff))
+        .collect(Collectors.toList());
+    if (!expired.isEmpty()) {
+      for (Interview i : expired) {
+        i.setStatus(Interview.InterviewStatus.CANCELLED);
+        i.setUpdatedAt(LocalDateTime.now());
+      }
+      interviewRepository.saveAll(expired);
+    }
+
+    // Remove cancelled interviews from the live queue view
+    allInterviews = allInterviews.stream()
+        .filter(i -> i.getStatus() != Interview.InterviewStatus.CANCELLED)
+        .collect(Collectors.toList());
 
     // Sort by scheduledTime first, then by id (insertion order) as tiebreaker.
     // This ensures deterministic queue ordering even when all candidates have
@@ -286,7 +326,30 @@ public class InterviewService {
     try {
         Interview.CandidateOutcome outcome = Interview.CandidateOutcome.valueOf(outcomeStr.toUpperCase());
         interview.setCandidateOutcome(outcome);
-        return interviewRepository.save(interview);
+        Interview saved = interviewRepository.save(interview);
+
+        // Update related application status if present
+        if (interview.getCandidate() != null && interview.getPosition() != null) {
+          Long candidateId = interview.getCandidate().getId();
+          Long positionId = interview.getPosition().getId();
+          List<Application> apps = applicationRepository.findByCandidateIdAndPositionId(candidateId, positionId);
+          if (!apps.isEmpty()) {
+            String newStatus = null;
+            if (outcome == Interview.CandidateOutcome.ACCEPTED) {
+              newStatus = "SHORTLISTED";
+            } else if (outcome == Interview.CandidateOutcome.REJECTED) {
+              newStatus = "REJECTED";
+            }
+            if (newStatus != null) {
+              for (Application app : apps) {
+                app.setStatus(newStatus);
+              }
+              applicationRepository.saveAll(apps);
+            }
+          }
+        }
+
+        return saved;
     } catch (IllegalArgumentException e) {
         throw new RuntimeException("Invalid outcome status. Must be PENDING, ACCEPTED, or REJECTED.");
     }

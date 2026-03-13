@@ -4,16 +4,74 @@ const companyId = sessionStorage.getItem('companyId');
 let allInterviews = [];
 let currentFilter = 'all';
 
+// ===== SET ADMIN NAME =====
+function setAdminName() {
+  const userInfo = api.getUserInfo();
+  if (userInfo) {
+    const nameEl = document.getElementById('adminName');
+    if (nameEl) nameEl.textContent = userInfo.fullName || 'Admin';
+  }
+}
+
+
 // ===== STATUS HELPERS =====
 function statusBadge(status) {
   const map = {
-    SCHEDULED: { bg: 'var(--blue-100)', color: 'var(--blue-800)', label: 'Upcoming' },
-    IN_PROGRESS: { bg: '#fef3c7', color: '#92400e', label: 'In Progress' },
-    COMPLETED: { bg: '#dcfce7', color: '#166534', label: 'Completed' },
-    CANCELLED: { bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
+    SCHEDULED:  { bg: 'var(--blue-100)', color: 'var(--blue-800)', label: 'Upcoming' },
+    IN_PROGRESS:{ bg: '#fef3c7', color: '#92400e', label: 'In Progress' },
+    COMPLETED:  { bg: '#dcfce7', color: '#166534', label: 'Completed' },
+    CANCELLED:  { bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
   };
   const s = map[status] || { bg: 'var(--blue-100)', color: 'var(--blue-800)', label: status || '—' };
   return `<span class="badge" style="background:${s.bg}; color:${s.color};">${s.label}</span>`;
+}
+
+function outcomeBadge(outcome) {
+  if (!outcome || outcome === 'PENDING') return '';
+  const cfg = outcome === 'ACCEPTED'
+    ? { bg: '#dcfce7', color: '#166534', label: 'Accepted' }
+    : { bg: '#fee2e2', color: '#991b1b', label: 'Rejected' };
+  return `<span class="badge" style="background:${cfg.bg}; color:${cfg.color}; margin-left:6px;">${cfg.label}</span>`;
+}
+
+function formatTimeLabelFromTimeString(timeStr) {
+  try {
+    if (!timeStr) return null;
+    const [hours, minutes] = timeStr.split(':');
+    if (hours == null || minutes == null) return null;
+    const d = new Date();
+    d.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return null;
+  }
+}
+
+function formatTimeLabelFromDateTime(dtStr) {
+  try {
+    if (!dtStr) return null;
+    const d = new Date(dtStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return null;
+  }
+}
+
+function formatDurationFromDateTimes(startStr, endStr) {
+  try {
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+    const minutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours <= 0) return `${mins}m`;
+    if (mins <= 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
+  } catch {
+    return null;
+  }
 }
 
 // ===== RENDER SCHEDULE =====
@@ -40,12 +98,36 @@ function renderSchedule(interviews) {
       ? computeEndTime(iv.scheduledTime, iv.durationMinutes) : null;
     const timeRange = endTime ? `${timeStr} – ${endTime}` : timeStr;
 
+    const scheduledStartLabel = formatTimeLabelFromTimeString(iv.scheduledTime) || 'Time TBD';
+    let timeLabel = scheduledStartLabel;
+
+    // Upcoming and in-progress interviews show only the scheduled start time (matches interviewer view).
+    // Completed interviews show actual start/end as tracked in the call flow.
+    if (iv.status === 'COMPLETED') {
+      const actualStartLabel = formatTimeLabelFromDateTime(iv.actualStartTime);
+      const actualEndLabel = formatTimeLabelFromDateTime(iv.actualEndTime);
+      const durationLabel = (iv.actualStartTime && iv.actualEndTime)
+        ? formatDurationFromDateTimes(iv.actualStartTime, iv.actualEndTime)
+        : null;
+
+      if (actualStartLabel && actualEndLabel) {
+        timeLabel = `${actualStartLabel} - ${actualEndLabel}${durationLabel ? ` (${durationLabel})` : ''}`;
+      }
+    }
+
+    const recordingBtn = (iv.recordings && iv.recordings.length > 0)
+      ? (() => {
+        const roomId = iv.meetingLink || String(iv.id);
+        const url = api.getLobbyUrl(roomId);
+        return `<a href="${url}" class="btn-outline btn-sm">Download Recording</a>`;
+      })()
+      : '';
+
     const actionBtns = iv.status === 'COMPLETED'
       ? `<button class="btn-outline btn-sm">View Feedback</button>
-         ${iv.recordingUrl ? `<button class="btn-outline btn-sm">View Recording</button>` : ''}`
+         ${recordingBtn}`
       : iv.status === 'SCHEDULED'
-        ? `<button class="btn-outline btn-sm">Reschedule</button>
-         <button class="btn-outline btn-sm" style="color:#dc2626;border-color:#dc2626;">Cancel</button>`
+        ? ``
         : iv.status === 'CANCELLED'
           ? `<button class="btn-outline btn-sm">Details</button>`
           : '';
@@ -56,16 +138,16 @@ function renderSchedule(interviews) {
         <div class="card-content">
           <div class="interview-header">
             <h3>${iv.candidateName || 'Unknown'} – ${iv.title || iv.interviewRound || 'Interview'}</h3>
-            ${statusBadge(iv.status)}
+            <div style="display:flex;align-items:center;gap:6px;">${statusBadge(iv.status)}${outcomeBadge(iv.candidateOutcome)}</div>
           </div>
           <div class="interview-details">
             <p><strong>Interviewer:</strong> ${iv.interviewerName || '—'}</p>
-            <p><strong>Time:</strong> ${timeRange}</p>
+            <p><strong>Time:</strong> ${timeLabel}</p>
             <p><strong>Type:</strong> ${iv.interviewType || iv.interviewRound || '—'}</p>
             <p><strong>Position:</strong> ${iv.positionTitle || '—'}</p>
             ${iv.status === 'COMPLETED' && iv.score ? `<p><strong>Score:</strong> ${iv.score}/10</p>` : ''}
             ${iv.status === 'COMPLETED' && iv.feedback ? `<p><strong>Feedback:</strong> ${iv.feedback}</p>` : ''}
-            ${iv.meetingLink ? `<p><strong>Room:</strong> <a href="${iv.meetingLink}" style="color:var(--blue-600);">${iv.meetingLink}</a></p>` : ''}
+            ${iv.meetingLink ? `<p><strong>Room:</strong> ${iv.meetingLink}</p>` : ''}
           </div>
           ${actionBtns ? `<div class="card-actions">${actionBtns}</div>` : ''}
         </div>
@@ -109,6 +191,19 @@ async function loadInterviews() {
   if (container) container.innerHTML = '<p class="text-muted" style="padding:32px;">Loading interviews...</p>';
   try {
     allInterviews = await api.getCompanyInterviews(companyId);
+    allInterviews = await Promise.all(allInterviews.map(async (iv) => {
+      if (iv.status === 'COMPLETED') {
+        try {
+          const roomId = iv.meetingLink || String(iv.id);
+          const recordings = await api.getRoomRecordings(roomId);
+          return { ...iv, recordings: recordings || [] };
+        } catch (e) {
+          console.warn(`Failed to fetch recordings for interview ${iv.id}`, e);
+          return iv;
+        }
+      }
+      return iv;
+    }));
     // Sort by scheduled date descending
     allInterviews.sort((a, b) => {
       if (!a.scheduledDate) return 1;
@@ -122,4 +217,7 @@ async function loadInterviews() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadInterviews);
+document.addEventListener('DOMContentLoaded', () => {
+  setAdminName();
+  loadInterviews();
+});

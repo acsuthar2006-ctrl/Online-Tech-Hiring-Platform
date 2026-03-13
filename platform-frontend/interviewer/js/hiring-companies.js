@@ -23,6 +23,8 @@ async function initializeHiringCompanies() {
 
         if (profile) {
             profileName.textContent = profile.fullName;
+        } else if (currentUser) {
+            profileName.textContent = currentUser.fullName || 'Interviewer';
         }
 
         // Map applications by companyId for quick access
@@ -39,9 +41,11 @@ async function initializeHiringCompanies() {
         // Group positions by company
         const positionsByCompany = {};
         openPositions.forEach(p => {
-            const cId = p.company.id;
-            if (!positionsByCompany[cId]) positionsByCompany[cId] = [];
-            positionsByCompany[cId].push(p);
+            const cId = p.company?.id;
+            if (cId) {
+                if (!positionsByCompany[cId]) positionsByCompany[cId] = [];
+                positionsByCompany[cId].push(p);
+            }
         });
 
         // Only show companies that have open positions
@@ -74,7 +78,7 @@ function renderCompanyGrid(companies, positionsByCompany, applicationMap) {
         const card = document.createElement('div');
         card.className = 'company-card';
 
-        let positionsHtml = positions.map(p => `<span class="req-tag">${p.positionTitle}</span>`).join('');
+        let positionsHtml = positions.map(p => `<span class="req-tag">${p.positionTitle}${p.location ? ' (' + p.location + ')' : ''}</span>`).join('');
 
         // Find all unique required expertises across positions for this company
         const allExpertise = new Set();
@@ -96,9 +100,9 @@ function renderCompanyGrid(companies, positionsByCompany, applicationMap) {
         card.innerHTML = `
             <div class="company-status status-open">${positions.length} Open Position${positions.length > 1 ? 's' : ''}</div>
             <div class="company-header">
-                <div class="company-logo">${company.companyName.charAt(0)}</div>
+                <div class="company-logo">${(company.companyName || 'C').charAt(0)}</div>
                 <div class="company-basic">
-                    <h3>${company.companyName}</h3>
+                    <h3>${company.companyName || 'Unknown Company'}</h3>
                     <p>${company.industry || 'Tech'} · ${company.location || 'Remote'}</p>
                 </div>
             </div>

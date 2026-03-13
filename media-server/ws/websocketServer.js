@@ -251,7 +251,7 @@ async function initWebSocket(server) {
             );
 
             if (activeParticipants.length >= 2) {
-              const enableRecording = process.env.ENABLE_RECORDING === "true";
+              const enableRecording = process.env.ENABLE_RECORDING !== "false";
 
               if (enableRecording) {
                 let recorder = recorders.get(socket.channel);
@@ -303,6 +303,8 @@ async function initWebSocket(server) {
                 } else if (recorder.consumers.length === 0) {
                   recorder.start(producersList).catch((e) => console.error(e));
                 }
+              } else {
+                console.log(`[Recorder] Recording disabled by env (ENABLE_RECORDING=false) for room ${socket.channel}`);
               }
             }
 

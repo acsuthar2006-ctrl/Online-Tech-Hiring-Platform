@@ -8,6 +8,7 @@ import {
   createErrorState,
   createEmptyState
 } from '../../common/dashboard-utils.js';
+import { initNotifications } from '../../common/notifications.js';
 
 // Global state
 let interviewerProfile = null
@@ -100,7 +101,7 @@ async function renderDashboard() {
       </div>
       <div class="header-right">
         <button class="btn-icon" id="notificationBtn">
-            <span class="notification-badge">3</span>
+            <span class="notification-badge" style="display:none;">0</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" />
@@ -181,7 +182,8 @@ async function renderDashboard() {
 
   `;
 
-  contentDiv.innerHTML = html;
+contentDiv.innerHTML = html;
+  await initNotifications();
 }
 
 function renderApprovedCompanyList(companies) {
@@ -230,27 +232,48 @@ window.viewCandidates = async (companyId, positionId, positionTitle, companyName
       return;
     }
 
-    list.innerHTML = candidates.map(c => {
+    const renderCandidateRow = (c) => {
       let actionHTML = '';
-      if (c.status === 'APPLIED' || c.status === 'SHORTLISTED' || c.status === 'PENDING') {
-        actionHTML = `<button class="btn btn-primary btn-sm" onclick="openSchedulePage('${c.email}', '${c.fullName.replace(/'/g, "\\'")}', '${positionTitle.replace(/'/g, "\\'")}', '${companyName.replace(/'/g, "\\'")}')">Schedule Interview</button>`;
+
+      // Priority: outcome > interview status > application status
+      if (c.candidateOutcome && c.candidateOutcome !== 'PENDING') {
+        const badgeClass = c.candidateOutcome === 'ACCEPTED' ? 'badge-green' : 'badge-red';
+        const label = c.candidateOutcome === 'ACCEPTED' ? '✓ Accepted' : '✕ Rejected';
+        actionHTML = `<span class="badge ${badgeClass}" style="font-size:12px;font-weight:600;padding:6px 10px;">${label}</span>`;
+      } else if (c.interviewStatus === 'COMPLETED') {
+        // Show Accept/Reject buttons directly in the modal
+        actionHTML = `
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <span class="badge badge-green" style="font-size:12px;">Interview Completed</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-sm" style="background:#16a34a;color:white;" onclick="markOutcomeInModal(event, ${c.interviewId}, 'ACCEPTED', ${positionId}, '${positionTitle.replace(/'/g, "\\'")}', '${companyName.replace(/'/g, "\\'")}')">✓ Accept</button>
+              <button class="btn btn-sm" style="background:#dc2626;color:white;" onclick="markOutcomeInModal(event, ${c.interviewId}, 'REJECTED', ${positionId}, '${positionTitle.replace(/'/g, "\\'")}', '${companyName.replace(/'/g, "\\'")}')">✕ Reject</button>
+            </div>
+          </div>`;
+      } else if (c.interviewStatus === 'SCHEDULED' || c.interviewStatus === 'IN_PROGRESS') {
+        const label = c.interviewStatus === 'IN_PROGRESS' ? '🔴 In Progress' : '📅 Scheduled';
+        actionHTML = `<span class="badge badge-blue" style="font-size:12px;font-weight:500;padding:6px 10px;">${label}</span>`;
+      } else if (c.status === 'APPLIED' || c.status === 'SHORTLISTED' || c.status === 'PENDING') {
+        actionHTML = `<button class="btn btn-primary btn-sm" onclick="openSchedulePage('${c.email}', '${c.fullName.replace(/'/g, "\\'")}', '${positionTitle.replace(/'/g, "\\'")}', '${companyName.replace(/'/g, "\\'")}'${companyId ? `, ${companyId}` : ''}, ${positionId})">Schedule Interview</button>`;
       } else {
         const badgeClass = c.status === 'REJECTED' ? 'badge-red' : (c.status === 'OFFERED' || c.status === 'ACCEPTED' ? 'badge-green' : 'badge-blue');
-        actionHTML = `<span class="badge ${badgeClass}" style="font-size: 12px; font-weight: 500;">${c.status.replace('_', ' ')}</span>`;
+        actionHTML = `<span class="badge ${badgeClass}" style="font-size:12px;font-weight:500;">${c.status.replace('_', ' ')}</span>`;
       }
 
       return `
-            <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h4 style="margin: 0 0 4px 0">${c.fullName}</h4>
-                    <p style="margin: 0; font-size: 13px; color: #6b7280;">${c.email} | Status: ${c.status}</p>
-                </div>
-                ${actionHTML}
-            </div>
-        `;
-    }).join('');
+        <div data-candidate-id="${c.id}" style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h4 style="margin:0 0 4px 0">${c.fullName}</h4>
+            <p style="margin:0;font-size:13px;color:#6b7280;">${c.email} | Status: ${c.status}</p>
+          </div>
+          <div class="candidate-action">${actionHTML}</div>
+        </div>
+      `;
+    };
+
+    list.innerHTML = candidates.map(renderCandidateRow).join('');
   } catch (e) {
-    list.innerHTML = `<p style="color: red;">Failed to load candidates: ${e.message}</p>`;
+    list.innerHTML = `<p style="color:red;">Failed to load candidates: ${e.message}</p>`;
   }
 };
 
@@ -258,12 +281,14 @@ window.closeCandidatesModal = () => {
   document.getElementById('candidatesModal').style.display = 'none';
 };
 
-window.openSchedulePage = (email, name, positionTitle, companyName) => {
+window.openSchedulePage = (email, name, positionTitle, companyName, companyId, positionId) => {
   const params = new URLSearchParams({
     email,
     name,
     positionTitle,
-    companyName
+    companyName,
+    companyId,
+    positionId
   });
   window.location.href = `schedule-an-interview.html?${params.toString()}`;
 };
@@ -324,9 +349,8 @@ async function renderScheduleList(interviews) {
   const interviewsWithRecordings = await Promise.all(interviews.map(async (interview) => {
     if (interview.status === 'COMPLETED') {
       try {
-        const recordings = await api.getRecordings(interview.id);
-        // recordings is a List<Recording>
-        // We'll attach it to the interview object
+        const roomId = interview.meetingLink || String(interview.id);
+        const recordings = await api.getRoomRecordings(roomId);
         return { ...interview, recordings: recordings || [] };
       } catch (e) {
         console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
@@ -382,8 +406,9 @@ function createActionButtons(interview) {
     }
 
     if (interview.recordings && interview.recordings.length > 0) {
-      const rec = interview.recordings[0];
-      buttons += ` <a href="http://localhost:3000/recordings/${rec.filename}" download="${rec.filename}" class="btn btn-secondary btn-sm" style="margin-left: 5px;">Recording</a>`;
+      const roomId = interview.meetingLink || String(interview.id);
+      const url = api.getLobbyUrl(roomId);
+      buttons += ` <a href="${url}" class="btn btn-secondary btn-sm" style="margin-left: 5px;">Recording</a>`;
     }
     return buttons;
   }
@@ -398,6 +423,30 @@ window.markOutcome = async (interviewId, outcome) => {
     initializeDashboard();
   } catch (e) {
     alert('Failed to update candidate outcome: ' + e.message);
+  }
+};
+
+// Used inside the candidates modal — updates inline without closing modal
+window.markOutcomeInModal = async (event, interviewId, outcome, positionId, positionTitle, companyName) => {
+  if (!confirm(`Mark this candidate as ${outcome}?`)) return;
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    await api.updateInterviewOutcome(interviewId, outcome);
+    // Update the action area inline
+    const actionDiv = btn.closest('.candidate-action');
+    if (actionDiv) {
+      const badgeClass = outcome === 'ACCEPTED' ? 'badge-green' : 'badge-red';
+      const label = outcome === 'ACCEPTED' ? '✓ Accepted' : '✕ Rejected';
+      actionDiv.innerHTML = `<span class="badge ${badgeClass}" style="font-size:12px;font-weight:600;padding:6px 10px;">${label}</span>`;
+    }
+    // Also refresh dashboard counts in background
+    initializeDashboard();
+  } catch (e) {
+    alert('Failed to update candidate outcome: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = outcome === 'ACCEPTED' ? '✓ Accept' : '✕ Reject';
   }
 };
 

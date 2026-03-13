@@ -1,5 +1,6 @@
 package com.techhiring.platform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Company {
 
   @Id

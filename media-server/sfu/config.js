@@ -96,7 +96,7 @@ export const config = {
       ip: "127.0.0.1",
       announcedIp: null,
     },
-    rtcpMux: true,
-    comedia: false,
+    rtcpMux: false,
+    comedia: true,
   },
 };

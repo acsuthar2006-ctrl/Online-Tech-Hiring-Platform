@@ -4,6 +4,46 @@ import { createErrorState, createEmptyState, formatDateTime } from '../../common
 
 let allInterviews = [];
 
+function formatTimeLabelFromTimeString(timeStr) {
+  try {
+    if (!timeStr) return null;
+    const [hours, minutes] = timeStr.split(':');
+    if (hours == null || minutes == null) return null;
+    const d = new Date();
+    d.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return null;
+  }
+}
+
+function formatTimeLabelFromDateTime(dtStr) {
+  try {
+    if (!dtStr) return null;
+    const d = new Date(dtStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return null;
+  }
+}
+
+function formatDurationFromDateTimes(startStr, endStr) {
+  try {
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+    const minutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours <= 0) return `${mins}m`;
+    if (mins <= 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
+  } catch {
+    return null;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const userInfo = api.getUserInfo();
   if (!userInfo) {
@@ -31,7 +71,8 @@ async function loadSchedule() {
     allInterviews = await Promise.all(interviews.map(async (interview) => {
       if (interview.status === 'COMPLETED') {
         try {
-          const recordings = await api.getRecordings(interview.id);
+          const roomId = interview.meetingLink || String(interview.id);
+          const recordings = await api.getRoomRecordings(roomId);
           return { ...interview, recordings: recordings || [] };
         } catch (e) {
           console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
@@ -60,55 +101,37 @@ function setupFilters() {
 }
 
 function renderSchedule(filterType) {
-  const videoList = document.getElementById('videoInterviewList');
-  const technicalList = document.getElementById('technicalInterviewList');
+  const upcomingList = document.getElementById('upcomingInterviewList');
   const completedList = document.getElementById('completedInterviewList');
 
   // Counts
-  const videoCount = document.getElementById('videoCount');
-  const technicalCount = document.getElementById('technicalCount');
+  const upcomingCount = document.getElementById('upcomingCount');
   const completedCount = document.getElementById('completedCount');
 
   // Filter Logic
   const completed = allInterviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
-
-  // Upcoming: Split into Video vs Technical based on type
   const upcoming = allInterviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
 
-  const technical = upcoming.filter(i =>
-    i.interviewType === 'TECHNICAL' ||
-    i.interviewType === 'SYSTEM_DESIGN' ||
-    i.interviewType === 'CODING'
-  );
-
-  const video = upcoming.filter(i => !technical.includes(i));
-
   // Render Lists
-  if (videoList) videoList.innerHTML = renderInterviewList(video);
-  if (technicalList) technicalList.innerHTML = renderInterviewList(technical);
+  if (upcomingList) upcomingList.innerHTML = renderInterviewList(upcoming);
   if (completedList) completedList.innerHTML = renderInterviewList(completed);
 
   // Update Counts
-  if (videoCount) videoCount.innerText = video.length;
-  if (technicalCount) technicalCount.innerText = technical.length;
+  if (upcomingCount) upcomingCount.innerText = upcoming.length;
   if (completedCount) completedCount.innerText = completed.length;
 
   // Handle Section Visibility
-  const videoSection = document.getElementById('videoSection');
-  const technicalSection = document.getElementById('technicalSection');
+  const upcomingSection = document.getElementById('upcomingSection');
   const completedSection = document.getElementById('completedSection');
 
   if (filterType === 'all') {
-    if (videoSection) videoSection.style.display = 'block';
-    if (technicalSection) technicalSection.style.display = 'block';
+    if (upcomingSection) upcomingSection.style.display = 'block';
     if (completedSection) completedSection.style.display = 'block';
   } else if (filterType === 'upcoming') {
-    if (videoSection) videoSection.style.display = 'block';
-    if (technicalSection) technicalSection.style.display = 'block';
+    if (upcomingSection) upcomingSection.style.display = 'block';
     if (completedSection) completedSection.style.display = 'none';
   } else if (filterType === 'completed') {
-    if (videoSection) videoSection.style.display = 'none';
-    if (technicalSection) technicalSection.style.display = 'none';
+    if (upcomingSection) upcomingSection.style.display = 'none';
     if (completedSection) completedSection.style.display = 'block';
   }
 }
@@ -132,10 +155,19 @@ function renderInterviewList(interviews) {
     const month = dateObj.toLocaleString('default', { month: 'short' });
     const day = dateObj.getDate().toString().padStart(2, '0');
 
-    // Time range (mock end time +1h for now)
-    const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const endDateObj = new Date(dateObj.getTime() + 60 * 60000);
-    const endTime = endDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const scheduledStartLabel = formatTimeLabelFromTimeString(interview.scheduledTime)
+      || dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    let timeLabel = scheduledStartLabel;
+    if (interview.status === 'COMPLETED') {
+      const actualStartLabel = formatTimeLabelFromDateTime(interview.actualStartTime);
+      const actualEndLabel = formatTimeLabelFromDateTime(interview.actualEndTime);
+      const durationLabel = (interview.actualStartTime && interview.actualEndTime)
+        ? formatDurationFromDateTimes(interview.actualStartTime, interview.actualEndTime)
+        : null;
+      if (actualStartLabel && actualEndLabel) {
+        timeLabel = `${actualStartLabel} - ${actualEndLabel}${durationLabel ? ` (${durationLabel})` : ''}`;
+      }
+    }
 
     const isJoinable = ['SCHEDULED', 'IN_PROGRESS'].includes(interview.status);
     const statusClass = interview.status === 'COMPLETED' ? 'status-completed' : 'status-upcoming';
@@ -168,7 +200,7 @@ function renderInterviewList(interviews) {
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                   </svg>
-                  <span>${startTime} - ${endTime}</span>
+                  <span>${timeLabel}</span>
                 </div>
                 <div class="interview-info-row">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -181,10 +213,9 @@ function renderInterviewList(interviews) {
                 </div>
               </div>
               <div class="interview-actions">
-                <button class="btn-secondary btn-sm" onclick="alert('Viewing Details...')">View Details</button>
                 ${isJoinable ? `<button class="btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join Interview</button>` : ''}
                 ${interview.status === 'COMPLETED' && interview.recordings && interview.recordings.length > 0
-        ? `<a href="http://localhost:3000/recordings/${interview.recordings[0].filename}" download="${interview.recordings[0].filename}" class="btn btn-primary btn-sm" style="margin-left: 5px;">Download Recording</a>`
+        ? `<a href="${api.getLobbyUrl(interview.meetingLink || String(interview.id))}" class="btn btn-primary btn-sm" style="margin-left: 5px;">Download Recording</a>`
         : ''}
               </div>
             </div>

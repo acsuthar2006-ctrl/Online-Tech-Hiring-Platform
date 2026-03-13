@@ -4,6 +4,15 @@ const companyId = sessionStorage.getItem('companyId');
 let allCandidates = [];
 let allPositionTitles = new Set();
 
+// ===== SET ADMIN NAME =====
+function setAdminName() {
+  const userInfo = api.getUserInfo();
+  if (userInfo) {
+    const nameEl = document.getElementById('adminName');
+    if (nameEl) nameEl.textContent = userInfo.fullName || 'Admin';
+  }
+}
+
 // ===== STATUS BADGE =====
 function statusBadge(status) {
   const map = {
@@ -51,7 +60,7 @@ function renderTable(candidates) {
       <td>${c.score != null ? c.score + '/10' : '—'}</td>
       <td style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn-text" onclick="viewCandidateSkills(${JSON.stringify(c.skills || []).replace(/"/g, '&quot;')})">Skills</button>
-        ${!c.appliedDirectly ? '' : `<button class="btn-text">View</button>`}
+        ${!c.appliedDirectly ? '' : `<button class="btn-text" onclick="viewCandidateDetails(${c.id}, ${JSON.stringify(c.fullName || 'Candidate').replace(/\"/g, '&quot;')})">View</button>`}
       </td>
     </tr>
   `).join('');
@@ -61,6 +70,121 @@ function renderTable(candidates) {
 window.viewCandidateSkills = function (skills) {
   if (!skills || skills.length === 0) { alert('No skills listed for this candidate.'); return; }
   alert('Skills: ' + skills.join(', '));
+};
+
+// ===== VIEW CANDIDATE DETAILS =====
+function setModalLoading() {
+  const bioEl = document.getElementById('candidateBio');
+  const skillsEl = document.getElementById('candidateSkills');
+  const expEl = document.getElementById('candidateExperience');
+  const eduEl = document.getElementById('candidateEducation');
+  if (bioEl) bioEl.textContent = 'Loading...';
+  if (skillsEl) skillsEl.textContent = 'Loading...';
+  if (expEl) expEl.textContent = 'Loading...';
+  if (eduEl) eduEl.textContent = 'Loading...';
+}
+
+function openModal() {
+  const modal = document.getElementById('candidateModal');
+  if (!modal) return;
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeModal() {
+  const modal = document.getElementById('candidateModal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+function formatMonthYear(dateStr) {
+  if (!dateStr) return 'Present';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+function renderSkills(skills) {
+  const skillsEl = document.getElementById('candidateSkills');
+  if (!skillsEl) return;
+  if (!skills || skills.length === 0) {
+    skillsEl.textContent = 'No skills added.';
+    return;
+  }
+  skillsEl.innerHTML = skills.map(s => `<span class="badge" style="margin-right:6px;">${s}</span>`).join('');
+}
+
+function renderExperience(items) {
+  const expEl = document.getElementById('candidateExperience');
+  if (!expEl) return;
+  if (!items || items.length === 0) {
+    expEl.textContent = 'No work experience added.';
+    return;
+  }
+  expEl.innerHTML = `<div class="modal-list">${
+    items.map(item => {
+      const duration = item.durationMonths ? `${item.durationMonths} months` : null;
+      const range = `${formatMonthYear(item.startDate)} - ${formatMonthYear(item.endDate)}`;
+      const meta = [range, duration].filter(Boolean).join(' | ');
+      const desc = item.description ? `<div>${item.description}</div>` : '';
+      return `
+        <div class="modal-item">
+          <div class="item-title">${item.jobTitle} at ${item.companyName}</div>
+          <div class="item-meta">${meta}</div>
+          ${desc}
+        </div>
+      `;
+    }).join('')
+  }</div>`;
+}
+
+function renderEducation(items) {
+  const eduEl = document.getElementById('candidateEducation');
+  if (!eduEl) return;
+  if (!items || items.length === 0) {
+    eduEl.textContent = 'No education added.';
+    return;
+  }
+  eduEl.innerHTML = `<div class="modal-list">${
+    items.map(item => {
+      const field = item.fieldOfStudy ? `, ${item.fieldOfStudy}` : '';
+      const grad = item.graduationDate ? ` | Graduated ${formatMonthYear(item.graduationDate)}` : '';
+      return `
+        <div class="modal-item">
+          <div class="item-title">${item.degree}${field}</div>
+          <div class="item-meta">${item.schoolName}${grad}</div>
+        </div>
+      `;
+    }).join('')
+  }</div>`;
+}
+
+window.viewCandidateDetails = async function (candidateId, candidateName) {
+  const titleEl = document.getElementById('candidateModalTitle');
+  if (titleEl) titleEl.textContent = candidateName ? `${candidateName} - Profile` : 'Candidate Profile';
+  setModalLoading();
+  openModal();
+  try {
+    const profile = await api.getCompanyCandidateProfile(candidateId);
+    const bioEl = document.getElementById('candidateBio');
+    if (bioEl) {
+      bioEl.textContent = profile.bio && profile.bio.trim() ? profile.bio : 'No bio added.';
+    }
+    renderSkills(profile.skills || []);
+    renderExperience(profile.experience || []);
+    renderEducation(profile.education || []);
+  } catch (err) {
+    console.error('Failed to load candidate profile:', err);
+    const bioEl = document.getElementById('candidateBio');
+    const skillsEl = document.getElementById('candidateSkills');
+    const expEl = document.getElementById('candidateExperience');
+    const eduEl = document.getElementById('candidateEducation');
+    if (bioEl) bioEl.textContent = 'Failed to load candidate details.';
+    if (skillsEl) skillsEl.textContent = 'â€”';
+    if (expEl) expEl.textContent = 'â€”';
+    if (eduEl) eduEl.textContent = 'â€”';
+  }
 };
 
 // ===== FILTER =====
@@ -131,4 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (statusFilter) statusFilter.addEventListener('change', applyFilters);
 
   loadCandidates();
+  setAdminName();
+
+  const modal = document.getElementById('candidateModal');
+  const modalClose = document.getElementById('candidateModalClose');
+  if (modalClose) modalClose.addEventListener('click', closeModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
 });
+

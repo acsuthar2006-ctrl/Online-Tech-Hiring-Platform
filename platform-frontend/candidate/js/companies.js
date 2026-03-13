@@ -23,16 +23,36 @@ async function initializeCompanies() {
 
     try {
         const userInfo = api.getUserInfo();
-        const [companies, positions, rawApplications] = await Promise.all([
+        const [companies, positions, rawApplications, interviews] = await Promise.all([
             api.getAllCompanies(),
             api.getAllPositions(),
-            api.getCandidateApplications(userInfo.id).catch(() => [])
+            api.getCandidateApplications(userInfo.id).catch(() => []),
+            api.getUpcomingInterviews(userInfo.email).catch(() => [])
         ]);
 
         if (!companies || companies.length === 0) {
             grid.innerHTML = createEmptyState('No companies found at the moment.');
             return;
         }
+
+        // Build a map: positionId -> interview outcome
+        const interviewOutcomeByPosition = {};
+        (interviews || []).forEach(iv => {
+            if (iv.position && iv.position.id) {
+                // Keep the most decisive outcome: ACCEPTED/REJECTED > COMPLETED > SCHEDULED
+                const existing = interviewOutcomeByPosition[iv.position.id];
+                const rank = s => s === 'ACCEPTED' || s === 'REJECTED' ? 3 : s === 'COMPLETED' ? 2 : 1;
+                const outcome = iv.candidateOutcome && iv.candidateOutcome !== 'PENDING'
+                    ? iv.candidateOutcome
+                    : iv.status; // fall back to interview status
+                if (!existing || rank(outcome) > rank(existing)) {
+                    interviewOutcomeByPosition[iv.position.id] = {
+                        interviewStatus: iv.status,
+                        candidateOutcome: iv.candidateOutcome
+                    };
+                }
+            }
+        });
 
         // Map positions to companies
         const companyPositions = {};
@@ -44,14 +64,14 @@ async function initializeCompanies() {
             companyPositions[companyId].push(pos);
         });
 
-        renderCompanies(companies, companyPositions, rawApplications || []);
+        renderCompanies(companies, companyPositions, rawApplications || [], interviewOutcomeByPosition);
     } catch (error) {
         console.error('Failed to load companies:', error);
         grid.innerHTML = createErrorState('Failed to load companies and positions. Please try again later.');
     }
 }
 
-function renderCompanies(companies, companyPositions, myApplications) {
+function renderCompanies(companies, companyPositions, myApplications, interviewOutcomeByPosition = {}) {
     const grid = document.getElementById('companiesGrid');
     grid.innerHTML = '';
 
@@ -96,10 +116,20 @@ function renderCompanies(companies, companyPositions, myApplications) {
                 </span>
             </div>
             <div class="positions-list">
-                ${positions.slice(0, 2).map(pos => {
+                ${positions.map(pos => {
             const existingApp = myApplications.find(app => app.position && app.position.id === pos.id);
+            const ivInfo = interviewOutcomeByPosition[pos.id];
             let actionHtml = '';
-            if (existingApp) {
+
+            if (ivInfo && ivInfo.candidateOutcome === 'ACCEPTED') {
+                actionHtml = `<span class="badge badge-green" style="padding:4px 10px;font-weight:600;">✓ Accepted</span>`;
+            } else if (ivInfo && ivInfo.candidateOutcome === 'REJECTED') {
+                actionHtml = `<span class="badge" style="padding:4px 10px;font-weight:600;background:#fee2e2;color:#991b1b;">✕ Rejected</span>`;
+            } else if (ivInfo && (ivInfo.interviewStatus === 'COMPLETED')) {
+                actionHtml = `<span class="badge badge-blue" style="padding:4px 8px;">Interview Completed</span>`;
+            } else if (ivInfo && (ivInfo.interviewStatus === 'SCHEDULED' || ivInfo.interviewStatus === 'IN_PROGRESS')) {
+                actionHtml = `<span class="badge badge-blue" style="padding:4px 8px;">Interview Scheduled</span>`;
+            } else if (existingApp) {
                 actionHtml = `<span class="badge badge-green" style="padding:4px 8px;">Applied (${existingApp.status})</span>`;
             } else {
                 actionHtml = `<button class="btn-primary btn-sm" onclick="applyForPosition(${pos.id})">Apply</button>`;
@@ -112,13 +142,13 @@ function renderCompanies(companies, companyPositions, myApplications) {
                             <div class="position-tags">
                                 <span class="badge badge-blue">Full-time</span>
                                 <span class="badge badge-green">${pos.salaryRange || 'Competitive'}</span>
+                                ${pos.location ? `<span class="badge badge-purple" style="margin-left: 4px;">${pos.location}</span>` : ''}
                             </div>
                         </div>
                         ${actionHtml}
                     </div>
                 `}).join('')}
             </div>
-            ${positions.length > 2 ? `<button class="btn-outline btn-full">View All ${positions.length} Positions</button>` : ''}
         `;
         grid.appendChild(card);
     });

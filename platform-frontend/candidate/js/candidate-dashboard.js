@@ -1,6 +1,7 @@
 // Candidate Dashboard
 import { api } from '../../common/api.js';
 import { Router } from '../../common/router.js'; // Auth check
+import { initNotifications } from '../../common/notifications.js';
 import {
   formatDateTime,
   createLoadingState,
@@ -10,6 +11,28 @@ import {
 // Global state
 let candidateProfile = null;
 let upcomingInterviews = [];
+
+function formatTimeLabelFromDateTime(dtStr) {
+  try {
+    if (!dtStr) return null;
+    const d = new Date(dtStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return null;
+  }
+}
+
+function formatDateLabelFromDateTime(dtStr) {
+  try {
+    if (!dtStr) return null;
+    const d = new Date(dtStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Initialize dashboard on page load
@@ -87,7 +110,7 @@ function renderDashboard() {
       </div>
       <div class="header-right">
               <button class="btn-icon" id="notificationBtn">
-                <span class="notification-badge">3</span>
+                <span class="notification-badge" style="display:none;">0</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" />
@@ -161,7 +184,8 @@ function renderDashboard() {
     </div>
   `;
 
-  contentDiv.innerHTML = html;
+contentDiv.innerHTML = html;
+initNotifications();
 }
 
 
@@ -195,15 +219,23 @@ function renderInterviewList(interviews, type) {
 function createInterviewItem(interview, type) {
   const dateStr = interview.scheduledDate || 'TBD';
   const timeStr = interview.scheduledTime || '';
-  const dateTime = formatDateTime(interview.scheduledDate, interview.scheduledTime);
+  let dateTime = formatDateTime(interview.scheduledDate, interview.scheduledTime);
+  if (interview.status === 'COMPLETED') {
+    const actualStartLabel = formatTimeLabelFromDateTime(interview.actualStartTime);
+    const actualEndLabel = formatTimeLabelFromDateTime(interview.actualEndTime);
+    const actualDateLabel = formatDateLabelFromDateTime(interview.actualStartTime)
+      || formatDateLabelFromDateTime(interview.actualEndTime);
+    if (actualStartLabel && actualEndLabel && actualDateLabel) {
+      dateTime = `${actualDateLabel} @ ${actualStartLabel} - ${actualEndLabel}`;
+    }
+  }
   
   let actionBtn = '';
   if (type === 'upcoming') {
       actionBtn = `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>`;
-  } else if (interview.recordingUrl) {
-      // Use media server port 3000
-      const downloadLink = '../../interview-screen/lobby.html';
-      actionBtn = `<a href="${downloadLink}" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none; display: inline-block;">Download Recording</a>`;
+  } else if (interview.recordingUrl || interview.meetingLink) {
+      const downloadLink = api.getLobbyUrl(interview.meetingLink || String(interview.id));
+      actionBtn = `<a href="${downloadLink}" class="btn btn-secondary btn-sm" style="text-decoration: none; display: inline-block;">Download Recording</a>`;
   } else {
       actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;
   }

@@ -13,7 +13,20 @@ async function initializeSchedule() {
     const profile = await api.getUserProfile();
     if (profile) {
       profileName.textContent = profile.fullName;
-      const interviews = await api.getUpcomingInterviewsForInterviewer(profile.email);
+      let interviews = await api.getUpcomingInterviewsForInterviewer(profile.email);
+      interviews = await Promise.all(interviews.map(async (interview) => {
+        if (interview.status === 'COMPLETED') {
+          try {
+            const roomId = interview.meetingLink || String(interview.id);
+            const recordings = await api.getRoomRecordings(roomId);
+            return { ...interview, recordings: recordings || [] };
+          } catch (e) {
+            console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
+            return interview;
+          }
+        }
+        return interview;
+      }));
       renderSchedule(interviews);
     } else {
       throw new Error('Profile not found');
@@ -51,11 +64,14 @@ function renderSchedule(interviews) {
 
     if (interview.status === 'COMPLETED') {
       completedInterviews.push(interview);
-    } else if (interviewDateOnly.getTime() === today.getTime()) {
-      todayInterviews.push(interview);
-    } else if (interviewDateOnly > today) {
-      // Show all future interviews in the "Upcoming" section
-      weekInterviews.push(interview);
+    } else if (interview.status === 'SCHEDULED' || interview.status === 'IN_PROGRESS') {
+      const hasValidDate = !Number.isNaN(interviewDateOnly.getTime());
+      if (!hasValidDate) return;
+      if (interviewDateOnly.getTime() === today.getTime()) {
+        todayInterviews.push(interview);
+      } else if (interviewDateOnly > today) {
+        weekInterviews.push(interview);
+      }
     }
   });
 
@@ -86,6 +102,13 @@ function renderTimelineItem(interview, sectionId) {
   const dateTimeStr = `${interview.scheduledDate}T${interview.scheduledTime}`;
   const date = new Date(dateTimeStr);
   const isCompleted = interview.status === 'COMPLETED';
+  const statusClass = isCompleted ? 'status-completed' : 'status-upcoming';
+  let outcomeHtml = '';
+  if (isCompleted && interview.candidateOutcome && interview.candidateOutcome !== 'PENDING') {
+    const isAccepted = interview.candidateOutcome === 'ACCEPTED';
+    const bg = isAccepted ? 'background:#dcfce7;color:#166534' : 'background:#fee2e2;color:#991b1b';
+    outcomeHtml = `<span class="status-badge" style="margin-left:8px; border:1px solid currentColor; ${bg}">${interview.candidateOutcome}</span>`;
+  }
 
   return `
         <div class="timeline-item">
@@ -96,7 +119,10 @@ function renderTimelineItem(interview, sectionId) {
             <div class="interview-card">
                 <div class="interview-header">
                     <h3>${interview.title || 'Technical Interview'}</h3>
-                    <span class="status-badge status-${interview.status.toLowerCase()}">${interview.status}</span>
+                    <div>
+                      <span class="status-badge ${statusClass}">${interview.status}</span>
+                      ${outcomeHtml}
+                    </div>
                 </div>
                 <div class="interview-details">
                     <p class="company-name">${interview.description || 'Job Interview'}</p>
@@ -116,8 +142,14 @@ function renderTimelineItem(interview, sectionId) {
                     </div>
                 </div>
                 <div class="interview-actions">
-                    <button class="btn-secondary btn-sm" onclick="alert('Viewing details...')">Details</button>
                     ${!isCompleted ? `<button class="btn-primary btn-sm" onclick="joinInterview('${interview.meetingLink}')">Join Interview</button>` : ''}
+                    ${isCompleted && interview.recordings && interview.recordings.length > 0
+                      ? (() => {
+                          const roomId = interview.meetingLink || String(interview.id);
+                          const url = api.getLobbyUrl(roomId);
+                          return `<a href="${url}" class="btn btn-primary btn-sm" style="margin-left: 6px;">Download Recording</a>`;
+                        })()
+                      : ''}
                 </div>
             </div>
         </div>

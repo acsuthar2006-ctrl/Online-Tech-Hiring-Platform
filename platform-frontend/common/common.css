@@ -381,3 +381,61 @@ body {
     display: none;
   }
 }
+
+.notification-panel {
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  z-index: 9999;
+}
+
+.notification-panel-inner {
+  background: var(--white);
+  border: 1px solid var(--blue-200);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.14);
+  overflow: hidden;
+}
+
+.notification-title {
+  padding: 12px 14px;
+  font-weight: 700;
+  color: var(--gray-800);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.notification-empty {
+  padding: 14px;
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+.notification-items {
+  max-height: 360px;
+  overflow: auto;
+}
+
+.notification-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: block;
+}
+
+.notification-item:hover {
+  background: var(--blue-50);
+}
+
+.notification-item-title {
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 4px;
+}
+
+.notification-item-message {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.35;
+}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -21,7 +21,7 @@
       </div>
       <div class="header-right">
         <button class="btn-icon" id="notificationBtn">
-          <span class="notification-badge">3</span>
+          <span class="notification-badge" style="display:none;">0</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" />
@@ -47,24 +47,13 @@
     </div>
 
     <div class="schedule-container">
-      <!-- Video Interview section -->
-      <div class="schedule-section" id="videoSection">
+      <!-- Upcoming Interviews section -->
+      <div class="schedule-section" id="upcomingSection">
         <div class="section-header">
-          <h2>Video Interviews</h2>
-          <span class="interview-count" id="videoCount">0</span>
+          <h2>Upcoming Interviews</h2>
+          <span class="interview-count" id="upcomingCount">0</span>
         </div>
-        <div class="interview-timeline" id="videoInterviewList">
-             <div class="loading-state">Loading...</div>
-        </div>
-      </div>
-
-      <!-- Technical Round section with coding and analytical rounds -->
-      <div class="schedule-section" id="technicalSection">
-        <div class="section-header">
-          <h2>Technical Rounds</h2>
-          <span class="interview-count" id="technicalCount">0</span>
-        </div>
-        <div class="interview-timeline" id="technicalInterviewList">
+        <div class="interview-timeline" id="upcomingInterviewList">
              <div class="loading-state">Loading...</div>
         </div>
       </div>

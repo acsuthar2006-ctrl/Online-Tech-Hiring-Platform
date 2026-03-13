@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -22,7 +22,7 @@
       </div>
       <div class="header-right">
         <button class="btn-icon" id="notificationBtn">
-          <span class="notification-badge">2</span>
+          <span class="notification-badge" style="display:none;">0</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" />
@@ -44,20 +44,12 @@
       <div class="profile-header">
         <div class="profile-avatar"></div>
         <div class="profile-basic-info">
-          <h2 id="profileUsername">John Doe</h2>
-          <p>Senior Technical Interviewer</p>
+          <h2 id="profileUsername"></h2>
+          <p class="text-muted">Interviewer</p>
           <div class="profile-stats">
             <div class="profile-stat">
-              <span class="profile-stat-number">156</span>
+              <span class="profile-stat-number" id="statInterviews">--</span>
               <span class="profile-stat-label">Interviews</span>
-            </div>
-            <div class="profile-stat">
-              <span class="profile-stat-number">4.8</span>
-              <span class="profile-stat-label">Rating</span>
-            </div>
-            <div class="profile-stat">
-              <span class="profile-stat-number">$8,450</span>
-              <span class="profile-stat-label">Earnings</span>
             </div>
           </div>
         </div>
@@ -69,86 +61,60 @@
           <div class="form-row">
             <div class="form-group">
               <label>First Name</label>
-              <input type="text" value="John" id="firstName">
+              <input type="text" value="" id="firstName">
             </div>
             <div class="form-group">
               <label>Last Name</label>
-              <input type="text" value="Doe" id="lastName">
+              <input type="text" value="" id="lastName">
             </div>
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" value="john.doe@example.com">
+            <input type="email" id="email" value="" disabled>
           </div>
           <div class="form-group">
             <label>Phone</label>
-            <input type="tel" value="+1 (555) 123-4567">
+            <input type="tel" id="phone" value="">
           </div>
           <div class="form-group">
             <label>Bio</label>
-            <textarea>Senior Technical Interviewer with 8+ years of experience in software development and recruitment. Specialized in Full Stack and System Design interviews.</textarea>
+            <textarea id="bio"></textarea>
           </div>
-          <button class="btn-primary">Save Changes</button>
+          <button class="btn-primary" id="savePersonalBtn">Save Changes</button>
         </div>
 
         <div class="profile-section">
           <h3 class="section-title">Interview Expertise</h3>
           <div class="form-group">
-            <label>Primary Focus Areas</label>
-            <div class="expertise-list">
-              <span class="expertise-tag">Full Stack Development</span>
-              <span class="expertise-tag">System Design</span>
-              <span class="expertise-tag">Data Structures</span>
-              <span class="expertise-tag">Algorithms</span>
-              <span class="expertise-tag">React.js</span>
-            </div>
+            <label>Expertise</label>
+            <div class="expertise-list" id="expertiseList"></div>
           </div>
-          <div class="form-group">
-            <label>Languages</label>
-            <div class="expertise-list">
-              <span class="expertise-tag">JavaScript</span>
-              <span class="expertise-tag">Python</span>
-              <span class="expertise-tag">Java</span>
-            </div>
-          </div>
-          <button class="btn-primary">Edit Expertise</button>
+          <button class="btn-primary" id="editExpertiseBtn">Add Expertise</button>
         </div>
 
         <div class="profile-section">
           <h3 class="section-title">Professional Details</h3>
           <div class="form-group">
             <label>Years of Experience</label>
-            <input type="number" value="8" min="0" max="50">
+            <input type="number" id="yearsExperience" value="" min="0" max="50">
           </div>
           <div class="form-group">
             <label>Availability</label>
-            <select>
-              <option selected>Part-time (10-20 hrs/week)</option>
-              <option>Part-time (20-30 hrs/week)</option>
-              <option>Flexible</option>
+            <select id="availabilityStatus">
+              <option value="AVAILABLE">Available</option>
+              <option value="BUSY">Busy</option>
+              <option value="OFFLINE">Offline</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Hourly Rate ($)</label>
-            <input type="number" value="75" min="0">
-          </div>
-          <button class="btn-primary">Update Details</button>
+          <button class="btn-primary" id="saveProfessionalBtn">Update Details</button>
         </div>
 
         <div class="profile-section">
           <h3 class="section-title">Interview Statistics</h3>
           <div class="form-row">
             <div class="profile-stat">
-              <span class="profile-stat-number">156</span>
+              <span class="profile-stat-number" id="statTotalInterviews">--</span>
               <span class="profile-stat-label">Total Interviews</span>
-            </div>
-            <div class="profile-stat">
-              <span class="profile-stat-number">142</span>
-              <span class="profile-stat-label">Completed</span>
-            </div>
-            <div class="profile-stat">
-              <span class="profile-stat-number">4.8/5</span>
-              <span class="profile-stat-label">Average Rating</span>
             </div>
           </div>
         </div>
@@ -159,6 +125,7 @@
   <script type="module" src="../common/dashboard.js"></script>
   <script type="module" src="../common/interviewer-sidebar.js"></script>
   <script type="module" src="js/interviewer-profile.js"></script>
+  <script type="module" src="../common/notifications-init.js"></script>
 </body>
 
 </html>

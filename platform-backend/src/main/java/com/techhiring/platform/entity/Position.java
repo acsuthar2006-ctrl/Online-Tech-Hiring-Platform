@@ -34,6 +34,8 @@ public class Position {
 
   private String salaryRange;
 
+  private String location;
+
   @Column(columnDefinition = "TEXT")
   private String requiredExpertise;
 

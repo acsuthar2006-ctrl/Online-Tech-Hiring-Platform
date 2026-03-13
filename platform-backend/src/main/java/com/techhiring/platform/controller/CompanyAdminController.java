@@ -72,6 +72,12 @@ public class CompanyAdminController {
     return ResponseEntity.ok(companyAdminService.getCandidatesForCompany(companyId));
   }
 
+  @GetMapping("/candidates/{candidateId}/profile")
+  public ResponseEntity<CompanyAdminDto.CandidateProfileDetails> getCandidateProfileDetails(
+      @PathVariable Long candidateId) {
+    return ResponseEntity.ok(companyAdminService.getCandidateProfileDetails(candidateId));
+  }
+
   @GetMapping("/positions/{positionId}/applications")
   public ResponseEntity<List<CompanyAdminDto.CandidateInfo>> getCandidatesByPosition(@PathVariable Long positionId) {
     return ResponseEntity.ok(companyAdminService.getCandidatesByPosition(positionId));

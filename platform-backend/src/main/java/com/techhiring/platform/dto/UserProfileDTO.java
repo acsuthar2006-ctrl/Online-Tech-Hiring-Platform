@@ -14,6 +14,7 @@ public class UserProfileDTO {
   private String email;
   private String fullName;
   private String role;
+  private java.time.LocalDateTime createdAt;
 
   // Common fields
   private String phone;
@@ -25,4 +26,7 @@ public class UserProfileDTO {
   private String companyName;
   private Double hourlyRate;
   private String availabilityStatus;
+  private Integer totalInterviewsConducted;
+  private Double averageRating;
+  private Double totalEarnings;
 }
