@@ -529,28 +529,45 @@ The Use Case Diagram visualizes the interactions between the primary actors (Can
 
 *Fig 5.2 Use Case Diagram — System User Interactions*
 ```mermaid
-usecaseDiagram
-actor Candidate
-actor Interviewer
+flowchart LR
+    Candidate([Candidate])
+    Interviewer([Interviewer])
 
-rectangle "Online Technical Hiring Platform" {
-    Candidate --> (Register / Login)
-    Candidate --> (Build Profile & Upload Resume)
-    Candidate --> (Submit Application)
-    Candidate --> (Join Waiting Room)
-    Candidate --> (Participate in WebRTC Interview)
+    subgraph Platform [Online Technical Hiring Platform]
+        direction TB
+        UC1(Register / Login)
+        UC2(Build Profile & Upload Resume)
+        UC3(Submit Application)
+        UC4(Join Waiting Room)
+        UC5(Participate in WebRTC Interview)
+        
+        UC6(Post Job Positions)
+        UC7(Review Applications)
+        UC8(Schedule Interview)
+        UC9(Start Session & Admit Candidate)
+        UC10(Provide Feedback & Score)
+        
+        UC11(Generate Meeting Link)
+        UC12(End WebRTC Session)
+        UC13(Start FFmpeg Recording)
+    end
+
+    Candidate --- UC1
+    Candidate --- UC2
+    Candidate --- UC3
+    Candidate --- UC4
+    Candidate --- UC5
     
-    Interviewer --> (Register / Login)
-    Interviewer --> (Post Job Positions)
-    Interviewer --> (Review Applications)
-    Interviewer --> (Schedule Interview)
-    Interviewer --> (Start Session & Admit Candidate)
-    Interviewer --> (Provide Feedback & Score)
-}
+    Interviewer --- UC1
+    Interviewer --- UC6
+    Interviewer --- UC7
+    Interviewer --- UC8
+    Interviewer --- UC9
+    Interviewer --- UC10
 
-(Schedule Interview) -.-> (Generate Meeting Link) : <<include>>
-(Provide Feedback & Score) -.-> (End WebRTC Session) : <<include>>
-(Start Session & Admit Candidate) -.-> (Start FFmpeg Recording) : <<include>>
+    UC8 -. "<<include>>" .-> UC11
+    UC10 -. "<<include>>" .-> UC12
+    UC9 -. "<<include>>" .-> UC13
 ```
 
 <div style="page-break-after: always;"></div>
