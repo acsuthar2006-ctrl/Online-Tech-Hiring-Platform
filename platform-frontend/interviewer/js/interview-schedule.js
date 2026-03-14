@@ -144,11 +144,12 @@ function renderTimelineItem(interview, sectionId) {
                 <div class="interview-actions">
                     ${!isCompleted ? `<button class="btn-primary btn-sm" onclick="joinInterview('${interview.meetingLink}')">Join Interview</button>` : ''}
                     ${isCompleted && interview.recordings && interview.recordings.length > 0
-                      ? (() => {
-                          const roomId = interview.meetingLink || String(interview.id);
-                          const url = api.getLobbyUrl(roomId);
-                          return `<a href="${url}" class="btn btn-primary btn-sm" style="margin-left: 6px;">Download Recording</a>`;
-                        })()
+                      ? interview.recordings.map(rec => {
+                          const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+                          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
+                          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download</button>
+                                  <a href="${fileUrl}" class="btn btn-secondary btn-sm" style="margin-left: 6px; text-decoration: none;" target="_blank">Play</a>`;
+                        }).join('')
                       : ''}
                 </div>
             </div>
@@ -185,3 +186,43 @@ window.joinInterview = async (link) => {
     alert('Meeting link not available.');
   }
 };
+
+// Global click handler for forcing downloads cross-origin without opening a new tab
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest('.force-download-btn');
+  if (btn) {
+    e.preventDefault();
+    
+    const originalText = btn.innerHTML;
+    try {
+      btn.innerHTML = 'Downloading...';
+      btn.disabled = true;
+      
+      const url = btn.getAttribute("data-url");
+      const filename = btn.getAttribute("data-filename") || "recording.mp4";
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      
+      const blob = await response.blob();
+      const windowUrl = window.URL || window.webkitURL;
+      const downloadUrl = windowUrl.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      windowUrl.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+    } catch (err) {
+      console.error("Force download failed:", err);
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+});

@@ -116,11 +116,12 @@ function renderSchedule(interviews) {
     }
 
     const recordingBtn = (iv.recordings && iv.recordings.length > 0)
-      ? (() => {
-        const roomId = iv.meetingLink || String(iv.id);
-        const url = api.getLobbyUrl(roomId);
-        return `<a href="${url}" class="btn-outline btn-sm">Download Recording</a>`;
-      })()
+      ? iv.recordings.map(rec => {
+          const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
+          return `<button class="btn-outline btn-sm force-download-btn" data-url="${fileUrl}" data-filename="${rec.filename}">Download</button>
+                  <a href="${fileUrl}" class="btn-outline btn-sm" target="_blank" style="text-decoration: none;">Play</a>`;
+        }).join('')
       : '';
 
     const actionBtns = iv.status === 'COMPLETED'
@@ -216,6 +217,46 @@ async function loadInterviews() {
     if (container) container.innerHTML = '<p style="padding:32px;color:#dc2626;">Failed to load interviews.</p>';
   }
 }
+
+// Global click handler for forcing downloads cross-origin without opening a new tab
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest('.force-download-btn');
+  if (btn) {
+    e.preventDefault();
+    
+    const originalText = btn.innerHTML;
+    try {
+      btn.innerHTML = 'Downloading...';
+      btn.disabled = true;
+      
+      const url = btn.getAttribute("data-url");
+      const filename = btn.getAttribute("data-filename") || "recording.mp4";
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      
+      const blob = await response.blob();
+      const windowUrl = window.URL || window.webkitURL;
+      const downloadUrl = windowUrl.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      windowUrl.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+    } catch (err) {
+      console.error("Force download failed:", err);
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   setAdminName();

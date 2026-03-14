@@ -130,8 +130,11 @@ if (downloadBtn) {
     console.log(`[Lobby] Checking recordings for room: ${roomId}`);
     showLoading(true);
 
+    // When running on Vite dev server (port 5173), the media server is on port 3000
+    const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+
     try {
-      const res = await fetch(`/api/recordings/${roomId}`);
+      const res = await fetch(`${mediaBase}/api/recordings/${roomId}`);
       const data = await res.json();
 
       showLoading(false);
@@ -154,6 +157,9 @@ if (downloadBtn) {
             ? "fa-file-video"
             : "fa-file";
 
+          // Always use the absolute media server URL for play/download
+          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
+
           listHtml += `
             <div class="recording-item">
                 <div class="recording-info">
@@ -163,12 +169,12 @@ if (downloadBtn) {
                     </span>
                 </div>
                 <div class="recording-actions">
-                    <a href="${rec.url}" class="action-btn" target="_blank" title="Play Video">
+                    <a href="${fileUrl}" class="action-btn" target="_blank" title="Play Video">
                         <i class="fas fa-play"></i>
                     </a>
-                    <a href="${rec.url}" class="action-btn download-action" download title="Download">
+                    <button class="action-btn download-action force-download-btn" data-url="${fileUrl}" data-filename="${rec.filename}" title="Download">
                         <i class="fas fa-download"></i>
-                    </a>
+                    </button>
                     <button class="action-btn delete-action" onclick="deleteRecording('${rec.filename}')" title="Delete (Interviewer Only)">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -209,6 +215,7 @@ if (downloadBtn) {
     }
   });
 }
+
 
 // Check if room exists
 async function roomExists(room) {
@@ -323,3 +330,47 @@ window.deleteRecording = async (filename) => {
     showToast("Error connecting to server", "error");
   }
 };
+
+// Global click handler for forcing downloads cross-origin without opening a new tab
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest('.force-download-btn');
+  if (btn) {
+    e.preventDefault();
+    
+    // In lobby.js, the button contains an icon. We need to preserve it.
+    const originalChildren = Array.from(btn.childNodes);
+    
+    try {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
+      
+      const url = btn.getAttribute("data-url");
+      const filename = btn.getAttribute("data-filename") || "recording.mp4";
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      
+      const blob = await response.blob();
+      const windowUrl = window.URL || window.webkitURL;
+      const downloadUrl = windowUrl.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      windowUrl.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+    } catch (err) {
+      console.error("Force download failed:", err);
+      showToast("Download failed. Please try again later.", "error");
+    } finally {
+      btn.innerHTML = '';
+      originalChildren.forEach(child => btn.appendChild(child));
+      btn.disabled = false;
+    }
+  }
+});

@@ -97,6 +97,6 @@ export const config = {
       announcedIp: null,
     },
     rtcpMux: false,
-    comedia: true,
+    comedia: false, // Must be false: comedia=true waits for remote to send first (deadlock with FFmpeg reader)
   },
 };

@@ -151,11 +151,32 @@ window.completeCandidate = async function (id) {
           socket.addEventListener('message', activeListener);
           const params = new URLSearchParams(window.location.search);
           const roomParam = params.get('room');
-          const recordingName = roomParam ? `${roomParam}-interview-${id}` : `interview-${id}`;
-          socket.send(JSON.stringify({
-            type: 'stopRecording',
-            recordingName: recordingName
-          }));
+          
+          // Try to get candidate name from the DOM (relies on the list structure from _fetchModalQueue)
+          // We can find the button that was clicked and traverse up, but we know the 'id'
+          // A safer way is to fetch the queue again, or rely on global state. Given we're inside a function, let's fetch.
+          fetch(`/api/interviews/session/${roomParam}/queue`)
+            .then(res => res.json())
+            .then(data => {
+              const item = data.timeline.find(i => i.id === id);
+              const candidateName = item && item.candidate ? item.candidate.fullName.replace(/[^a-zA-Z0-9]/g, '_') : 'Candidate';
+              const secureId = crypto.randomUUID();
+              
+              const recordingName = `${roomParam}-${candidateName}-${secureId}`;
+              
+              socket.send(JSON.stringify({
+                type: 'stopRecording',
+                recordingName: recordingName
+              }));
+            })
+            .catch(err => {
+              console.error("Failed to fetch candidate name for recording:", err);
+              const fallbackName = `${roomParam}-Interview-${id}-${crypto.randomUUID()}`;
+              socket.send(JSON.stringify({
+                type: 'stopRecording',
+                recordingName: fallbackName
+              }));
+            });
         });
 
         if (filename) recordingUrl = filename;

@@ -71,7 +71,21 @@ async function initializeDashboard() {
     }
 
     // Load upcoming interviews
-    upcomingInterviews = await api.getUpcomingInterviews(candidateProfile.email);
+    const interviewsData = await api.getUpcomingInterviews(candidateProfile.email);
+    
+    // Pre-fetch recordings for completed ones
+    upcomingInterviews = await Promise.all(interviewsData.map(async (interview) => {
+      if (interview.status === 'COMPLETED' || interview.status === 'CANCELLED') {
+        try {
+          const roomId = interview.meetingLink || String(interview.id);
+          const recordings = await api.getRoomRecordings(roomId);
+          return { ...interview, recordings: recordings || [] };
+        } catch (e) {
+          return interview;
+        }
+      }
+      return interview;
+    }));
 
     // Render dashboard
     renderDashboard();
@@ -233,9 +247,13 @@ function createInterviewItem(interview, type) {
   let actionBtn = '';
   if (type === 'upcoming') {
       actionBtn = `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>`;
-  } else if (interview.recordingUrl || interview.meetingLink) {
-      const downloadLink = api.getLobbyUrl(interview.meetingLink || String(interview.id));
-      actionBtn = `<a href="${downloadLink}" class="btn btn-secondary btn-sm" style="text-decoration: none; display: inline-block;">Download Recording</a>`;
+  } else if (interview.recordings && interview.recordings.length > 0) {
+      actionBtn = interview.recordings.map(rec => {
+          const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
+          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left:5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download</button>
+                  <a href="${fileUrl}" class="btn btn-secondary btn-sm" style="margin-left:5px; text-decoration:none;" target="_blank">Play</a>`;
+      }).join('');
   } else {
       actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;
   }
@@ -251,7 +269,7 @@ function createInterviewItem(interview, type) {
           <span class="badge ${interview.status === 'COMPLETED' ? 'badge-green' : 'badge-gray'}">${interview.status}</span>
         </div>
       </div>
-      ${actionBtn}
+      <div>${actionBtn}</div>
     </div>
   `
 }
@@ -290,6 +308,47 @@ async function logout() {
 // Expose functions
 window.joinInterview = joinInterview
 window.logout = logout
+
+// Global click handler for forcing downloads cross-origin without opening a new tab
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest('.force-download-btn');
+  if (btn) {
+    e.preventDefault();
+    
+    const originalText = btn.innerHTML;
+    try {
+      btn.innerHTML = 'Downloading...';
+      btn.disabled = true;
+      
+      const url = btn.getAttribute("data-url");
+      const filename = btn.getAttribute("data-filename") || "recording.mp4";
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      
+      const blob = await response.blob();
+      const windowUrl = window.URL || window.webkitURL;
+      const downloadUrl = windowUrl.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      windowUrl.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+    } catch (err) {
+      console.error("Force download failed:", err);
+      // alert("Download failed. Please try again later.");
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+});
 
 // Initialize
 document.addEventListener('DOMContentLoaded', initializeDashboard)

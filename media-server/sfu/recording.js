@@ -52,153 +52,160 @@ export class Recorder extends EventEmitter {
   async start(producersList) {
     console.log(`[Recorder] Starting merged recording for room ${this.roomId}`);
 
-    const ports = []; // Track ports to build SDP
+    // ── Step 1: Create consumers (paused) and allocate port pairs ────────────
+    // We create plain transports first to get their mediasoup-allocated ports,
+    // but we do NOT call transport.connect() yet — that happens after FFmpeg binds.
 
-    // We need 4 transports
-    // Let's assume producersList order: [Audio1, Video1, Audio2, Video2] based on logic in server
+    const portPairs = []; // [{ rtpPort, rtcpPort }, ...]
 
     for (const p of producersList) {
       const transport = await createPlainTransport(this.router);
       this.transports.push(transport);
 
-      // Assign a random port
-      // Assign a random port within configured range
-      const minPort = parseInt(process.env.RECORDER_MIN_PORT || 50000);
-      const maxPort = parseInt(process.env.RECORDER_MAX_PORT || 59999);
-      let port = minPort + Math.floor(Math.random() * (maxPort - minPort));
-      if (port % 2 !== 0) port += 1; // ensure even RTP port
-      const rtcpPort = port + 1;
-      ports.push({ port, rtcpPort });
-
-      await transport.connect({ ip: "127.0.0.1", port, rtcpPort });
+      // Pick a dedicated port pair for this stream.
+      // Use a range separate from the WebRTC ports to avoid collisions.
+      const base = parseInt(process.env.RECORDER_MIN_PORT || 50000);
+      const range = parseInt(process.env.RECORDER_MAX_PORT || 59999) - base;
+      let rtpPort = base + Math.floor(Math.random() * (range - 1));
+      if (rtpPort % 2 !== 0) rtpPort += 1; // RTP must be even
+      const rtcpPort = rtpPort + 1;
+      portPairs.push({ rtpPort, rtcpPort });
 
       const consumer = await transport.consume({
         producerId: p.producerId,
         rtpCapabilities: getRtpCapabilities(),
-        paused: true,
+        paused: true, // stay paused until FFmpeg is ready
+        appData: p.appData || {},
       });
-
       this.consumers.push(consumer);
-      // Consumers remain paused until FFmpeg is ready
     }
 
-    // Build SDP
-    // Mappings:
-    // Stream 0: Audio 1
-    // Stream 1: Video 1
-    // Stream 2: Audio 2
-    // Stream 3: Video 2
-
-    let sdp = `v=0
-o=- 0 0 IN IP4 127.0.0.1
-s=FFmpeg
-c=IN IP4 127.0.0.1
-t=0 0
-`;
+    // ── Step 2: Build the SDP that points FFmpeg at our chosen ports ──────────
+    let sdp = `v=0\no=- 0 0 IN IP4 127.0.0.1\ns=FFmpeg\nc=IN IP4 127.0.0.1\nt=0 0\n`;
 
     for (let i = 0; i < this.consumers.length; i++) {
       const consumer = this.consumers[i];
-      const { port, rtcpPort } = ports[i];
+      const { rtpPort, rtcpPort } = portPairs[i];
       const codec = consumer.rtpParameters.codecs[0];
       const kind = consumer.kind;
 
       if (kind === "audio") {
-        sdp += `m=audio ${port} RTP/AVP ${codec.payloadType}
-a=rtpmap:${codec.payloadType} ${codec.mimeType.split("/")[1]}/${codec.clockRate}/${codec.channels}
-a=fmtp:${codec.payloadType} sprop-stereo=1
-a=rtcp:${rtcpPort}
-`;
+        sdp += `m=audio ${rtpPort} RTP/AVP ${codec.payloadType}\n`;
+        sdp += `a=rtpmap:${codec.payloadType} ${codec.mimeType.split("/")[1]}/${codec.clockRate}/${codec.channels}\n`;
+        sdp += `a=fmtp:${codec.payloadType} sprop-stereo=1\n`;
+        sdp += `a=rtcp:${rtcpPort}\n`;
       } else {
-        sdp += `m=video ${port} RTP/AVP ${codec.payloadType}
-a=rtpmap:${codec.payloadType} ${codec.mimeType.split("/")[1]}/${codec.clockRate}
-a=rtcp:${rtcpPort}
-`;
+        sdp += `m=video ${rtpPort} RTP/AVP ${codec.payloadType}\n`;
+        sdp += `a=rtpmap:${codec.payloadType} ${codec.mimeType.split("/")[1]}/${codec.clockRate}\n`;
+        sdp += `a=rtcp:${rtcpPort}\n`;
+        // Hint the resolution so FFmpeg never sees 0x0 even before the first keyframe
+        sdp += `a=imageattr:${codec.payloadType} recv [x=640,y=480]\n`;
       }
     }
 
+    // ── Step 3: Prepare FFmpeg args ───────────────────────────────────────────
     const timestamp = Date.now();
-    const filename = `${this.roomId}-${timestamp}.mp4`; // MP4 output
-    const filepath = path.join(RECORD_DIR, filename);
-    
-    // Store chunk with full path
+    // Use the custom filename provided by the frontend if available, else fallback
+    const outputFilename = this.recordingName ? `${this.recordingName}.mp4` : `${this.roomId}-${timestamp}.mp4`;
+    const filepath  = path.join(RECORD_DIR, outputFilename);
     this.recordingChunks.push(filepath);
 
-    // Append to manifest file for reliability
     if (!this.manifestPath) {
-        this.manifestPath = path.join(RECORD_DIR, `${this.roomId}-${timestamp}-manifest.txt`);
+      this.manifestPath = path.join(RECORD_DIR, `${this.roomId}-${timestamp}-manifest.txt`);
     }
     fs.appendFileSync(this.manifestPath, `file '${path.resolve(filepath)}'\n`);
 
-    // FFmpeg Filter Complex for merging
-    // [0:a][2:a]amix=inputs=2[a]
-    // [1:v][3:v]hstack[v]
+    // DYNAMIC FFMPEG LAYOUT
+    let audioInputs = [];
+    let cameraInputs = [];
+    let screenInput = null;
 
-    // Note: Map indices depend on SDP order.
-    // 0: Audio 1, 1: Video 1, 2: Audio 2, 3: Video 2
-
-    const args = [
-      "-protocol_whitelist",
-      "file,pipe,udp,rtp",
-      "-analyzeduration",
-      "100M", // 100s
-      "-probesize",
-      "100M", // 100MB
-      "-thread_queue_size",
-      "4096",
-      "-f",
-      "sdp",
-      "-i",
-      "pipe:0",
-    ];
-
-    // Dynamic Filter Complex
-    let filterComplex = "";
-
-    if (this.consumers.length === 4) {
-      // 2 Video Streams side-by-side
-      filterComplex =
-        "[0:0][0:2]amix= inputs=2[aout];[0:1]scale=640:480[v1];[0:3]scale=640:480[v2];[v1][v2]hstack[vout]";
-    } else if (this.consumers.length === 5) {
-      // Enhanced resolution for better quality (Target: 1920x720)
-      // Screen: 1280x720
-      // Cams: 640x360 each (stacked vertically = 640x720)
-      filterComplex = `
-                [0:0][0:2]amix=inputs=2[aout];
-                [0:1]scale=640:360[v1];
-                [0:3]scale=640:360[v2];
-                [0:4]scale=1280:720[scr];
-                [v1][v2]vstack[cams];
-                [scr][cams]hstack[vout]
-            `.replace(/\s+/g, "");
+    // Analyze producers to find what we have
+    for (let i = 0; i < this.consumers.length; i++) {
+      const consumer = this.consumers[i];
+      if (consumer.kind === "audio") {
+        audioInputs.push(`[0:${i}]`);
+      } else if (consumer.kind === "video") {
+        if (consumer.appData && consumer.appData.source === "screen") {
+          screenInput = `[0:${i}]`;
+        } else {
+          cameraInputs.push(`[0:${i}]`);
+        }
+      }
     }
 
-    args.push("-filter_complex", filterComplex);
-    args.push("-map", "[aout]");
-    args.push("-map", "[vout]");
+    let filterComplex = "";
+    
+    // Mix audio
+    if (audioInputs.length > 0) {
+      filterComplex += `${audioInputs.join('')}amix=inputs=${audioInputs.length}[aout];`;
+    } else {
+      // Create silent dummy audio if no audio tracks exist
+      filterComplex += `anullsrc=r=48000:cl=stereo[aout];`;
+    }
 
-    args.push(
-      "-c:v",
-      "libx264",
-      "-preset",
-      "veryfast", // Better quality/size balance than superfast
-      "-tune",
-      "zerolatency",
-      "-crf",
-      "21", // High quality (lower is better, was 24)
-      "-r",
-      "30", // Standard 30fps for smoother video
-      "-c:a",
-      "aac",
-      "-b:a",
-      "192k", // High quality audio
-      "-movflags",
-      "frag_keyframe+empty_moov",
-      "-y",
-      filepath,
-    );
+    // Base black background canvas
+    const CANVAS_W = 1280;
+    const CANVAS_H = 720;
+    filterComplex += `color=c=black:s=${CANVAS_W}x${CANVAS_H}[bg];`;
 
-    console.log(`[Recorder] Spawning FFmpeg: ${args.join(" ")}`);
+    if (screenInput) {
+      // Layout with Screen Share
+      filterComplex += `${screenInput}scale=960:720:force_original_aspect_ratio=decrease,pad=960:720:(ow-iw)/2:(oh-ih)/2[scr];`;
+      
+      if (cameraInputs.length > 0) {
+         // Scale cameras to fit right side (320px wide)
+         let camFilters = cameraInputs.map((cam, idx) => `${cam}scale=320:240:force_original_aspect_ratio=decrease,pad=320:240:(ow-iw)/2:(oh-ih)/2[c${idx}]`).join(';');
+         filterComplex += camFilters + ';';
+         
+         if (cameraInputs.length === 1) {
+             // 1 Camera vertically centered on the right
+             filterComplex += `[bg][scr]overlay=0:0[bg1];[bg1][c0]overlay=960:240[vout]`;
+         } else {
+             // 2 Cameras stacked on the right
+             filterComplex += `[bg][scr]overlay=0:0[bg1];[bg1][c0]overlay=960:120[bg2];[bg2][c1]overlay=960:360[vout]`;
+         }
+      } else {
+         // Just Screen Share, centered
+         filterComplex += `[bg][scr]overlay=160:0[vout]`;
+      }
+    } else if (cameraInputs.length > 0) {
+      // Layout with Cameras Only
+      if (cameraInputs.length === 1) {
+          filterComplex += `${cameraInputs[0]}scale=${CANVAS_W}:${CANVAS_H}:force_original_aspect_ratio=decrease,pad=${CANVAS_W}:${CANVAS_H}:(ow-iw)/2:(oh-ih)/2[vout]`;
+      } else {
+          // 2 Cameras Side by Side
+          filterComplex += `${cameraInputs[0]}scale=640:480:force_original_aspect_ratio=decrease,pad=640:480:(ow-iw)/2:(oh-ih)/2[c0];`;
+          filterComplex += `${cameraInputs[1]}scale=640:480:force_original_aspect_ratio=decrease,pad=640:480:(ow-iw)/2:(oh-ih)/2[c1];`;
+          filterComplex += `[bg][c0]overlay=0:120[bg1];[bg1][c1]overlay=640:120[vout]`;
+      }
+    } else {
+      // No video at all
+      filterComplex += `color=c=black:s=${CANVAS_W}x${CANVAS_H}[vout]`;
+    }
 
+    const args = [
+      "-protocol_whitelist", "file,pipe,udp,rtp",
+      "-analyzeduration",    "30M",
+      "-probesize",          "30M",
+      "-thread_queue_size",  "4096",
+      "-f",  "sdp",
+      "-i",  "pipe:0",
+      "-filter_complex", filterComplex,
+      "-map", "[vout]",
+      "-map", "[aout]",
+      "-c:v", "libx264", "-preset", "veryfast", "-tune", "zerolatency",
+      "-crf", "21", "-r", "30",
+      "-c:a", "aac", "-b:a", "192k",
+      "-movflags", "frag_keyframe+empty_moov",
+      "-y", filepath
+    ];
+
+    // ── Step 4: Spawn FFmpeg and write SDP ────────────────────────────────────
+    // FFmpeg binds to the UDP ports in the SDP as soon as it starts probing.
+    // We must wait for that bind to complete BEFORE connecting mediasoup
+    // transports (which start pushing RTP immediately on connect).
+    console.log(`[Recorder] Process command: ffmpeg ${args.join(" ")}`);
     this.process = child_process.spawn(ffmpegPath, args);
 
     this.process.stdin.write(sdp);
@@ -207,27 +214,44 @@ a=rtcp:${rtcpPort}
     this.process.stderr.on("data", (data) => {
       console.log("[FFmpeg Log]", data.toString());
     });
-
     this.process.on("close", (code) => {
       console.log(`[Recorder] FFmpeg exited with code ${code}`);
       this.emit("stop");
     });
 
-    // Wait for FFmpeg to initialize and bind ports
-    // Increased to 1500ms to allow FFmpeg to be ready to receive packets
-    console.log("[Recorder] Waiting for FFmpeg to initialize...");
+    // Give FFmpeg time to open its UDP sockets before we start pushing RTP.
+    // 1500 ms is generous but safe — FFmpeg bind is near-instant in practice.
+    console.log("[Recorder] Waiting for FFmpeg to bind UDP ports...");
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Resume consumers and request keyframes
-    console.log("[Recorder] Resuming consumers and requesting keyframes...");
+    // ── Step 5: Connect transports → FFmpeg's ports, then resume ─────────────
+    // Now that FFmpeg is listening, connect each transport so mediasoup knows
+    // where to forward RTP.  With comedia=false this starts pushing immediately.
+    console.log("[Recorder] Connecting transports to FFmpeg ports and resuming consumers...");
+    for (let i = 0; i < this.transports.length; i++) {
+      const { rtpPort, rtcpPort } = portPairs[i];
+      await this.transports[i].connect({ ip: "127.0.0.1", port: rtpPort, rtcpPort });
+    }
+
+    // Resume consumers and request keyframes — RTP will flow right away.
     for (const consumer of this.consumers) {
       await consumer.resume();
       if (consumer.kind === "video") {
         await consumer.requestKeyFrame();
-        // Repeat keyframe request to ensure I-frame arrival
-        setTimeout(() => consumer.requestKeyFrame().catch(() => {}), 1000);
       }
     }
+
+    // One more keyframe burst 800 ms later to make sure the I-frame
+    // lands inside FFmpeg's probe window.
+    setTimeout(async () => {
+      for (const consumer of this.consumers) {
+        if (consumer.kind === "video") {
+          consumer.requestKeyFrame().catch(() => {});
+        }
+      }
+    }, 800);
+
+    console.log("[Recorder] Recording pipeline active.");
   }
 
   async stop() {
@@ -267,54 +291,73 @@ a=rtcp:${rtcpPort}
 
   async saveRecording(customFilename) {
     const outputName = customFilename || `${this.roomId}.mp4`;
-    const finalOutputPath = path.join(RECORD_DIR, outputName);
-    const MIN_VALID_BYTES = 10 * 1024; // Accept shorter recordings too
+    let finalOutputPath = path.join(RECORD_DIR, outputName);
+    
+    // Ensure final filename ends with .mp4
+    if (!finalOutputPath.endsWith('.mp4')) {
+        finalOutputPath += '.mp4';
+    }
 
     try {
-        const candidates = [];
+        const validChunks = [];
         for (const p of this.recordingChunks) {
             if (fs.existsSync(p)) {
                 const size = fs.statSync(p).size;
-                if (size > 0) candidates.push({ path: p, size });
+                if (size > 0) validChunks.push(p);
             }
         }
 
-        if (candidates.length === 0) {
-            const files = fs.readdirSync(RECORD_DIR)
-                .filter(f => f.startsWith(`${this.roomId}-`) && f.endsWith(".mp4"))
-                .map(f => {
-                    const p = path.join(RECORD_DIR, f);
-                    const size = fs.statSync(p).size;
-                    return { path: p, size };
-                })
-                .filter(f => f.size > 0);
-            candidates.push(...files);
-        }
-
-        if (candidates.length === 0) {
-            console.log("[Recorder] No chunk files found to save.");
+        if (validChunks.length === 0) {
+            console.log("[Recorder] No valid chunk files found to merge/save.");
             return;
         }
 
-        candidates.sort((a, b) => b.size - a.size);
-        const best = candidates[0];
-        if (best.size < MIN_VALID_BYTES) {
-            console.warn(`[Recorder] Largest chunk too small (${best.size} bytes). Saving anyway.`);
+        if (validChunks.length === 1 || !this.manifestPath || !fs.existsSync(this.manifestPath)) {
+            // Only one chunk, just copy/rename it
+            console.log(`[Recorder] Only 1 chunk found. Saving directly to: ${finalOutputPath}`);
+            if (path.resolve(validChunks[0]) !== path.resolve(finalOutputPath)) {
+                fs.copyFileSync(validChunks[0], finalOutputPath);
+            }
+        } else {
+            // Multiple chunks, we must merge them using the FFmpeg concat demuxer
+            console.log(`[Recorder] Merging ${validChunks.length} chunks into: ${finalOutputPath}`);
+            
+            await new Promise((resolve, reject) => {
+                const args = [
+                    "-y",
+                    "-f", "concat",
+                    "-safe", "0",
+                    "-i", this.manifestPath,
+                    "-c", "copy", // Copy streams without re-encoding
+                    finalOutputPath
+                ];
+
+                const mergeProcess = child_process.spawn(ffmpegPath, args);
+
+                mergeProcess.stderr.on("data", (data) => {
+                    console.log("[Concat Log]", data.toString());
+                });
+
+                mergeProcess.on("close", (code) => {
+                    if (code === 0) {
+                        console.log(`[Recorder] Successfully merged recordings into ${finalOutputPath}`);
+                        resolve();
+                    } else {
+                        console.error(`[Recorder] FFmpeg merge failed with code ${code}`);
+                        reject(new Error(`Merge failed with code ${code}`));
+                    }
+                });
+            });
         }
 
-        if (path.resolve(best.path) !== path.resolve(finalOutputPath)) {
-            fs.copyFileSync(best.path, finalOutputPath);
-        }
-        console.log(`[Recorder] Saved recording from chunk: ${finalOutputPath}`);
-
-        // Cleanup chunks
-        console.log("[Recorder] Cleaning up chunks...");
+        // Cleanup chunks and manifest
+        console.log("[Recorder] Cleaning up chunk files and manifest...");
         if (this.manifestPath && fs.existsSync(this.manifestPath)) {
             try { fs.unlinkSync(this.manifestPath); } catch(e) {}
         }
-        for (const c of candidates) {
-            if (path.resolve(c.path) !== path.resolve(finalOutputPath)) {
-                try { fs.unlinkSync(c.path); } catch(e) {}
+        for (const chunkPath of validChunks) {
+            if (path.resolve(chunkPath) !== path.resolve(finalOutputPath)) {
+                try { fs.unlinkSync(chunkPath); } catch(e) {}
             }
         }
         

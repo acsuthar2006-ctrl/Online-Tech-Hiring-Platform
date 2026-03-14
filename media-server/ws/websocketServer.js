@@ -267,10 +267,12 @@ async function initWebSocket(server) {
                   producersList.push({
                     producerId: s.producers.audio,
                     kind: "audio",
+                    appData: { source: "mic" }
                   });
                   producersList.push({
                     producerId: s.producers.video,
                     kind: "video",
+                    appData: { source: "camera" }
                   });
                 });
 
@@ -282,6 +284,7 @@ async function initWebSocket(server) {
                   producersList.push({
                     producerId: screenSharer.producers.screen,
                     kind: "video",
+                    appData: { source: "screen" }
                   });
                 }
 
@@ -292,13 +295,10 @@ async function initWebSocket(server) {
                     console.log(
                       `[Recorder] Restarting recording for room ${socket.channel} (Streams: ${recorder.consumers.length} -> ${producersList.length})`,
                     );
-                    recorder.stop();
-                    setTimeout(() => {
-                      if (recorders.has(socket.channel))
-                        recorder
-                          .start(producersList)
-                          .catch((e) => console.error(e));
-                    }, 500);
+                    await recorder.stop();
+                    if (recorders.has(socket.channel)) {
+                      recorder.start(producersList).catch((e) => console.error(e));
+                    }
                   }
                 } else if (recorder.consumers.length === 0) {
                   recorder.start(producersList).catch((e) => console.error(e));
@@ -360,10 +360,12 @@ async function initWebSocket(server) {
                 producersList.push({
                   producerId: s.producers.audio,
                   kind: "audio",
+                  appData: { source: "mic" }
                 });
                 producersList.push({
                   producerId: s.producers.video,
                   kind: "video",
+                  appData: { source: "camera" }
                 });
               });
               const screenSharer = roomSockets.find(
@@ -373,6 +375,7 @@ async function initWebSocket(server) {
                 producersList.push({
                   producerId: screenSharer.producers.screen,
                   kind: "video",
+                  appData: { source: "screen" }
                 });
               }
 
@@ -382,11 +385,10 @@ async function initWebSocket(server) {
                 recorder.consumers.length !== producersList.length
               ) {
                 console.log(`[Recorder] Restarting recording (Stream removed)`);
-                recorder.stop();
-                setTimeout(() => {
-                  if (recorders.has(socket.channel))
-                    recorder.start(producersList).catch((e) => console.error(e));
-                }, 500);
+                await recorder.stop();
+                if (recorders.has(socket.channel)) {
+                  recorder.start(producersList).catch((e) => console.error(e));
+                }
               }
             }
           }

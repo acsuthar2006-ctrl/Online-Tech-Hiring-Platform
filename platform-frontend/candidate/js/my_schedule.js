@@ -215,7 +215,12 @@ function renderInterviewList(interviews) {
               <div class="interview-actions">
                 ${isJoinable ? `<button class="btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join Interview</button>` : ''}
                 ${interview.status === 'COMPLETED' && interview.recordings && interview.recordings.length > 0
-        ? `<a href="${api.getLobbyUrl(interview.meetingLink || String(interview.id))}" class="btn btn-primary btn-sm" style="margin-left: 5px;">Download Recording</a>`
+        ? interview.recordings.map(rec => {
+            const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+            const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
+            return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}" title="Download Recording">⬇ Download Recording</button>
+                    <a href="${fileUrl}" class="btn btn-primary btn-sm" style="margin-left: 5px;" target="_blank" title="Play Recording">▶ Play</a>`;
+          }).join('')
         : ''}
               </div>
             </div>
@@ -246,3 +251,41 @@ if (notificationBtn) {
     alert("No new notifications");
   });
 }
+
+// Global click handler for forcing downloads
+document.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("force-download-btn")) {
+    e.preventDefault();
+    const btn = e.target;
+    const originalText = btn.innerText;
+    
+    try {
+      btn.innerText = "Downloading...";
+      const url = btn.getAttribute("data-url");
+      const filename = btn.getAttribute("data-filename") || "recording.mp4";
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      
+      const blob = await response.blob();
+      const windowUrl = window.URL || window.webkitURL;
+      const downloadUrl = windowUrl.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      windowUrl.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+    } catch (err) {
+      console.error("Force download failed:", err);
+      alert("Download failed. Please try again later.");
+    } finally {
+      btn.innerText = originalText;
+    }
+  }
+});
