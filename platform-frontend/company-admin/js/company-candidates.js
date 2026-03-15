@@ -3,6 +3,7 @@ import { api } from '../../common/api.js';
 const companyId = sessionStorage.getItem('companyId');
 let allCandidates = [];
 let allPositionTitles = new Set();
+let currentStatusFilter = 'all';
 
 // ===== SET ADMIN NAME =====
 function setAdminName() {
@@ -188,19 +189,27 @@ window.viewCandidateDetails = async function (candidateId, candidateName) {
 };
 
 // ===== FILTER =====
+window.filterCandidates = function (status) {
+  currentStatusFilter = status;
+  
+  // Update UI
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('onclick')?.includes(`'${status}'`)) {
+      btn.classList.add('active');
+    }
+  });
+
+  applyFilters();
+};
+
 function applyFilters() {
-  const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
-  const posFilter = document.getElementById('positionFilter')?.value || 'all';
-  const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+  const statusFilter = currentStatusFilter;
 
   let filtered = allCandidates.filter(c => {
-    const matchSearch = !searchVal ||
-      (c.fullName || '').toLowerCase().includes(searchVal) ||
-      (c.email || '').toLowerCase().includes(searchVal) ||
-      (c.positionTitle || '').toLowerCase().includes(searchVal);
-    const matchPos = posFilter === 'all' || (c.positionTitle || '') === posFilter;
-    const matchStatus = statusFilter === 'all' || c.status === statusFilter;
-    return matchSearch && matchPos && matchStatus;
+    const matchStatus = statusFilter === 'all' || c.status === statusFilter || 
+                        (statusFilter === 'ACCEPTED' && (c.status === 'OFFERED' || c.status === 'SHORTLISTED'));
+    return matchStatus;
   });
   renderTable(filtered);
 }
@@ -243,16 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const tbody = document.querySelector('.candidates-table tbody');
   if (tbody) tbody.id = 'candidatesTableBody';
 
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', applyFilters);
-  }
-
-  const posFilter = document.getElementById('positionFilter');
-  if (posFilter) posFilter.addEventListener('change', applyFilters);
-
-  const statusFilter = document.getElementById('statusFilter');
-  if (statusFilter) statusFilter.addEventListener('change', applyFilters);
 
   loadCandidates();
   setAdminName();
@@ -266,4 +265,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-

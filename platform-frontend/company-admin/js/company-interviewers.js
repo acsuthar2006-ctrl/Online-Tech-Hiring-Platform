@@ -2,6 +2,7 @@ import { api } from '../../common/api.js';
 
 const companyId = sessionStorage.getItem('companyId');
 let allInterviewers = [];
+let currentStatusFilter = 'all';
 
 // ===== SET ADMIN NAME =====
 function setAdminName() {
@@ -61,7 +62,7 @@ function renderInterviewers(interviewers) {
         ? `<button class="btn-primary btn-sm btn-full" onclick="approveInterviewer(${iv.applicationId})">Approve</button>
              <button class="btn-outline btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="rejectInterviewer(${iv.applicationId})">Reject</button>`
         : iv.applicationStatus === 'APPROVED'
-          ? `<button class="btn-outline btn-sm btn-full" onclick="rejectInterviewer(${iv.applicationId})">Remove</button>`
+          ? `<button class="btn-outline btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="rejectInterviewer(${iv.applicationId})">Remove</button>`
           : `<button class="btn-primary btn-sm btn-full" onclick="approveInterviewer(${iv.applicationId})">Re-approve</button>`)
       : `<button class="btn-outline btn-sm btn-full">Not Applied</button>`;
 
@@ -155,20 +156,29 @@ window.rejectInterviewer = async function (applicationId) {
 };
 
 // ===== FILTER =====
+window.filterInterviewers = function (status) {
+  currentStatusFilter = status;
+  
+  // Update UI
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('onclick')?.includes(`'${status}'`)) {
+      btn.classList.add('active');
+    }
+  });
+
+  applyFilters();
+};
+
 function applyFilters() {
-  const searchVal = (document.getElementById('interviewerSearch')?.value || '').toLowerCase();
-  const statusFilter = document.getElementById('interviewerStatusFilter')?.value || 'all';
+  const statusFilter = currentStatusFilter;
 
   let filtered = allInterviewers.filter(iv => {
-    const matchSearch = !searchVal ||
-      (iv.fullName || '').toLowerCase().includes(searchVal) ||
-      (iv.email || '').toLowerCase().includes(searchVal) ||
-      (iv.expertises || []).some(e => e.toLowerCase().includes(searchVal));
     const matchStatus = statusFilter === 'all' ||
       (statusFilter === 'APPROVED' && iv.applicationStatus === 'APPROVED') ||
       (statusFilter === 'APPLIED' && iv.applicationStatus === 'APPLIED') ||
-      (statusFilter === 'NOT_APPLIED' && !iv.appliedToCompany);
-    return matchSearch && matchStatus;
+      (statusFilter === 'REJECTED' && iv.applicationStatus === 'REJECTED');
+    return matchStatus;
   });
   renderInterviewers(filtered);
 }
@@ -194,23 +204,6 @@ async function loadInterviewers() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const searchInput = document.querySelector('.search-bar input');
-  if (searchInput) {
-    searchInput.id = 'interviewerSearch';
-    searchInput.addEventListener('input', applyFilters);
-  }
-
-  const statusSelect = document.querySelectorAll('.search-bar select')[1];
-  if (statusSelect) {
-    statusSelect.id = 'interviewerStatusFilter';
-    statusSelect.innerHTML = `
-      <option value="all">All Status</option>
-      <option value="APPROVED">Hired</option>
-      <option value="APPLIED">Pending Approval</option>
-      <option value="NOT_APPLIED">Not Applied</option>
-    `;
-    statusSelect.addEventListener('change', applyFilters);
-  }
 
   const detailsClose = document.getElementById('interviewerDetailsClose');
   if (detailsClose) detailsClose.addEventListener('click', closeInterviewerDetails);

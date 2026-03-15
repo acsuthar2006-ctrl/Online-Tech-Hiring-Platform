@@ -169,11 +169,8 @@ if (downloadBtn) {
                     </span>
                 </div>
                 <div class="recording-actions">
-                    <a href="${fileUrl}" class="action-btn" target="_blank" title="Play Video">
-                        <i class="fas fa-play"></i>
-                    </a>
-                    <button class="action-btn download-action force-download-btn" data-url="${fileUrl}" data-filename="${rec.filename}" title="Download">
-                        <i class="fas fa-download"></i>
+                    <button class="action-btn download-action force-download-btn" data-url="${fileUrl}" data-filename="${rec.filename}" title="Download Recording">
+                        Download Recording
                     </button>
                     <button class="action-btn delete-action" onclick="deleteRecording('${rec.filename}')" title="Delete (Interviewer Only)">
                         <i class="fas fa-trash"></i>

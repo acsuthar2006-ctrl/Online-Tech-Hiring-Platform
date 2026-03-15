@@ -119,14 +119,12 @@ function renderSchedule(interviews) {
       ? iv.recordings.map(rec => {
           const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
           const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-          return `<button class="btn-outline btn-sm force-download-btn" data-url="${fileUrl}" data-filename="${rec.filename}">Download</button>
-                  <a href="${fileUrl}" class="btn-outline btn-sm" target="_blank" style="text-decoration: none;">Play</a>`;
+          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
         }).join('')
       : '';
 
     const actionBtns = iv.status === 'COMPLETED'
-      ? `<button class="btn-outline btn-sm">View Feedback</button>
-         ${recordingBtn}`
+      ? `${recordingBtn}`
       : iv.status === 'SCHEDULED'
         ? ``
         : iv.status === 'CANCELLED'

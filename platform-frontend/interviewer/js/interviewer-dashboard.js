@@ -14,6 +14,7 @@ import { initNotifications } from '../../common/notifications.js';
 let interviewerProfile = null
 let scheduledInterviews = []
 let approvedCompanies = []
+let allPositionsMap = {}
 
 
 // Initialize dashboard on page load
@@ -39,12 +40,23 @@ async function initializeDashboard() {
     scheduledInterviews = await api.getUpcomingInterviewsForInterviewer(interviewerProfile.email)
     console.log('Scheduled interviews loaded:', scheduledInterviews)
 
-    // Load approved companies
+    // Load approved companies and all positions
     try {
-      approvedCompanies = await api.getApprovedCompanies(interviewerProfile.id)
-      console.log('Approved Companies loaded:', approvedCompanies)
+      const [companiesArr, allPos] = await Promise.all([
+        api.getApprovedCompanies(interviewerProfile.id),
+        api.getAllPositions()
+      ]);
+      approvedCompanies = companiesArr;
+      
+      // Create a map for quick status lookup
+      allPositionsMap = {};
+      (allPos || []).forEach(p => {
+        allPositionsMap[p.id] = p.status;
+      });
+      
+      console.log('Approved Companies loaded:', approvedCompanies);
     } catch (e) {
-      console.warn('Failed to load approved companies:', e)
+      console.warn('Failed to load approved companies or positions:', e)
       approvedCompanies = []
     }
 
@@ -194,11 +206,21 @@ function renderApprovedCompanyList(companies) {
   return companies.map(company => {
     let positionsHtml = '';
     if (company.positions && company.positions.length > 0) {
-      positionsHtml = company.positions.map(p =>
-        `<button class="btn btn-outline btn-sm" style="margin-right: 8px; margin-top: 8px;" onclick="viewCandidates(${company.companyId}, ${p.positionId}, '${p.positionTitle.replace(/'/g, "\\'")}', '${company.companyName.replace(/'/g, "\\'")}')">
-                ${p.positionTitle} (View Candidates)
-            </button>`
-      ).join('');
+      // Use the global positions map for the most accurate status
+      const openPositions = company.positions.filter(p => {
+        const liveStatus = allPositionsMap[p.positionId];
+        return liveStatus === 'OPEN';
+      });
+
+      if (openPositions.length > 0) {
+        positionsHtml = openPositions.map(p =>
+          `<button class="btn btn-outline btn-sm" style="margin-right: 8px; margin-top: 8px;" onclick="viewCandidates(${company.companyId}, ${p.positionId}, '${p.positionTitle.replace(/'/g, "\\'")}', '${company.companyName.replace(/'/g, "\\'")}')">
+                  ${p.positionTitle} (View Candidates)
+              </button>`
+        ).join('');
+      } else {
+        positionsHtml = `<p class="text-muted" style="font-size: 12px;">No open positions at the moment.</p>`;
+      }
     } else {
       positionsHtml = `<p class="text-muted" style="font-size: 12px;">No open positions.</p>`;
     }
@@ -409,8 +431,7 @@ function createActionButtons(interview) {
       buttons += interview.recordings.map(rec => {
           const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
           const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-          return `<button class="btn btn-secondary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download</button>
-                  <a href="${fileUrl}" class="btn btn-secondary btn-sm" style="margin-left: 5px; text-decoration: none;" target="_blank">Play</a>`;
+          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
       }).join('');
     }
     return buttons;

@@ -38,7 +38,7 @@ public class InterviewService {
   private final EmailService emailService;
   private final CompanyRepository companyRepository;
   private final PositionRepository positionRepository;
-  
+
   // Track candidate lobby presence (interviewId -> lastPingTime)
   private final Map<Long, LocalDateTime> candidatePresence = new ConcurrentHashMap<>();
 
@@ -52,7 +52,7 @@ public class InterviewService {
       Integer durationMinutes, com.techhiring.platform.entity.InterviewType type,
       Long companyId, Long positionId) {
     Interviewer interviewer;
-    
+
     // Try to find by email first, if that fails, try to parse as ID
     if (interviewerEmail != null && interviewerEmail.contains("@")) {
       interviewer = (Interviewer) userRepository.findByEmail(interviewerEmail)
@@ -72,7 +72,8 @@ public class InterviewService {
     Candidate candidate = (Candidate) userRepository.findByEmail(candidateEmail).orElse(null);
     if (candidate == null) {
       String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-      // Use the 3-arg constructor which correctly sets User fields (fullName, email, password)
+      // Use the 3-arg constructor which correctly sets User fields (fullName, email,
+      // password)
       candidate = new Candidate(candidateName, candidateEmail, passwordEncoder.encode(tempPassword));
       candidateRepository.save(candidate);
       // TODO: Email the candidate their temp credentials? For now, we just schedule.
@@ -85,7 +86,7 @@ public class InterviewService {
     List<Interview> existing = interviewRepository.findByInterviewerId(interviewer.getId());
     java.time.LocalDate schedDate = scheduledTime.toLocalDate();
     java.time.LocalTime schedTime = scheduledTime.toLocalTime();
-    
+
     for (Interview i : existing) {
       if (i.getScheduledDate() != null && i.getScheduledDate().isEqual(schedDate)) {
         // Check if times are within 4 hours
@@ -184,7 +185,7 @@ public class InterviewService {
 
     // Calculate rolling expected time
     LocalDateTime rollingExpectedFinishTime = LocalDateTime.now();
-    
+
     if (current != null && current.getActualStartTime() != null) {
       int duration = current.getDurationMinutes() != null ? current.getDurationMinutes() : 30;
       LocalDateTime expectedCurrentFinish = current.getActualStartTime().plusMinutes(duration);
@@ -213,13 +214,14 @@ public class InterviewService {
 
       // If scheduled, calculate expectedStartTime
       if (i.getStatus() == Interview.InterviewStatus.SCHEDULED) {
-         LocalDateTime schLocal = LocalDateTime.of(i.getScheduledDate(), i.getScheduledTime());
-         // Expected start is the maximum of scheduled time or the rolling finish time
-         LocalDateTime expectedStart = schLocal.isAfter(rollingExpectedFinishTime) ? schLocal : rollingExpectedFinishTime;
-         map.put("expectedStartTime", expectedStart);
-         // Advance the rolling finish time for the next candidate in line
-         int dur = i.getDurationMinutes() != null ? i.getDurationMinutes() : 30;
-         rollingExpectedFinishTime = expectedStart.plusMinutes(dur);
+        LocalDateTime schLocal = LocalDateTime.of(i.getScheduledDate(), i.getScheduledTime());
+        // Expected start is the maximum of scheduled time or the rolling finish time
+        LocalDateTime expectedStart = schLocal.isAfter(rollingExpectedFinishTime) ? schLocal
+            : rollingExpectedFinishTime;
+        map.put("expectedStartTime", expectedStart);
+        // Advance the rolling finish time for the next candidate in line
+        int dur = i.getDurationMinutes() != null ? i.getDurationMinutes() : 30;
+        rollingExpectedFinishTime = expectedStart.plusMinutes(dur);
       }
 
       // Determine inLobby status (pinged within last 30 seconds)
@@ -324,34 +326,34 @@ public class InterviewService {
     Interview interview = interviewRepository.findById(interviewId)
         .orElseThrow(() -> new RuntimeException("Interview not found"));
     try {
-        Interview.CandidateOutcome outcome = Interview.CandidateOutcome.valueOf(outcomeStr.toUpperCase());
-        interview.setCandidateOutcome(outcome);
-        Interview saved = interviewRepository.save(interview);
+      Interview.CandidateOutcome outcome = Interview.CandidateOutcome.valueOf(outcomeStr.toUpperCase());
+      interview.setCandidateOutcome(outcome);
+      Interview saved = interviewRepository.save(interview);
 
-        // Update related application status if present
-        if (interview.getCandidate() != null && interview.getPosition() != null) {
-          Long candidateId = interview.getCandidate().getId();
-          Long positionId = interview.getPosition().getId();
-          List<Application> apps = applicationRepository.findByCandidateIdAndPositionId(candidateId, positionId);
-          if (!apps.isEmpty()) {
-            String newStatus = null;
-            if (outcome == Interview.CandidateOutcome.ACCEPTED) {
-              newStatus = "SHORTLISTED";
-            } else if (outcome == Interview.CandidateOutcome.REJECTED) {
-              newStatus = "REJECTED";
+      // Update related application status if present
+      if (interview.getCandidate() != null && interview.getPosition() != null) {
+        Long candidateId = interview.getCandidate().getId();
+        Long positionId = interview.getPosition().getId();
+        List<Application> apps = applicationRepository.findByCandidateIdAndPositionId(candidateId, positionId);
+        if (!apps.isEmpty()) {
+          String newStatus = null;
+          if (outcome == Interview.CandidateOutcome.ACCEPTED) {
+            newStatus = "SHORTLISTED";
+          } else if (outcome == Interview.CandidateOutcome.REJECTED) {
+            newStatus = "REJECTED";
+          }
+          if (newStatus != null) {
+            for (Application app : apps) {
+              app.setStatus(newStatus);
             }
-            if (newStatus != null) {
-              for (Application app : apps) {
-                app.setStatus(newStatus);
-              }
-              applicationRepository.saveAll(apps);
-            }
+            applicationRepository.saveAll(apps);
           }
         }
+      }
 
-        return saved;
+      return saved;
     } catch (IllegalArgumentException e) {
-        throw new RuntimeException("Invalid outcome status. Must be PENDING, ACCEPTED, or REJECTED.");
+      throw new RuntimeException("Invalid outcome status. Must be PENDING, ACCEPTED, or REJECTED.");
     }
   }
 }

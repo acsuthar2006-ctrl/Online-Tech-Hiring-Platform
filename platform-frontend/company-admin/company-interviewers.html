@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -44,25 +44,15 @@
       </div>
     </div>
 
-    <!-- Search and Filter -->
-    <div class="card" style="margin-bottom: 24px;">
-      <div class="search-bar">
-        <input type="text" class="form-input" placeholder="Search interviewers by name or expertise...">
-        <select class="form-input" style="flex: 0.5;">
-          <option>All Expertise</option>
-          <option>Backend</option>
-          <option>Frontend</option>
-          <option>Full Stack</option>
-          <option>Data Science</option>
-        </select>
-        <select class="form-input" style="flex: 0.5;">
-          <option>All Status</option>
-          <option>Active</option>
-          <option>Inactive</option>
-          <option>On Leave</option>
-        </select>
-      </div>
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <button class="filter-btn active" onclick="filterInterviewers('all')">All Interviewers</button>
+      <button class="filter-btn" onclick="filterInterviewers('APPLIED')">Applied</button>
+      <button class="filter-btn" onclick="filterInterviewers('REJECTED')">Rejected</button>
+      <button class="filter-btn" onclick="filterInterviewers('APPROVED')">Accepted</button>
     </div>
+
+
 
     <!-- Interviewers Grid -->
     <div class="interviewers-grid">

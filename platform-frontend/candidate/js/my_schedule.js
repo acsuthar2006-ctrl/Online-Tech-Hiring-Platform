@@ -218,8 +218,7 @@ function renderInterviewList(interviews) {
         ? interview.recordings.map(rec => {
             const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
             const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-            return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}" title="Download Recording">⬇ Download Recording</button>
-                    <a href="${fileUrl}" class="btn btn-primary btn-sm" style="margin-left: 5px;" target="_blank" title="Play Recording">▶ Play</a>`;
+            return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
           }).join('')
         : ''}
               </div>

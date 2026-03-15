@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -44,23 +44,15 @@
       </div>
     </div>
 
-    <!-- Search and Filter -->
-    <div class="card" style="margin-bottom: 24px;">
-      <div class="search-bar">
-        <input type="text" id="searchInput" class="form-input" placeholder="Search candidates by name, email, or position...">
-        <select id="positionFilter" class="form-input" style="flex: 0.5;">
-          <option value="all">All Positions</option>
-        </select>
-        <select id="statusFilter" class="form-input" style="flex: 0.5;">
-          <option value="all">All Status</option>
-          <option value="APPLIED">Applied</option>
-          <option value="INTERVIEW_SCHEDULED">Interview Scheduled</option>
-          <option value="SHORTLISTED">Shortlisted</option>
-          <option value="REJECTED">Rejected</option>
-          <option value="OFFERED">Offered</option>
-        </select>
-      </div>
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <button class="filter-btn active" onclick="filterCandidates('all')">All Candidates</button>
+      <button class="filter-btn" onclick="filterCandidates('APPLIED')">Applied</button>
+      <button class="filter-btn" onclick="filterCandidates('REJECTED')">Rejected</button>
+      <button class="filter-btn" onclick="filterCandidates('ACCEPTED', 'OFFERED')">Accepted</button>
     </div>
+
+
 
     <!-- Candidates Table -->
     <div class="card">

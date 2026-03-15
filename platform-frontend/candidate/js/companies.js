@@ -56,7 +56,7 @@ async function initializeCompanies() {
 
         // Map positions to companies
         const companyPositions = {};
-        positions.forEach(pos => {
+        positions.filter(p => p.status === 'OPEN').forEach(pos => {
             const companyId = pos.company.id;
             if (!companyPositions[companyId]) {
                 companyPositions[companyId] = [];

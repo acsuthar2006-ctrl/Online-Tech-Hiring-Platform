@@ -24,6 +24,26 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function loadDismissedIds() {
+  try {
+    const raw = localStorage.getItem('thp_dismissed_notifications');
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch (e) {
+    console.warn('Failed to load dismissed notifications', e);
+    return new Set();
+  }
+}
+
+function saveDismissedIds(set) {
+  try {
+    localStorage.setItem('thp_dismissed_notifications', JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.warn('Failed to persist dismissed notifications', e);
+  }
+}
+
 function ensurePanel(notificationBtn) {
   let panel = document.getElementById('notificationPanel');
   if (panel) return panel;
@@ -61,7 +81,7 @@ function ensurePanel(notificationBtn) {
   return panel;
 }
 
-function renderPanel(panel, items) {
+function renderPanel(panel, items, onItemClick) {
   if (!panel) return;
 
   if (!items || items.length === 0) {
@@ -76,7 +96,7 @@ function renderPanel(panel, items) {
     <div class="notification-title">Notifications</div>
     <div class="notification-items">
       ${items.map((it) => `
-        <button class="notification-item" data-action-url="${escapeHtml(it.actionUrl || '')}">
+        <button class="notification-item" data-id="${escapeHtml(it.id || '')}" data-action-url="${escapeHtml(it.actionUrl || '')}">
           <div class="notification-item-title">${escapeHtml(it.title || '')}</div>
           <div class="notification-item-message">${escapeHtml(it.message || '')}</div>
         </button>
@@ -86,7 +106,11 @@ function renderPanel(panel, items) {
 
   panel.querySelectorAll('button.notification-item').forEach((btn) => {
     btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
       const url = btn.getAttribute('data-action-url');
+      if (typeof onItemClick === 'function' && id) {
+        onItemClick(id);
+      }
       if (url) window.location.href = url;
     });
   });
@@ -112,7 +136,12 @@ export async function initNotifications() {
     return;
   }
 
-  const count = data?.count ?? (data?.items?.length ?? 0);
+  const allItems = data?.items || [];
+
+  const dismissedIds = loadDismissedIds();
+  let visibleItems = allItems.filter((it) => it && it.id && !dismissedIds.has(it.id));
+
+  const count = visibleItems.length;
   if (badge) {
     badge.textContent = String(count);
     if (count > 0) show(badge);
@@ -120,7 +149,28 @@ export async function initNotifications() {
   }
 
   const panel = ensurePanel(notificationBtn);
-  renderPanel(panel, data?.items || []);
+
+  const onItemClick = (id) => {
+    dismissedIds.add(id);
+    saveDismissedIds(dismissedIds);
+    visibleItems = visibleItems.filter((it) => it.id !== id);
+
+    const newCount = visibleItems.length;
+    if (badge) {
+      badge.textContent = String(newCount);
+      if (newCount > 0) show(badge);
+      else hide(badge);
+    }
+
+    renderPanel(panel, visibleItems, onItemClick);
+  };
+
+  // Single profile notification should still respect profile URL
+  if (allItems.length === 1 && allItems[0]?.type === 'PROFILE_INCOMPLETE' && (!allItems[0].actionUrl || allItems[0].actionUrl === '/')) {
+    allItems[0].actionUrl = profileUrl;
+  }
+
+  renderPanel(panel, visibleItems, onItemClick);
 
   // Toggle panel on bell click.
   notificationBtn.addEventListener('click', (e) => {
@@ -129,12 +179,5 @@ export async function initNotifications() {
     if (!panel) return;
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   });
-
-  // If the only notification is profile completion, clicking the bell should still let the user act quickly.
-  // We keep the panel behavior, but ensure the actionUrl points at the right profile page.
-  const items = data?.items || [];
-  if (items.length === 1 && items[0]?.type === 'PROFILE_INCOMPLETE' && (!items[0].actionUrl || items[0].actionUrl === '/')) {
-    items[0].actionUrl = profileUrl;
-  }
 }
 

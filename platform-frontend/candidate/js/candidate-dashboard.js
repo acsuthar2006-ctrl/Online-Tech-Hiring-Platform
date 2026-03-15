@@ -251,8 +251,7 @@ function createInterviewItem(interview, type) {
       actionBtn = interview.recordings.map(rec => {
           const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
           const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left:5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download</button>
-                  <a href="${fileUrl}" class="btn btn-secondary btn-sm" style="margin-left:5px; text-decoration:none;" target="_blank">Play</a>`;
+          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left:5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
       }).join('');
   } else {
       actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;
