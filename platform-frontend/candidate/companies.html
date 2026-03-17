@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -44,28 +44,19 @@
 
         <!-- Search and Filters -->
         <div class="search-section">
-            <div class="search-bar">
-                <input type="text" placeholder="Search companies or positions..." id="searchInput">
+            <div class="search-row">
+                <div class="search-bar" style="margin-bottom:0;">
+                    <input type="text" placeholder="Search companies or positions..." id="searchInput">
+                </div>
+                <select class="filter-select" id="postFilter" style="flex: 0 1 320px;">
+                    <option value="all">All Posts</option>
+                </select>
             </div>
-            <div class="filters">
-                <select class="filter-select">
-                    <option>All Industries</option>
-                    <option>Technology</option>
-                    <option>Finance</option>
-                    <option>Healthcare</option>
-                </select>
-                <select class="filter-select">
-                    <option>All Locations</option>
-                    <option>San Francisco</option>
-                    <option>New York</option>
-                    <option>Remote</option>
-                </select>
-                <select class="filter-select">
-                    <option>All Experience Levels</option>
-                    <option>Entry Level</option>
-                    <option>Mid Level</option>
-                    <option>Senior Level</option>
-                </select>
+            <div class="status-filters" id="statusFilters">
+                <button class="status-filter-btn active" type="button" data-status="all">All</button>
+                <button class="status-filter-btn" type="button" data-status="applied">Applied</button>
+                <button class="status-filter-btn" type="button" data-status="accepted">Accepted</button>
+                <button class="status-filter-btn" type="button" data-status="rejected">Rejected</button>
             </div>
         </div>
 

@@ -5,6 +5,23 @@
   margin-bottom: 32px;
 }
 
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-row .search-bar {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.search-row #postFilter {
+  min-width: 260px;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -33,6 +50,36 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.status-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.status-filter-btn {
+  padding: 10px 18px;
+  border: 1px solid var(--blue-400);
+  background: var(--white);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue-700);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-filter-btn:hover {
+  background: var(--blue-50);
+  border-color: var(--blue-600);
+}
+
+.status-filter-btn.active {
+  background: var(--blue-700);
+  color: var(--white);
+  border-color: var(--blue-700);
 }
 
 .filter-select {
@@ -191,8 +238,21 @@
     grid-template-columns: 1fr;
   }
 
-  .filters {
+  .search-row {
     flex-direction: column;
+  }
+
+  .search-row #postFilter {
+    width: 100%;
+    max-width: none;
+  }
+
+  .status-filters {
+    flex-direction: column;
+  }
+
+  .status-filter-btn {
+    width: 100%;
   }
 
   .filter-select {

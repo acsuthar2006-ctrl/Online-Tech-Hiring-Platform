@@ -4,6 +4,7 @@ import com.techhiring.platform.entity.Interview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Collection;
 
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
@@ -25,5 +26,9 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
   List<Interview> findByCompanyId(Long companyId);
 
   List<Interview> findByInterviewerIdAndStatus(Long interviewerId, Interview.InterviewStatus status);
+
+  long countByCompanyIdAndInterviewerIdAndStatus(Long companyId, Long interviewerId, Interview.InterviewStatus status);
+
+  long countByCompanyIdAndInterviewerIdAndStatusIn(Long companyId, Long interviewerId, Collection<Interview.InterviewStatus> statuses);
 }
 

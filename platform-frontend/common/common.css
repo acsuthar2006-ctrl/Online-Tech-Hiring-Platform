@@ -355,6 +355,16 @@ body {
   color: var(--blue-800);
 }
 
+.badge-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {

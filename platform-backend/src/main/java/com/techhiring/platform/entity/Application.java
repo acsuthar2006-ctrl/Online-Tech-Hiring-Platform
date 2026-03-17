@@ -29,6 +29,11 @@ public class Application {
   @JoinColumn(name = "position_id", nullable = false)
   private Position position;
 
+  // Company admin assignment: one candidate application is assigned to one interviewer (optional).
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "assigned_interviewer_id")
+  private Interviewer assignedInterviewer;
+
   @Column(nullable = false)
   @Builder.Default
   private String status = "APPLIED"; // APPLIED, SHORTLISTED, INTERVIEW_SCHEDULED, REJECTED, OFFERED

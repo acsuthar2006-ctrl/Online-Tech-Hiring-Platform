@@ -209,6 +209,15 @@ async function loadInterviews() {
       if (!b.scheduledDate) return -1;
       return new Date(b.scheduledDate) - new Date(a.scheduledDate);
     });
+
+    // Update counts in filter buttons
+    const upcoming = allInterviews.filter(iv => iv.status === 'SCHEDULED' || iv.status === 'IN_PROGRESS').length;
+    const completed = allInterviews.filter(iv => iv.status === 'COMPLETED').length;
+    const upcomingEl = document.getElementById('upcomingCount');
+    const completedEl = document.getElementById('completedCount');
+    if (upcomingEl) upcomingEl.textContent = String(upcoming);
+    if (completedEl) completedEl.textContent = String(completed);
+
     renderSchedule(allInterviews);
   } catch (err) {
     console.error('Error loading interviews:', err);

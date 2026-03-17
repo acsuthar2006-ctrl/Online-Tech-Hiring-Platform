@@ -3,6 +3,7 @@ import { api } from '../../common/api.js';
 const companyId = sessionStorage.getItem('companyId');
 let allInterviewers = [];
 let currentStatusFilter = 'all';
+let currentPostFilter = 'all'; // all | positionId
 
 // ===== SET ADMIN NAME =====
 function setAdminName() {
@@ -18,7 +19,7 @@ function appStatusBadge(status) {
   if (status === 'APPROVED') return `<span class="badge" style="background:#dcfce7; color:#166534;">Hired</span>`;
   if (status === 'REJECTED') return `<span class="badge" style="background:#fee2e2; color:#991b1b;">Rejected</span>`;
   if (status === 'APPLIED') return `<span class="badge" style="background:#fef3c7; color:#92400e;">Pending</span>`;
-  return `<span class="badge" style="background:#ede9fe; color:#5b21b6;">Skill Match</span>`;
+  return '';
 }
 
 function availBadge(status) {
@@ -57,14 +58,21 @@ function renderInterviewers(interviewers) {
     const initials = iv.fullName ? iv.fullName.split(' ').map(p => p[0]).join('').toUpperCase().substring(0, 2) : '??';
     const expertiseTags = (iv.expertises || []).map(e => `<span class="tag">${e}</span>`).join('');
     const viewBtn = `<button class="btn-outline btn-sm btn-full" onclick="openInterviewerDetails(${iv.id})">View</button>`;
+    const assignBtn = (iv.applicationStatus === 'APPROVED' && iv.positionId)
+      ? `<button class="btn-primary btn-sm btn-full" onclick="openAssignCandidates(${iv.id}, ${iv.positionId}, ${JSON.stringify(iv.fullName || 'Interviewer').replace(/\"/g, '&quot;')}, ${JSON.stringify(iv.positionTitle || 'Position').replace(/\"/g, '&quot;')})">Assign Candidates</button>`
+      : '';
     const actionBtns = iv.appliedToCompany
       ? (iv.applicationStatus === 'APPLIED'
         ? `<button class="btn-primary btn-sm btn-full" onclick="approveInterviewer(${iv.applicationId})">Approve</button>
              <button class="btn-outline btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="rejectInterviewer(${iv.applicationId})">Reject</button>`
         : iv.applicationStatus === 'APPROVED'
-          ? `<button class="btn-outline btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="rejectInterviewer(${iv.applicationId})">Remove</button>`
+          ? `${assignBtn}<button class="btn-outline btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="rejectInterviewer(${iv.applicationId})">Remove</button>`
           : `<button class="btn-primary btn-sm btn-full" onclick="approveInterviewer(${iv.applicationId})">Re-approve</button>`)
       : `<button class="btn-outline btn-sm btn-full">Not Applied</button>`;
+
+    const positionLine = iv.positionTitle
+      ? `<div class="badge badge-blue" style="display:inline-block; margin:6px auto 12px; padding:6px 10px; font-weight:600;">${escapeHtml(iv.positionTitle)}</div>`
+      : '';
 
     return `
       <div class="card interviewer-card">
@@ -76,20 +84,17 @@ function renderInterviewers(interviewers) {
         </div>
         <h3 class="interviewer-name">${iv.fullName}</h3>
         <p class="text-muted" style="margin-bottom:4px; font-size:13px;">${iv.email}</p>
-        <div style="margin-bottom:12px; text-align:center;">${appStatusBadge(iv.applicationStatus)}</div>
+        <div style="margin-bottom:12px; text-align:center;">${iv.applicationStatus ? appStatusBadge(iv.applicationStatus) : ''}</div>
+        <div style="text-align:center;">${positionLine}</div>
         <div class="expertise-tags">${expertiseTags || '<span style="font-size:13px;color:var(--gray-400);">No expertise listed</span>'}</div>
         <div class="stats-mini">
           <div class="stat">
-            <p class="stat-value">${iv.totalInterviewsConducted || 0}</p>
-            <p class="stat-label">Interviews</p>
+            <p class="stat-value">${iv.completedInterviews != null ? iv.completedInterviews : (iv.totalInterviewsConducted || 0)}</p>
+            <p class="stat-label">Completed</p>
           </div>
           <div class="stat">
-            <p class="stat-value">${iv.averageRating ? iv.averageRating.toFixed(1) : '—'}</p>
-            <p class="stat-label">Rating</p>
-          </div>
-          <div class="stat">
-            <p class="stat-value">${iv.upcomingScheduled || 0}</p>
-            <p class="stat-label">Scheduled</p>
+            <p class="stat-value">${iv.upcomingInterviews != null ? iv.upcomingInterviews : (iv.upcomingScheduled || 0)}</p>
+            <p class="stat-label">Upcoming</p>
           </div>
         </div>
         <div class="card-actions">${viewBtn}${actionBtns}</div>
@@ -97,6 +102,70 @@ function renderInterviewers(interviewers) {
     `;
   }).join('');
 }
+
+function openAssignModal() {
+  const modal = document.getElementById('assignCandidatesModal');
+  if (!modal) return;
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeAssignModal() {
+  const modal = document.getElementById('assignCandidatesModal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+window.openAssignCandidates = async function (interviewerId, positionId, interviewerName, positionTitle) {
+  const titleEl = document.getElementById('assignCandidatesTitle');
+  const listEl = document.getElementById('assignCandidatesList');
+  if (titleEl) titleEl.textContent = `Assign Candidates • ${positionTitle} • ${interviewerName}`;
+  if (listEl) listEl.innerHTML = `<div class="modal-item">Loading...</div>`;
+  openAssignModal();
+
+  try {
+    const candidates = await api.getPositionCandidates(positionId);
+    const unassigned = (candidates || []).filter(c => !c.assignedInterviewerId && c.appliedDirectly);
+
+    if (!unassigned || unassigned.length === 0) {
+      if (listEl) listEl.innerHTML = `<div class="modal-item">No unassigned candidates for this position.</div>`;
+      return;
+    }
+
+    if (listEl) {
+      listEl.innerHTML = unassigned.map(c => `
+        <div class="modal-item" data-app-id="${c.applicationId}">
+          <div class="item-title">${c.fullName}</div>
+          <div class="item-meta">${c.email} • ${c.status}</div>
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn-primary btn-sm" onclick="assignCandidate(${positionId}, ${interviewerId}, ${c.applicationId})">Assign</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    if (listEl) listEl.innerHTML = `<div class="modal-item" style="color:#dc2626;">Failed to load candidates: ${e.message}</div>`;
+  }
+};
+
+window.assignCandidate = async function (positionId, interviewerId, applicationId) {
+  try {
+    await api.assignCandidateToInterviewer(companyId, applicationId, interviewerId);
+    // remove from list UI
+    const row = document.querySelector(`#assignCandidatesList .modal-item[data-app-id="${applicationId}"]`);
+    if (row) row.remove();
+    const listEl = document.getElementById('assignCandidatesList');
+    if (listEl) {
+      const remaining = listEl.querySelectorAll('.modal-item[data-app-id]').length;
+      if (remaining === 0) {
+        listEl.innerHTML = `<div class="modal-item">All candidates for this position are assigned.</div>`;
+      }
+    }
+  } catch (e) {
+    alert('Failed to assign: ' + e.message);
+  }
+};
 
 // ===== VIEW DETAILS =====
 window.openInterviewerDetails = function (interviewerId) {
@@ -141,6 +210,7 @@ window.approveInterviewer = async function (applicationId) {
   try {
     await api.updateInterviewerApplicationStatus(applicationId, 'APPROVED');
     await loadInterviewers();
+    applyFilters();
   } catch (err) {
     alert('Failed to approve: ' + err.message);
   }
@@ -150,6 +220,7 @@ window.rejectInterviewer = async function (applicationId) {
   try {
     await api.updateInterviewerApplicationStatus(applicationId, 'REJECTED');
     await loadInterviewers();
+    applyFilters();
   } catch (err) {
     alert('Failed to reject: ' + err.message);
   }
@@ -172,15 +243,41 @@ window.filterInterviewers = function (status) {
 
 function applyFilters() {
   const statusFilter = currentStatusFilter;
+  const postFilter = currentPostFilter;
 
   let filtered = allInterviewers.filter(iv => {
     const matchStatus = statusFilter === 'all' ||
       (statusFilter === 'APPROVED' && iv.applicationStatus === 'APPROVED') ||
       (statusFilter === 'APPLIED' && iv.applicationStatus === 'APPLIED') ||
       (statusFilter === 'REJECTED' && iv.applicationStatus === 'REJECTED');
-    return matchStatus;
+    const matchPost = postFilter === 'all' || String(iv.positionId) === String(postFilter);
+    return matchStatus && matchPost;
   });
   renderInterviewers(filtered);
+}
+
+function wireUpPostFilter() {
+  const el = document.getElementById('postFilter');
+  if (!el) return;
+  el.addEventListener('change', () => {
+    currentPostFilter = el.value || 'all';
+    applyFilters();
+  });
+}
+
+async function populatePostFilter() {
+  const el = document.getElementById('postFilter');
+  if (!el) return;
+  try {
+    const positions = await api.getCompanyPositions(companyId);
+    const open = (positions || []).filter(p => p.status === 'OPEN');
+    el.innerHTML = `<option value="all">All Posts</option>` + open
+      .map(p => `<option value="${p.id}">${p.positionTitle}</option>`)
+      .join('');
+  } catch (e) {
+    // ignore
+  }
+  el.value = currentPostFilter;
 }
 
 // ===== LOAD DATA =====
@@ -196,7 +293,8 @@ async function loadInterviewers() {
 
   try {
     allInterviewers = await api.getCompanyInterviewers(companyId);
-    renderInterviewers(allInterviewers);
+    // Respect current filter selection on reload
+    applyFilters();
   } catch (err) {
     console.error('Error loading interviewers:', err);
     if (grid) grid.innerHTML = '<p style="grid-column:1/-1;padding:32px;text-align:center;color:#dc2626;">Failed to load interviewers.</p>';
@@ -214,6 +312,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === detailsModal) closeInterviewerDetails();
     });
   }
+
+  const assignClose = document.getElementById('assignCandidatesClose');
+  if (assignClose) assignClose.addEventListener('click', closeAssignModal);
+  const assignModal = document.getElementById('assignCandidatesModal');
+  if (assignModal) {
+    assignModal.addEventListener('click', (e) => {
+      if (e.target === assignModal) closeAssignModal();
+    });
+  }
+  wireUpPostFilter();
+  populatePostFilter();
 
   loadInterviewers();
   setAdminName();

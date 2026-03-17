@@ -243,22 +243,9 @@ public class NotificationService {
       return List.of();
     }
 
-    // Only show jobs from companies where this interviewer has an approved application
-    List<InterviewerApplication> approvedApps = interviewerApplicationRepository
-        .findByInterviewerId(interviewer.getId()).stream()
-        .filter(ia -> "APPROVED".equalsIgnoreCase(ia.getStatus()))
-        .collect(Collectors.toList());
-
-    if (approvedApps.isEmpty()) {
-      return List.of();
-    }
-
-    Set<Long> companyIds = approvedApps.stream()
-        .map(ia -> ia.getCompany().getId())
-        .collect(Collectors.toSet());
-
-    return companyIds.stream()
-        .flatMap(cid -> positionRepository.findByCompanyIdAndStatus(cid, "OPEN").stream())
+    // Show new jobs matching expertise across the platform.
+    // (Applications/approvals are per-position; we don't gate discovery by company-level approval anymore.)
+    return positionRepository.findByStatus("OPEN").stream()
         .filter(p -> p.getCreatedAt() != null && p.getCreatedAt().isAfter(cutoff))
         .filter(p -> positionMatchesAnySkill(p, expertises))
         .map(p -> NotificationsDto.NotificationItem.builder()
@@ -276,21 +263,25 @@ public class NotificationService {
     LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
 
     return interviewerApplicationRepository.findByInterviewerId(interviewer.getId()).stream()
+        .filter(ia -> ia.getPosition() != null) // ignore legacy company-level applications
         .filter(ia -> ia.getCreatedAt() != null && ia.getCreatedAt().isAfter(cutoff))
         .filter(ia -> !"APPLIED".equalsIgnoreCase(ia.getStatus()))
         .map(ia -> {
           String status = ia.getStatus().toUpperCase();
           String title;
           String message;
+          String role = ia.getPosition() != null && notBlank(ia.getPosition().getPositionTitle())
+              ? ia.getPosition().getPositionTitle()
+              : "a role";
           if ("APPROVED".equals(status)) {
             title = "Company approved you";
-            message = "Approved as interviewer for " + ia.getCompany().getCompanyName();
+            message = "Approved for " + role + " at " + ia.getCompany().getCompanyName();
           } else if ("REJECTED".equals(status)) {
             title = "Application rejected";
-            message = "Application to interview for " + ia.getCompany().getCompanyName() + " was rejected.";
+            message = "Application for " + role + " at " + ia.getCompany().getCompanyName() + " was rejected.";
           } else {
             title = "Application updated";
-            message = "Your application for " + ia.getCompany().getCompanyName() + " is now " + status;
+            message = "Your application for " + role + " at " + ia.getCompany().getCompanyName() + " is now " + status;
           }
 
           return NotificationsDto.NotificationItem.builder()
@@ -335,15 +326,21 @@ public class NotificationService {
     // Interviewer applications to this company
     List<InterviewerApplication> interviewerApps = interviewerApplicationRepository.findByCompanyId(companyId);
     items.addAll(interviewerApps.stream()
+        .filter(ia -> ia.getPosition() != null) // ignore legacy
         .filter(ia -> ia.getCreatedAt() != null && ia.getCreatedAt().isAfter(cutoff))
-        .map(ia -> NotificationsDto.NotificationItem.builder()
-            .id("co-iv-app-" + ia.getId())
-            .type("NEW_INTERVIEWER_APPLICATION")
-            .title("New interviewer applied")
-            .message(ia.getInterviewer().getFullName() + " applied to interview for your company.")
-            .actionUrl("/company-admin/company-interviewers.html")
-            .createdAt(ia.getCreatedAt())
-            .build())
+        .map(ia -> {
+          String role = ia.getPosition() != null && notBlank(ia.getPosition().getPositionTitle())
+              ? ia.getPosition().getPositionTitle()
+              : "a role";
+          return NotificationsDto.NotificationItem.builder()
+              .id("co-iv-app-" + ia.getId())
+              .type("NEW_INTERVIEWER_APPLICATION")
+              .title("New interviewer applied")
+              .message(ia.getInterviewer().getFullName() + " applied for " + role + ".")
+              .actionUrl("/company-admin/company-interviewers.html")
+              .createdAt(ia.getCreatedAt())
+              .build();
+        })
         .collect(Collectors.toList()));
 
     return items;

@@ -101,8 +101,9 @@ async function renderDashboard() {
   const totalEarnings = interviewerProfile.totalEarnings ? `$${interviewerProfile.totalEarnings}` : '$0'
 
 
-  // Pre-render schedule list to handle async fetching
-  const scheduleListHtml = await renderScheduleList(scheduledInterviews);
+  // Pre-render lists to handle async fetching
+  const upcomingListHtml = await renderScheduleList(scheduledInterviews, 'upcoming');
+  const completedListHtml = await renderScheduleList(scheduledInterviews, 'completed');
 
   const html = `
     <!-- Header -->
@@ -156,13 +157,23 @@ async function renderDashboard() {
 
     <!-- Content Grid -->
     <div class="content-grid">
-      <!-- Schedule List -->
-      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; width: 100%;">
+      <!-- Upcoming Interviews -->
+      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; width: 100%; margin-bottom: 20px;">
         <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
-          <h2 style="margin: 0; font-size: 18px;">Interview Schedule</h2>
+          <h2 style="margin: 0; font-size: 18px;">Upcoming Interviews</h2>
         </div>
         <div class="schedule-list" style="padding: 20px;">
-           ${scheduleListHtml}
+           ${upcomingListHtml}
+        </div>
+      </div>
+
+      <!-- Completed Interviews -->
+      <div class="card" style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; width: 100%; margin-bottom: 20px;">
+        <div class="card-header" style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: 18px;">Completed Interviews</h2>
+        </div>
+        <div class="schedule-list" style="padding: 20px;">
+           ${completedListHtml}
         </div>
       </div>
 
@@ -248,7 +259,7 @@ window.viewCandidates = async (companyId, positionId, positionTitle, companyName
   modal.style.display = 'flex';
 
   try {
-    const candidates = await api.getCandidatesForPosition(positionId);
+    const candidates = await api.getCandidatesForPositionAssigned(positionId, interviewerProfile?.id);
     if (!candidates || candidates.length === 0) {
       list.innerHTML = `<p class="text-muted">No candidates have applied for this position yet.</p>`;
       return;
@@ -356,19 +367,32 @@ window.handleScheduleSubmit = async (e) => {
 };
 
 // Make this async to fetch recordings
-async function renderScheduleList(interviews) {
+async function renderScheduleList(interviews, type = 'upcoming') {
   if (!interviews || interviews.length === 0) {
-    return `
-      <div class="empty-state">
-        <div class="empty-icon">📅</div>
-        <h3>No Upcoming Interviews</h3>
-        <p class="text-muted">You don't have any interviews scheduled at the moment.</p>
-      </div>
-    `;
+    if (type === 'upcoming') return '<p class="text-muted">No upcoming interviews.</p>';
+    if (type === 'completed') return '<p class="text-muted">No completed interviews.</p>';
+    return '<p class="text-muted">No interviews found.</p>';
   }
 
+  const filtered = (type === 'completed')
+    ? interviews.filter(i => i.status === 'COMPLETED' || i.status === 'CANCELLED')
+    : interviews.filter(i => i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS');
+
+  if (!filtered || filtered.length === 0) {
+    if (type === 'upcoming') return '<p class="text-muted">No upcoming interviews.</p>';
+    if (type === 'completed') return '<p class="text-muted">No completed interviews.</p>';
+    return '<p class="text-muted">No interviews found.</p>';
+  }
+
+  // Sort + limit for dashboard (only show recent 3)
+  const sortedLimited = [...filtered].sort((a, b) => {
+    const da = new Date((a.scheduledDate || '') + 'T' + (a.scheduledTime || '00:00:00'));
+    const db = new Date((b.scheduledDate || '') + 'T' + (b.scheduledTime || '00:00:00'));
+    return type === 'completed' ? (db - da) : (da - db);
+  }).slice(0, 3);
+
   // Fetch recordings for completed interviews
-  const interviewsWithRecordings = await Promise.all(interviews.map(async (interview) => {
+  const interviewsWithRecordings = await Promise.all(sortedLimited.map(async (interview) => {
     if (interview.status === 'COMPLETED') {
       try {
         const roomId = interview.meetingLink || String(interview.id);

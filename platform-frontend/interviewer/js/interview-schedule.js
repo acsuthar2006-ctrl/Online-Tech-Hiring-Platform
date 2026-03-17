@@ -1,9 +1,21 @@
 import { api } from '../../common/api.js';
 import { createErrorState, createEmptyState, formatDate, formatTime } from '../../common/dashboard-utils.js';
+import { initNotifications } from '../../common/notifications.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initializeSchedule();
 });
+
+window.markOutcome = async (interviewId, outcome) => {
+  if (!confirm(`Mark this candidate as ${outcome}?`)) return;
+  try {
+    await api.updateInterviewOutcome(interviewId, outcome);
+    await initializeSchedule();
+    await initNotifications();
+  } catch (e) {
+    alert('Failed to update candidate outcome: ' + (e.message || e));
+  }
+};
 
 async function initializeSchedule() {
   const container = document.getElementById('scheduleContainer');
@@ -28,6 +40,7 @@ async function initializeSchedule() {
         return interview;
       }));
       renderSchedule(interviews);
+      await initNotifications();
     } else {
       throw new Error('Profile not found');
     }
@@ -110,6 +123,16 @@ function renderTimelineItem(interview, sectionId) {
     outcomeHtml = `<span class="status-badge" style="margin-left:8px; border:1px solid currentColor; ${bg}">${interview.candidateOutcome}</span>`;
   }
 
+  let completedOutcomeActions = '';
+  if (isCompleted) {
+    if (!interview.candidateOutcome || interview.candidateOutcome === 'PENDING') {
+      completedOutcomeActions = `
+        <button class="btn btn-sm" style="background:#16a34a;color:white;margin-left:6px;" onclick="window.markOutcome(${interview.id}, 'ACCEPTED')">✓ Accept</button>
+        <button class="btn btn-sm" style="background:#dc2626;color:white;margin-left:6px;" onclick="window.markOutcome(${interview.id}, 'REJECTED')">✕ Reject</button>
+      `;
+    }
+  }
+
   return `
         <div class="timeline-item">
             <div class="timeline-date">
@@ -143,6 +166,7 @@ function renderTimelineItem(interview, sectionId) {
                 </div>
                 <div class="interview-actions">
                     ${!isCompleted ? `<button class="btn-primary btn-sm" onclick="joinInterview('${interview.meetingLink}')">Join Interview</button>` : ''}
+                    ${isCompleted ? completedOutcomeActions : ''}
                     ${isCompleted && interview.recordings && interview.recordings.length > 0
                       ? interview.recordings.map(rec => {
                           const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;

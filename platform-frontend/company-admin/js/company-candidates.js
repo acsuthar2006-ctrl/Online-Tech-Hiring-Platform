@@ -4,6 +4,8 @@ const companyId = sessionStorage.getItem('companyId');
 let allCandidates = [];
 let allPositionTitles = new Set();
 let currentStatusFilter = 'all';
+let companyName = '';
+let currentPostFilter = 'all'; // all | positionId
 
 // ===== SET ADMIN NAME =====
 function setAdminName() {
@@ -58,20 +60,24 @@ function renderTable(candidates) {
       <td>${c.positionTitle || '<em style="color:var(--gray-400)">—</em>'}</td>
       <td>${c.applicationDate || '—'}</td>
       <td>${statusBadge(c.status)}</td>
-      <td>${c.score != null ? c.score + '/10' : '—'}</td>
-      <td style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn-text" onclick="viewCandidateSkills(${JSON.stringify(c.skills || []).replace(/"/g, '&quot;')})">Skills</button>
-        ${!c.appliedDirectly ? '' : `<button class="btn-text" onclick="viewCandidateDetails(${c.id}, ${JSON.stringify(c.fullName || 'Candidate').replace(/\"/g, '&quot;')})">View</button>`}
+      <td>${(c.assignedInterviewerName && c.status !== 'NOT_APPLIED') ? c.assignedInterviewerName : '—'}</td>
+      <td>
+        <div class="table-actions">
+          ${!c.appliedDirectly ? '' : `<button class="btn-text" onclick="viewCandidateDetails(${c.id}, ${JSON.stringify(c.fullName || 'Candidate').replace(/\"/g, '&quot;')})">View</button>`}
+          ${c.appliedDirectly && c.status === 'SHORTLISTED'
+            ? (() => {
+                const posTitle = c.positionTitle || 'the position';
+                const comp = companyName || 'the company';
+                const subject = `Selected for ${posTitle} at ${comp} - Offer Letter`;
+                const href = `mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}`;
+                return `<a class="btn-text" href="${href}">Send Offer</a>`;
+              })()
+            : ''}
+        </div>
       </td>
     </tr>
   `).join('');
 }
-
-// ===== SKILLS POPUP =====
-window.viewCandidateSkills = function (skills) {
-  if (!skills || skills.length === 0) { alert('No skills listed for this candidate.'); return; }
-  alert('Skills: ' + skills.join(', '));
-};
 
 // ===== VIEW CANDIDATE DETAILS =====
 function setModalLoading() {
@@ -205,13 +211,39 @@ window.filterCandidates = function (status) {
 
 function applyFilters() {
   const statusFilter = currentStatusFilter;
+  const postFilter = currentPostFilter;
 
   let filtered = allCandidates.filter(c => {
     const matchStatus = statusFilter === 'all' || c.status === statusFilter || 
                         (statusFilter === 'ACCEPTED' && (c.status === 'OFFERED' || c.status === 'SHORTLISTED'));
-    return matchStatus;
+    const matchPost = postFilter === 'all' || String(c.positionId) === String(postFilter);
+    return matchStatus && matchPost;
   });
   renderTable(filtered);
+}
+
+function wireUpPostFilter() {
+  const el = document.getElementById('postFilter');
+  if (!el) return;
+  el.addEventListener('change', () => {
+    currentPostFilter = el.value || 'all';
+    applyFilters();
+  });
+}
+
+async function populatePostFilter() {
+  const el = document.getElementById('postFilter');
+  if (!el) return;
+  try {
+    const positions = await api.getCompanyPositions(companyId);
+    const open = (positions || []).filter(p => p.status === 'OPEN');
+    el.innerHTML = `<option value="all">All Posts</option>` + open
+      .map(p => `<option value="${p.id}">${p.positionTitle}</option>`)
+      .join('');
+  } catch (e) {
+    // fallback: keep default
+  }
+  el.value = currentPostFilter;
 }
 
 // ===== LOAD DATA =====
@@ -230,6 +262,16 @@ async function loadCandidates() {
   }
 
   try {
+    // Load company name (for offer email subject)
+    if (!companyName) {
+      try {
+        const profile = await api.getCompanyProfile(companyId);
+        companyName = profile?.companyName || '';
+      } catch (e) {
+        companyName = '';
+      }
+    }
+
     allCandidates = await api.getCompanyCandidates(companyId);
     // Populate position filter
     const positionFilter = document.getElementById('positionFilter');
@@ -239,6 +281,7 @@ async function loadCandidates() {
         [...allPositionTitles].map(p => `<option value="${p}">${p}</option>`).join('');
     }
     renderTable(allCandidates);
+    applyFilters();
   } catch (err) {
     console.error('Error loading candidates:', err);
     const tbody = document.getElementById('candidatesTableBody');
@@ -252,6 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const tbody = document.querySelector('.candidates-table tbody');
   if (tbody) tbody.id = 'candidatesTableBody';
 
+  wireUpPostFilter();
+  populatePostFilter();
 
   loadCandidates();
   setAdminName();

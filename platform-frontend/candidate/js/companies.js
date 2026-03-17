@@ -1,6 +1,14 @@
 import { api } from '../../common/api.js';
 import { createErrorState, createEmptyState } from '../../common/dashboard-utils.js';
 
+let currentStatusFilter = 'all'; // all | applied | accepted | rejected
+let currentPostFilter = 'all';   // all | positionTitle
+let currentSearchQuery = '';
+let allCompaniesCache = [];
+let companyPositionsCache = {};
+let myApplicationsCache = [];
+let interviewOutcomeByPositionCache = {};
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const userInfo = api.getUserInfo();
@@ -15,8 +23,49 @@ document.addEventListener('DOMContentLoaded', () => {
         element.textContent = userInfo.fullName;
     });
 
+    wireUpStatusFilters();
+    wireUpPostFilter();
+    wireUpSearch();
     initializeCompanies();
 });
+
+function wireUpStatusFilters() {
+    const container = document.getElementById('statusFilters');
+    if (!container) return;
+
+    container.addEventListener('click', (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest('button[data-status]') : null;
+        if (!btn) return;
+        const next = btn.getAttribute('data-status') || 'all';
+        setStatusFilter(next);
+    });
+}
+
+function setStatusFilter(next) {
+    currentStatusFilter = next;
+    document.querySelectorAll('#statusFilters .status-filter-btn').forEach(b => {
+        b.classList.toggle('active', (b.getAttribute('data-status') || 'all') === currentStatusFilter);
+    });
+    renderWithFilters();
+}
+
+function wireUpPostFilter() {
+    const el = document.getElementById('postFilter');
+    if (!el) return;
+    el.addEventListener('change', () => {
+        currentPostFilter = el.value || 'all';
+        renderWithFilters();
+    });
+}
+
+function wireUpSearch() {
+    const el = document.getElementById('searchInput');
+    if (!el) return;
+    el.addEventListener('input', () => {
+        currentSearchQuery = (el.value || '').trim().toLowerCase();
+        renderWithFilters();
+    });
+}
 
 async function initializeCompanies() {
     const grid = document.getElementById('companiesGrid');
@@ -64,11 +113,88 @@ async function initializeCompanies() {
             companyPositions[companyId].push(pos);
         });
 
-        renderCompanies(companies, companyPositions, rawApplications || [], interviewOutcomeByPosition);
+        allCompaniesCache = companies || [];
+        companyPositionsCache = companyPositions || {};
+        myApplicationsCache = rawApplications || [];
+        interviewOutcomeByPositionCache = interviewOutcomeByPosition || {};
+
+        populatePostFilter();
+        renderWithFilters();
     } catch (error) {
         console.error('Failed to load companies:', error);
         grid.innerHTML = createErrorState('Failed to load companies and positions. Please try again later.');
     }
+}
+
+function populatePostFilter() {
+    const el = document.getElementById('postFilter');
+    if (!el) return;
+    const seen = new Set();
+    const options = [{ value: 'all', label: 'All Posts' }];
+    Object.values(companyPositionsCache || {}).flat().forEach(p => {
+        const title = (p?.positionTitle || '').trim();
+        if (!title) return;
+        const key = title.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        options.push({
+            value: title,
+            label: title
+        });
+    });
+    el.innerHTML = options.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    if (![...options].some(o => o.value === currentPostFilter)) currentPostFilter = 'all';
+    el.value = currentPostFilter;
+}
+
+function getPositionFilterState(positionId) {
+    const ivInfo = interviewOutcomeByPositionCache[positionId];
+    if (ivInfo && ivInfo.candidateOutcome === 'ACCEPTED') return 'accepted';
+    if (ivInfo && ivInfo.candidateOutcome === 'REJECTED') return 'rejected';
+    const existingApp = myApplicationsCache.find(app => app.position && app.position.id === positionId);
+    if (existingApp || ivInfo) return 'applied';
+    return 'none';
+}
+
+function shouldIncludePosition(positionId) {
+    const state = getPositionFilterState(positionId);
+    if (currentStatusFilter === 'all') return true;
+    if (currentStatusFilter === 'applied') return state === 'applied';
+    if (currentStatusFilter === 'accepted') return state === 'accepted';
+    if (currentStatusFilter === 'rejected') return state === 'rejected';
+    return true;
+}
+
+function renderWithFilters() {
+    const grid = document.getElementById('companiesGrid');
+    if (!grid) return;
+
+    // Build a filtered company->positions map
+    const filteredCompanyPositions = {};
+    Object.keys(companyPositionsCache || {}).forEach(companyId => {
+        const list = companyPositionsCache[companyId] || [];
+        const filtered = list.filter(p => {
+            if (!shouldIncludePosition(p.id)) return false;
+            const title = (p.positionTitle || '').toLowerCase();
+
+            // Post dropdown filter: match by title only (across all companies)
+            if (currentPostFilter !== 'all' && title !== String(currentPostFilter || '').toLowerCase()) return false;
+
+            // Search: match by title only (not company name)
+            if (currentSearchQuery && !title.includes(currentSearchQuery)) return false;
+
+            return true;
+        });
+        if (filtered.length > 0) filteredCompanyPositions[companyId] = filtered;
+    });
+
+    const visibleCompanies = (allCompaniesCache || []).filter(c => filteredCompanyPositions[c.id] && filteredCompanyPositions[c.id].length > 0);
+    if (!visibleCompanies || visibleCompanies.length === 0) {
+        grid.innerHTML = createEmptyState('No companies match the selected filter.');
+        return;
+    }
+
+    renderCompanies(visibleCompanies, filteredCompanyPositions, myApplicationsCache || [], interviewOutcomeByPositionCache || {});
 }
 
 function renderCompanies(companies, companyPositions, myApplications, interviewOutcomeByPosition = {}) {

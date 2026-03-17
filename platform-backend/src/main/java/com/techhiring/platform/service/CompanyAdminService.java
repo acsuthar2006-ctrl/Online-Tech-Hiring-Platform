@@ -118,6 +118,7 @@ public class CompanyAdminService {
       Long posId = applied ? app.getPosition().getId() : null;
       String interviewStatus = null;
       String candidateOutcome = null;
+      Long interviewId = null;
       if (applied) {
         List<Interview> candidateInterviews = interviewRepository.findByCandidateId(c.getId());
         Interview relatedInterview = candidateInterviews.stream()
@@ -127,6 +128,7 @@ public class CompanyAdminService {
         if (relatedInterview != null) {
           interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
           candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
+          interviewId = relatedInterview.getId();
         }
       }
 
@@ -142,9 +144,12 @@ public class CompanyAdminService {
           .status(applied ? app.getStatus() : "NOT_APPLIED")
           .interviewStatus(interviewStatus)
           .candidateOutcome(candidateOutcome)
+          .interviewId(interviewId)
           .score(null)
           .skills(skills)
           .appliedDirectly(applied)
+          .assignedInterviewerId(applied && app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
+          .assignedInterviewerName(applied && app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
           .build());
     }
 
@@ -176,26 +181,32 @@ public class CompanyAdminService {
   // application details overlaid.
 
   public List<CompanyAdminDto.InterviewerInfo> getInterviewersForCompany(Long companyId) {
-    // Build a map: interviewerId -> their application for this company
-    List<InterviewerApplication> iApps = interviewerApplicationRepository.findByCompanyId(companyId);
-    Map<Long, InterviewerApplication> appliedMap = new LinkedHashMap<>();
-    for (InterviewerApplication ia : iApps) {
-      Long ivId = ia.getInterviewer().getId();
-      appliedMap.put(ivId, ia);
-    }
+    // Applications are per-position now. We render one card per application.
+    List<InterviewerApplication> iApps = interviewerApplicationRepository.findByCompanyId(companyId)
+        .stream()
+        .filter(ia -> ia.getPosition() != null) // ignore legacy company-level applications
+        .collect(Collectors.toList());
 
     List<Interviewer> allInterviewers = interviewerRepository.findAll();
     List<CompanyAdminDto.InterviewerInfo> result = new ArrayList<>();
 
-    for (Interviewer iv : allInterviewers) {
+    // First: cards for each application (per position)
+    for (InterviewerApplication ia : iApps) {
+      Interviewer iv = ia.getInterviewer();
+      if (iv == null) continue;
       List<String> expertises = interviewerExpertiseRepository.findByInterviewerId(iv.getId())
           .stream().map(InterviewerExpertise::getExpertiseArea).collect(Collectors.toList());
 
-      InterviewerApplication ia = appliedMap.get(iv.getId());
-      boolean applied = ia != null;
-
-      long upcoming = interviewRepository
-          .findByInterviewerIdAndStatus(iv.getId(), Interview.InterviewStatus.SCHEDULED).size();
+      long upcoming = interviewRepository.countByCompanyIdAndInterviewerIdAndStatusIn(
+          companyId,
+          iv.getId(),
+          List.of(Interview.InterviewStatus.SCHEDULED, Interview.InterviewStatus.IN_PROGRESS)
+      );
+      long completed = interviewRepository.countByCompanyIdAndInterviewerIdAndStatus(
+          companyId,
+          iv.getId(),
+          Interview.InterviewStatus.COMPLETED
+      );
 
       result.add(CompanyAdminDto.InterviewerInfo.builder()
           .id(iv.getId())
@@ -207,10 +218,57 @@ public class CompanyAdminService {
           .averageRating(iv.getAverageRating())
           .availabilityStatus(iv.getAvailabilityStatus())
           .expertises(expertises)
-          .applicationId(applied ? ia.getId() : null)
-          .applicationStatus(applied ? ia.getStatus() : null)
-          .appliedToCompany(applied)
+          .applicationId(ia.getId())
+          .applicationStatus(ia.getStatus())
+          .appliedToCompany(true)
+          .positionId(ia.getPosition() != null ? ia.getPosition().getId() : null)
+          .positionTitle(ia.getPosition() != null ? ia.getPosition().getPositionTitle() : null)
           .upcomingScheduled(upcoming)
+          .upcomingInterviews(upcoming)
+          .completedInterviews(completed)
+          .build());
+    }
+
+    // Second: add one "not applied" card for interviewers with no applications to this company
+    Set<Long> appliedInterviewerIds = iApps.stream()
+        .map(ia -> ia.getInterviewer() != null ? ia.getInterviewer().getId() : null)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+
+    for (Interviewer iv : allInterviewers) {
+      if (appliedInterviewerIds.contains(iv.getId())) continue;
+      List<String> expertises = interviewerExpertiseRepository.findByInterviewerId(iv.getId())
+          .stream().map(InterviewerExpertise::getExpertiseArea).collect(Collectors.toList());
+
+      long upcoming = interviewRepository.countByCompanyIdAndInterviewerIdAndStatusIn(
+          companyId,
+          iv.getId(),
+          List.of(Interview.InterviewStatus.SCHEDULED, Interview.InterviewStatus.IN_PROGRESS)
+      );
+      long completed = interviewRepository.countByCompanyIdAndInterviewerIdAndStatus(
+          companyId,
+          iv.getId(),
+          Interview.InterviewStatus.COMPLETED
+      );
+
+      result.add(CompanyAdminDto.InterviewerInfo.builder()
+          .id(iv.getId())
+          .fullName(iv.getFullName())
+          .email(iv.getEmail())
+          .bio(iv.getBio())
+          .hourlyRate(iv.getHourlyRate())
+          .totalInterviewsConducted(iv.getTotalInterviewsConducted())
+          .averageRating(iv.getAverageRating())
+          .availabilityStatus(iv.getAvailabilityStatus())
+          .expertises(expertises)
+          .applicationId(null)
+          .applicationStatus(null)
+          .appliedToCompany(false)
+          .positionId(null)
+          .positionTitle(null)
+          .upcomingScheduled(upcoming)
+          .upcomingInterviews(upcoming)
+          .completedInterviews(completed)
           .build());
     }
 
@@ -276,9 +334,11 @@ public class CompanyAdminService {
               .orElse(null);
           String interviewStatus = null;
           String candidateOutcome = null;
+          Long interviewId = null;
           if (relatedInterview != null) {
             interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
             candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
+            interviewId = relatedInterview.getId();
           }
 
           return CompanyAdminDto.CandidateInfo.builder()
@@ -293,8 +353,54 @@ public class CompanyAdminService {
               .status(app.getStatus())
               .interviewStatus(interviewStatus)
               .candidateOutcome(candidateOutcome)
+              .interviewId(interviewId)
               .skills(skills)
               .appliedDirectly(true)
+              .assignedInterviewerId(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
+              .assignedInterviewerName(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
+              .build();
+        }).collect(Collectors.toList());
+  }
+
+  // Only candidates assigned to a given interviewer for this position
+  public List<CompanyAdminDto.CandidateInfo> getCandidatesByPositionAssignedToInterviewer(Long positionId, Long interviewerId) {
+    return applicationRepository.findByPosition_IdAndAssignedInterviewer_Id(positionId, interviewerId).stream()
+        .map(app -> {
+          Candidate c = app.getCandidate();
+          List<String> skills = candidateSkillRepository.findByCandidateId(c.getId())
+              .stream().map(CandidateSkill::getSkillName).collect(Collectors.toList());
+
+          List<Interview> candidateInterviews = interviewRepository.findByCandidateId(c.getId());
+          Interview relatedInterview = candidateInterviews.stream()
+              .filter(i -> i.getPosition() != null && i.getPosition().getId().equals(positionId))
+              .findFirst()
+              .orElse(null);
+          String interviewStatus = null;
+          String candidateOutcome = null;
+          Long interviewId = null;
+          if (relatedInterview != null) {
+            interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
+            candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
+            interviewId = relatedInterview.getId();
+          }
+
+          return CompanyAdminDto.CandidateInfo.builder()
+              .id(c.getId())
+              .fullName(c.getFullName())
+              .email(c.getEmail())
+              .applicationId(app.getId())
+              .positionId(positionId)
+              .positionTitle(app.getPosition().getPositionTitle())
+              .applicationDate(app.getApplicationDate() != null
+                  ? app.getApplicationDate().toLocalDate().toString() : null)
+              .status(app.getStatus())
+              .interviewStatus(interviewStatus)
+              .candidateOutcome(candidateOutcome)
+              .interviewId(interviewId)
+              .skills(skills)
+              .appliedDirectly(true)
+              .assignedInterviewerId(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
+              .assignedInterviewerName(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
               .build();
         }).collect(Collectors.toList());
   }
@@ -302,10 +408,8 @@ public class CompanyAdminService {
   public List<CompanyAdminDto.InterviewerInfo> getInterviewersByPosition(Long positionId) {
     Position position = positionRepository.findById(positionId)
         .orElseThrow(() -> new RuntimeException("Position not found"));
-    Long companyId = position.getCompany().getId();
 
-    return interviewerApplicationRepository.findByCompanyId(companyId).stream()
-        .filter(ia -> "APPROVED".equals(ia.getStatus()))
+    return interviewerApplicationRepository.findByPositionId(positionId).stream()
         .map(ia -> {
           Interviewer iv = ia.getInterviewer();
           List<String> expertises = interviewerExpertiseRepository.findByInterviewerId(iv.getId())
@@ -323,9 +427,41 @@ public class CompanyAdminService {
               .applicationId(ia.getId())
               .applicationStatus(ia.getStatus())
               .appliedToCompany(true)
+              .positionId(positionId)
+              .positionTitle(position.getPositionTitle())
               .upcomingScheduled(0)
               .build();
         }).collect(Collectors.toList());
+  }
+
+  @Transactional
+  public Application assignCandidateToInterviewer(Long companyId, Long applicationId, Long interviewerId) {
+    Application app = applicationRepository.findById(applicationId)
+        .orElseThrow(() -> new RuntimeException("Application not found"));
+
+    if (app.getPosition() == null || app.getPosition().getId() == null || app.getPosition().getCompany() == null) {
+      throw new RuntimeException("Application position not found");
+    }
+    if (!app.getPosition().getCompany().getId().equals(companyId)) {
+      throw new RuntimeException("Application does not belong to this company");
+    }
+    if (app.getAssignedInterviewer() != null) {
+      throw new RuntimeException("Candidate already assigned");
+    }
+
+    Interviewer interviewer = interviewerRepository.findById(interviewerId)
+        .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+
+    // Must be approved for this position
+    InterviewerApplication ia = interviewerApplicationRepository
+        .findByInterviewerIdAndPositionId(interviewerId, app.getPosition().getId())
+        .orElseThrow(() -> new RuntimeException("Interviewer is not approved for this position"));
+    if (!"APPROVED".equalsIgnoreCase(ia.getStatus())) {
+      throw new RuntimeException("Interviewer is not approved for this position");
+    }
+
+    app.setAssignedInterviewer(interviewer);
+    return applicationRepository.save(app);
   }
 
   // ==================== PROFILE ====================
@@ -378,18 +514,25 @@ public class CompanyAdminService {
 
   public List<CompanyAdminDto.ApprovedCompanyInfo> getApprovedCompaniesForInterviewer(Long interviewerId) {
     List<InterviewerApplication> applications = interviewerApplicationRepository.findAll().stream()
+      .filter(ia -> ia.getPosition() != null) // ignore legacy
       .filter(ia -> ia.getInterviewer().getId().equals(interviewerId) && "APPROVED".equals(ia.getStatus()))
       .collect(Collectors.toList());
 
-    return applications.stream().map(ia -> {
-      Company company = ia.getCompany();
-      List<CompanyAdminDto.PositionMinimalInfo> positions = positionRepository.findByCompanyId(company.getId())
-          .stream()
+    Map<Long, List<InterviewerApplication>> byCompany = applications.stream()
+        .collect(Collectors.groupingBy(ia -> ia.getCompany().getId()));
+
+    return byCompany.entrySet().stream().map(entry -> {
+      Long companyId = entry.getKey();
+      List<InterviewerApplication> apps = entry.getValue();
+      Company company = apps.get(0).getCompany();
+      List<CompanyAdminDto.PositionMinimalInfo> positions = apps.stream()
+          .map(ia -> ia.getPosition())
+          .filter(Objects::nonNull)
           .map(p -> new CompanyAdminDto.PositionMinimalInfo(p.getId(), p.getPositionTitle()))
           .collect(Collectors.toList());
 
       return CompanyAdminDto.ApprovedCompanyInfo.builder()
-          .companyId(company.getId())
+          .companyId(companyId)
           .companyName(company.getCompanyName())
           .positions(positions)
           .build();

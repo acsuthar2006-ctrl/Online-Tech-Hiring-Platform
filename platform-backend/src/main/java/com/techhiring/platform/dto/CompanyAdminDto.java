@@ -40,9 +40,12 @@ public class CompanyAdminDto {
     private String status;
     private String interviewStatus;
     private String candidateOutcome;
+    private Long interviewId; // Interview table id (when scheduled/completed)
     private Double score;
     private List<String> skills;
     private boolean appliedDirectly;
+    private Long assignedInterviewerId;
+    private String assignedInterviewerName;
   }
 
   @Data
@@ -78,7 +81,11 @@ public class CompanyAdminDto {
     private Long applicationId;
     private String applicationStatus; // APPLIED, APPROVED, REJECTED, null if not applied
     private boolean appliedToCompany;
+    private Long positionId;          // position/job applied for (if any)
+    private String positionTitle;     // position/job title (if any)
     private long upcomingScheduled;
+    private long upcomingInterviews;  // upcoming interviews for this company
+    private long completedInterviews; // completed interviews for this company
   }
 
   @Data

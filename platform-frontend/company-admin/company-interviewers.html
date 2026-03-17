@@ -44,6 +44,12 @@
       </div>
     </div>
 
+    <div class="search-bar" style="margin-bottom: 16px;">
+      <select class="form-input" id="postFilter" style="max-width: 420px;">
+        <option value="all">All Posts</option>
+      </select>
+    </div>
+
     <!-- Filter Buttons -->
     <div class="filter-buttons">
       <button class="filter-btn active" onclick="filterInterviewers('all')">All Interviewers</button>
@@ -92,6 +98,21 @@
               <div class="item-meta" id="interviewerDetailsUpcoming">0</div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Candidates Modal -->
+  <div class="modal" id="assignCandidatesModal" aria-hidden="true">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h2 id="assignCandidatesTitle">Assign Candidates</h2>
+        <button class="modal-close" id="assignCandidatesClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="assignCandidatesList" class="modal-list">
+          <div class="modal-item">Loading...</div>
         </div>
       </div>
     </div>

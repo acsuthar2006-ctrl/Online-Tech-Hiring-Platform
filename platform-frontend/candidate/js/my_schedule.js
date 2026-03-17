@@ -1,6 +1,7 @@
 import { api } from '../../common/api.js';
 
 import { createErrorState, createEmptyState, formatDateTime } from '../../common/dashboard-utils.js';
+import { initNotifications } from '../../common/notifications.js';
 
 let allInterviews = [];
 
@@ -60,6 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadSchedule();
 
   setupFilters();
+  await initNotifications();
 });
 
 async function loadSchedule() {
@@ -243,13 +245,6 @@ async function joinInterview(interviewId, meetingLink) {
 }
 
 window.joinInterview = joinInterview;
-// Notification button
-const notificationBtn = document.getElementById("notificationBtn");
-if (notificationBtn) {
-  notificationBtn.addEventListener("click", () => {
-    alert("No new notifications");
-  });
-}
 
 // Global click handler for forcing downloads
 document.addEventListener("click", async (e) => {

@@ -110,7 +110,7 @@ function renderDashboard() {
   // Calculate stats
   // Note: Backend might not provide all these stats in the profile DTO yet, adding fallbacks
   const scheduledCount = upcomingInterviews ? upcomingInterviews.filter(i => i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS').length : 0;
-  const completedCount = candidateProfile.totalInterviewsAttended || 0;
+  const completedCount = upcomingInterviews ? upcomingInterviews.filter(i => i.status === 'COMPLETED').length : 0;
   const avgRating = (candidateProfile.averageRating && candidateProfile.averageRating > 0)
     ? candidateProfile.averageRating.toFixed(1) + '/5'
     : 'N/A';
@@ -153,7 +153,15 @@ function renderDashboard() {
           <p class="stat-number">${scheduledCount}</p>
         </div>
       </div>
-      <!-- Other stats hidden until supported -->
+      <div class="stat-card">
+        <div class="stat-icon" style="background-color: #dcfce7; color: #16a34a;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="stat-info">
+          <h3>Completed</h3>
+          <p class="stat-number">${completedCount}</p>
+        </div>
+      </div>
     </div>
 
     <!-- Content Grid -->
@@ -213,11 +221,16 @@ function renderInterviewList(interviews, type) {
 
   let filtered = [];
   if (type === 'upcoming') {
-      filtered = interviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
+      filtered = interviews
+        .filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status))
+        // soonest first
+        .sort((a, b) => new Date(a.scheduledDate + 'T' + a.scheduledTime) - new Date(b.scheduledDate + 'T' + b.scheduledTime))
+        .slice(0, 3);
   } else {
       filtered = interviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
       // Sort past interviews desc
       filtered.sort((a, b) => new Date(b.scheduledDate + 'T' + b.scheduledTime) - new Date(a.scheduledDate + 'T' + a.scheduledTime));
+      filtered = filtered.slice(0, 3);
   }
 
   if (filtered.length === 0) {
@@ -257,6 +270,10 @@ function createInterviewItem(interview, type) {
       actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;
   }
 
+  const outcomeBadge = (interview.status === 'COMPLETED' && interview.candidateOutcome && interview.candidateOutcome !== 'PENDING')
+    ? `<span class="badge ${interview.candidateOutcome === 'ACCEPTED' ? 'badge-green' : 'badge-red'}">${interview.candidateOutcome}</span>`
+    : '';
+
   return `
     <div class="interview-item">
       <div class="interview-info">
@@ -266,6 +283,7 @@ function createInterviewItem(interview, type) {
           <span class="badge badge-blue">${interview.interviewRound || 'General'}</span>
           <span>${dateTime}</span>
           <span class="badge ${interview.status === 'COMPLETED' ? 'badge-green' : 'badge-gray'}">${interview.status}</span>
+          ${outcomeBadge}
         </div>
       </div>
       <div>${actionBtn}</div>

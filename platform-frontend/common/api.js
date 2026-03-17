@@ -354,6 +354,7 @@ class ApiService {
 
   // ===== INTERVIEWER APPLICATION ENDPOINTS =====
   async applyToCompanyAsInterviewer(interviewerId, companyId) {
+    // Legacy wrapper (company-level). Prefer applyToPositionAsInterviewer.
     return this.request(`/interviewer-applications`, {
       method: 'POST',
       body: JSON.stringify({
@@ -361,6 +362,18 @@ class ApiService {
         company: { id: companyId },
         applicationDate: new Date().toISOString(),
         status: 'APPLIED' // Default status
+      })
+    });
+  }
+
+  async applyToPositionAsInterviewer(interviewerId, positionId) {
+    return this.request(`/interviewer-applications`, {
+      method: 'POST',
+      body: JSON.stringify({
+        interviewer: { id: interviewerId },
+        position: { id: positionId },
+        applicationDate: new Date().toISOString(),
+        status: 'APPLIED'
       })
     });
   }
@@ -381,6 +394,11 @@ class ApiService {
     return this.request(`/company-admin/positions/${positionId}/applications`, {
       method: 'GET',
     });
+  }
+
+  async getCandidatesForPositionAssigned(positionId, interviewerId) {
+    const qs = interviewerId ? `?interviewerId=${encodeURIComponent(interviewerId)}` : '';
+    return this.request(`/company-admin/positions/${positionId}/applications${qs}`, { method: 'GET' });
   }
 
   // ===== COMPANY ADMIN PROFILE =====
@@ -426,6 +444,12 @@ class ApiService {
 
   async getPositionCandidates(positionId) {
     return this.request(`/company-admin/positions/${positionId}/applications`);
+  }
+
+  async assignCandidateToInterviewer(companyId, applicationId, interviewerId) {
+    return this.request(`/company-admin/applications/${applicationId}/assign?companyId=${encodeURIComponent(companyId)}&interviewerId=${encodeURIComponent(interviewerId)}`, {
+      method: 'PATCH',
+    });
   }
 
   async getCompanyInterviewers(companyId) {

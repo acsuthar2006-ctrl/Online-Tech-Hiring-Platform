@@ -29,6 +29,12 @@ public class InterviewerApplication {
   @JoinColumn(name = "company_id", nullable = false)
   private Company company;
 
+  // Position/job this interviewer applied to conduct interviews for.
+  // Nullable for legacy rows created before per-position applications existed.
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "position_id")
+  private Position position;
+
   @Column(nullable = false)
   @Builder.Default
   private String status = "APPLIED"; // APPLIED, APPROVED, REJECTED

@@ -77,6 +77,13 @@
   padding: 4px 8px;
 }
 
+.table-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 /* Modal Styles */
 .modal {
   position: fixed;

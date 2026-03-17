@@ -1,6 +1,7 @@
 package com.techhiring.platform.controller;
 
 import com.techhiring.platform.dto.CompanyAdminDto;
+import com.techhiring.platform.entity.Application;
 import com.techhiring.platform.entity.InterviewerApplication;
 import com.techhiring.platform.entity.Position;
 import com.techhiring.platform.service.CompanyAdminService;
@@ -79,7 +80,12 @@ public class CompanyAdminController {
   }
 
   @GetMapping("/positions/{positionId}/applications")
-  public ResponseEntity<List<CompanyAdminDto.CandidateInfo>> getCandidatesByPosition(@PathVariable Long positionId) {
+  public ResponseEntity<List<CompanyAdminDto.CandidateInfo>> getCandidatesByPosition(
+      @PathVariable Long positionId,
+      @RequestParam(required = false) Long interviewerId) {
+    if (interviewerId != null) {
+      return ResponseEntity.ok(companyAdminService.getCandidatesByPositionAssignedToInterviewer(positionId, interviewerId));
+    }
     return ResponseEntity.ok(companyAdminService.getCandidatesByPosition(positionId));
   }
 
@@ -99,6 +105,14 @@ public class CompanyAdminController {
   public ResponseEntity<InterviewerApplication> updateInterviewerApplicationStatus(
       @PathVariable Long id, @RequestParam String status) {
     return ResponseEntity.ok(companyAdminService.updateInterviewerApplicationStatus(id, status));
+  }
+
+  @PatchMapping("/applications/{applicationId}/assign")
+  public ResponseEntity<Application> assignCandidate(
+      @PathVariable Long applicationId,
+      @RequestParam Long companyId,
+      @RequestParam Long interviewerId) {
+    return ResponseEntity.ok(companyAdminService.assignCandidateToInterviewer(companyId, applicationId, interviewerId));
   }
 
   // ==================== INTERVIEWS ====================
