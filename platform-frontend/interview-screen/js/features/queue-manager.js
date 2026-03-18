@@ -22,6 +22,71 @@ window.toggleQueueModal = function () {
 }
 
 // ─── Fetch & render the interviewer modal queue list ──────────────────────────
+const _todayStr = () => new Date().toISOString().slice(0, 10);
+
+function _normalizeDate(item) {
+  const raw = item?.scheduledDate || item?.date || null;
+  if (!raw) return null;
+  // Handle ISO or YYYY-MM-DD
+  const d = new Date(raw);
+  if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  // Fallback: try plain string
+  return String(raw).slice(0, 10);
+}
+
+function _filterTimeline(timeline) {
+  if (!Array.isArray(timeline) || !timeline.length) return [];
+
+  const today = _todayStr();
+
+  // Anchor on the first active item (IN_PROGRESS > SCHEDULED) to lock context
+  const anchor =
+    timeline.find(t => t.status === 'IN_PROGRESS') ||
+    timeline.find(t => t.status === 'SCHEDULED') ||
+    timeline[0];
+
+  const anchorCompany =
+    anchor?.company?.id ||
+    anchor?.position?.company?.id ||
+    anchor?.position?.companyId ||
+    anchor?.companyId ||
+    null;
+  const anchorPosition =
+    anchor?.position?.id ||
+    anchor?.positionId ||
+    anchor?.position?.positionId ||
+    null;
+  const anchorInterviewer =
+    anchor?.interviewer?.id ||
+    anchor?.interviewer?.email ||
+    null;
+
+  return timeline.filter(item => {
+    const itemDate = _normalizeDate(item);
+    const matchesDate = itemDate === today; // daily reset
+
+    const matchesCompany =
+      !anchorCompany ||
+      item.company?.id === anchorCompany ||
+      item.position?.company?.id === anchorCompany ||
+      item.position?.companyId === anchorCompany ||
+      item.companyId === anchorCompany;
+
+    const matchesPosition =
+      !anchorPosition ||
+      item.position?.id === anchorPosition ||
+      item.positionId === anchorPosition ||
+      item.position?.positionId === anchorPosition;
+
+    const matchesInterviewer =
+      !anchorInterviewer ||
+      item.interviewer?.id === anchorInterviewer ||
+      item.interviewer?.email === anchorInterviewer;
+
+    return matchesDate && matchesCompany && matchesPosition && matchesInterviewer;
+  });
+}
+
 async function _fetchModalQueue() {
   const list = document.getElementById('queue-modal-list');
   list.innerHTML = '<p>Loading...</p>';
@@ -40,10 +105,11 @@ async function _fetchModalQueue() {
     }
 
     const data = await res.json();
+    const filteredTimeline = _filterTimeline(data.timeline || []);
 
-    if (data.timeline && data.timeline.length > 0) {
+    if (filteredTimeline.length > 0) {
       let html = '<ul style="list-style: none; padding: 0;">';
-      data.timeline.forEach(item => {
+      filteredTimeline.forEach(item => {
         let actionBtn = '';
         let statusColor = '#666';
 

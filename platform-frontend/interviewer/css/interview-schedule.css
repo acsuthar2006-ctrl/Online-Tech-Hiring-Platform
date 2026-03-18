@@ -103,6 +103,13 @@
   line-height: 1;
 }
 
+.date-time {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  letter-spacing: 0.2px;
+}
+
 /* Timeline Line */
 .timeline-item::before {
   content: '';

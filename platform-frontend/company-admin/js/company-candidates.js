@@ -272,7 +272,25 @@ async function loadCandidates() {
       }
     }
 
-    allCandidates = await api.getCompanyCandidates(companyId);
+    const rawCandidates = await api.getCompanyCandidates(companyId);
+
+    // Expand any aggregated candidate -> applications into a flat list so every position shows
+    allCandidates = (rawCandidates || []).flatMap(c => {
+      if (Array.isArray(c.applications) && c.applications.length) {
+        return c.applications.map(app => ({
+          ...c,
+          ...app,
+          // Ensure position identifiers/titles exist on the flattened record
+          positionId: app.positionId || app.position?.id || app.position?.positionId || c.positionId,
+          positionTitle: app.positionTitle || app.position?.positionTitle || app.position?.title || c.positionTitle,
+          status: app.status || c.status,
+          applicationDate: app.applicationDate || c.applicationDate,
+          assignedInterviewerName: app.assignedInterviewerName || c.assignedInterviewerName,
+          appliedDirectly: app.appliedDirectly ?? c.appliedDirectly ?? true
+        }));
+      }
+      return c ? [c] : [];
+    });
     // Populate position filter
     const positionFilter = document.getElementById('positionFilter');
     if (positionFilter) {

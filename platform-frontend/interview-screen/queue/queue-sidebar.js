@@ -38,6 +38,66 @@ let _roomId = null;
 let _userEmail = null;
 let _userRole = null;
 let _pollTimer = null;
+const _todayStr = () => new Date().toISOString().slice(0, 10);
+
+function _normalizeDate(item) {
+  const raw = item?.scheduledDate || item?.date || null;
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  return String(raw).slice(0, 10);
+}
+
+function _filterTimeline(timeline) {
+  if (!Array.isArray(timeline) || !timeline.length) return [];
+
+  const today = _todayStr();
+  const anchor =
+    timeline.find(t => t.status === 'IN_PROGRESS') ||
+    timeline.find(t => t.status === 'SCHEDULED') ||
+    timeline[0];
+
+  const anchorCompany =
+    anchor?.company?.id ||
+    anchor?.position?.company?.id ||
+    anchor?.position?.companyId ||
+    anchor?.companyId ||
+    null;
+  const anchorPosition =
+    anchor?.position?.id ||
+    anchor?.positionId ||
+    anchor?.position?.positionId ||
+    null;
+  const anchorInterviewer =
+    anchor?.interviewer?.id ||
+    anchor?.interviewer?.email ||
+    null;
+
+  return timeline.filter(item => {
+    const itemDate = _normalizeDate(item);
+    const matchesDate = itemDate === today; // daily reset
+
+    const matchesCompany =
+      !anchorCompany ||
+      item.company?.id === anchorCompany ||
+      item.position?.company?.id === anchorCompany ||
+      item.position?.companyId === anchorCompany ||
+      item.companyId === anchorCompany;
+
+    const matchesPosition =
+      !anchorPosition ||
+      item.position?.id === anchorPosition ||
+      item.positionId === anchorPosition ||
+      item.position?.positionId === anchorPosition;
+
+    const matchesInterviewer =
+      !anchorInterviewer ||
+      item.interviewer?.id === anchorInterviewer ||
+      item.interviewer?.email === anchorInterviewer;
+
+    return matchesDate && matchesCompany && matchesPosition && matchesInterviewer;
+  });
+}
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -147,7 +207,8 @@ async function _fetchAndRender() {
     }
 
     const data = await res.json();
-    const timeline = Array.isArray(data.timeline) ? data.timeline : [];
+    const rawTimeline = Array.isArray(data.timeline) ? data.timeline : [];
+    const timeline = _filterTimeline(rawTimeline);
 
     _renderQueue(list, subtitle, timeline);
 

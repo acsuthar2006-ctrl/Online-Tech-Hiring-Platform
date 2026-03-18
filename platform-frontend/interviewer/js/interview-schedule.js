@@ -116,6 +116,9 @@ function renderTimelineItem(interview, sectionId) {
   const date = new Date(dateTimeStr);
   const isCompleted = interview.status === 'COMPLETED';
   const statusClass = isCompleted ? 'status-completed' : 'status-upcoming';
+  const monthLabel = formatDate(date, { month: 'short' });
+  const dayLabel = formatDate(date, { day: '2-digit' });
+  const timeLabel = formatTime(date);
   let outcomeHtml = '';
   if (isCompleted && interview.candidateOutcome && interview.candidateOutcome !== 'PENDING') {
     const isAccepted = interview.candidateOutcome === 'ACCEPTED';
@@ -136,8 +139,9 @@ function renderTimelineItem(interview, sectionId) {
   return `
         <div class="timeline-item">
             <div class="timeline-date">
-                <div class="date-badge">${sectionId === 'today' ? 'Today' : formatDate(date, { month: 'short' })}</div>
-                <div class="date-number">${formatTime(date)}</div>
+                <div class="date-badge">${sectionId === 'today' ? 'Today' : monthLabel}</div>
+                <div class="date-number">${dayLabel}</div>
+                <div class="date-time">${timeLabel}</div>
             </div>
             <div class="interview-card">
                 <div class="interview-header">
