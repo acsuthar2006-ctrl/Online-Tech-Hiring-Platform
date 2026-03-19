@@ -1,113 +1,185 @@
 # Online Technical Hiring Platform (PeerChat)
 
-A real-time video interviewing platform built with Mediasoup (SFU) and WebRTC. Features support for screen recording and low-latency peer-to-peer communication.
+A comprehensive real-time video interviewing and technical hiring platform built as a monorepo. It features scalable role-based user management, structured candidate queues, and a robust low-latency peer-to-peer video conferencing solution using Mediasoup.
+
+---
+
+## Table of Contents
+1. [Project Title & Description](#online-technical-hiring-platform-peerchat)
+2. [Features](#features)
+3. [Demo](#demo)
+4. [Installation](#installation)
+5. [Usage](#usage)
+6. [Project Structure](#project-structure)
+7. [Configuration / Environment Variables](#configuration--environment-variables)
+8. [API Endpoints](#api-endpoints)
+9. [Screenshots](#screenshots)
+10. [Contributing Guidelines](#contributing-guidelines)
+11. [License](#license)
+12. [Contact / Author Info](#contact--author-info)
+
+---
 
 ## Features
 
-- **High Quality Video/Audio**: Uses Mediasoup SFU for scalable multiparty conferencing.
-- **Screen Recording**: Server-side recording of video and audio sessions.
-- **Dynamic IP Support**: Automatically detects public IP on AWS (EC2) for seamless connectivity.
-- **CI/CD Pipeline**: Automated deployment to AWS via GitHub Actions.
+- **Role-Based Portals**: Dedicated dashboards for *Candidates*, *Interviewers*, and *Company Admins* to streamline the hiring process.
+- **Comprehensive Hiring Management**: Tools for scheduling interviews, managing job postings, and tracking candidate progress throughout the pipeline.
+- **Real-Time Video Interviews**: Uses a bespoke Mediasoup SFU setup for high-quality, scalable, low-latency multiparty conferencing.
+- **Waiting Rooms & Queues**: Built-in pre-call lobby and queue manager for structured, professional interview flows.
+- **Screen Sharing & Server-Side Recording**: Native screen sharing support. The media backend streams RTP packets directly to FFmpeg to generate and securely save `.mp4`/`.webm` recordings of the interview.
+- **Automated Deployments**: Ready-to-configure CI/CD pipeline via GitHub Actions for AWS EC2 instances, featuring automatic dynamic IP resolution.
 
-## Quick Start (Local Development)
+---
 
-1.  **Install Dependencies**:
+## Demo
 
-    ```bash
-    npm install
-    ```
+*(Add a link to your live demo, video walkthrough, or staging environment here once deployed)*
+- **Live Demo Site**: [https://your-demo-link.com](https://your-demo-link.com)
+- **Video Walkthrough**: [YouTube Link](https://youtube.com)
 
-2.  **Start Server**:
+---
 
-    ```bash
-    npm start
-    ```
+## Installation
 
-    - Access at `http://localhost:3000`.
+Follow these step-by-step instructions to set up the monolithic environment locally.
 
-## Deployment (AWS)
+### Prerequisites
+- Node.js (v18+)
+- Java (v17+) and Maven
+- PostgreSQL
+- FFmpeg (for server-side video recording)
 
-This project is configured for automated deployment to AWS EC2 (Ubuntu).
+### 1. Database Setup
+Create a PostgreSQL database and configure the local credentials in your Spring Boot application properties before running the backend.
 
-### 1. Initial Server Setup
-
-Follow the `AWS_DEPLOYMENT_GUIDE.md` to launch an instance and install dependencies (Node.js, FFmpeg).
-
-### 2. Automatic IP Detection
-
-The server is configured to automatically detect its public IP on startup.
-
-- **Setup**: Ensure `DETECT_PUBLIC_IP=true` is set in the `.env` file on the server.
-- **Benefit**: You can stop/start the instance and the server will automatically adapt to the new IP address.
-
-### 3. CI/CD (GitHub Actions)
-
-Changes pushed to the `main` branch are automatically deployed to the AWS server.
-
-**Required GitHub Secrets:**
-Go to **Settings** > **Secrets and variables** > **Actions** and add:
-
-- `AWS_HOST`: Private or Public IP of your server (e.g., `13.233.139.200`).
-  > **Important**: If you stop/start your AWS instance, this IP will change. To avoid updating this secret constantly, **allocate an Elastic IP (Static IP)** in the AWS Console and associate it with your instance. This gives you a permanent IP address.
-- `AWS_USERNAME`: `ubuntu`
-- `AWS_SSH_KEY`: Content of your `.pem` key file.
-- `TARGET_DIR`: Path to project on server (e.g., `/home/ubuntu/Peer-Chat-App`).
-
-## Environment Variables (`.env`)
-
-| Variable                 | Description                    | Default                        |
-| :----------------------- | :----------------------------- | :----------------------------- |
-| `PORT`                   | HTTP Server Port               | `3000`                         |
-| `MEDIASOUP_MIN_PORT`     | Start of UDP range             | `40000`                        |
-| `MEDIASOUP_MAX_PORT`     | End of UDP range               | `40050`                        |
-| `MEDIASOUP_ANNOUNCED_IP` | Public IP (Auto-filled on AWS) | `Local LAN IP`                 |
-| `DETECT_PUBLIC_IP`       | Enable auto-detection          | `false` (Local) / `true` (AWS) |
-
-## Troubleshooting
-
-- **"Video Connecting..."**: Ensure UDP ports `40000-40050` are allowed in AWS Security Groups.
-- **Deployment Fails**: Check GitHub Actions logs. Verify `AWS_HOST` matches your current IP.
-
-## How PeerChat Works (SFU Architecture)
-
-PeerChat uses **Mediasoup** as a Selective Forwarding Unit (SFU). This means the server acts as a smart router for media packets.
-
-![PeerChat SFU Architecture](./sfu_architecture_detailed.png)
-
-### 1. Forwarding (The "Router")
-
-Instead of mixing audio/video (which is CPU intensive), the SFU simple **forwards** packets.
-
-- **Producer**: A user sends their video stream (RTP packets) to the server.
-- **Router**: The server's `Router` component receives these packets.
-- **Consumer**: When another user wants to watch, the Router creates a copy of the stream and sends it to that user.
-- _Benefit_: The uploader only sends 1 stream, regardless of how many people are watching.
-
-### 2. Recording (FFmpeg Integration)
-
-Recording is handled by treating the "Recorder" as just another user (Consumer).
-
-1.  **Transport Creation**: The server creates a special `DirectTransport` (no network delay) for recording.
-2.  **Consumption**: This transport _consumes_ the video and audio streams from the Router.
-3.  **Process**: The RTP packets are piped directly into an **FFmpeg** process running on the server.
-4.  **Output**: FFmpeg decodes the packets and muxes them into a single `.mp4` or `.webm` file.
-
-```mermaid
-sequenceDiagram
-    participant U as User (Uploader)
-    participant S as SFU Receiver
-    participant R as SFU Router
-    participant V as Viewer (Downloader)
-    participant Rec as FFmpeg (Recorder)
-
-    Note over U, S: Publishing
-    U->>S: Send RTP Packets (Video/Audio)
-    S->>R: Feed to Router
-
-    par Forwarding
-        R->>V: Forward RTP Packets (to Viewer)
-    and Recording
-        R->>Rec: Pipe RTP Packets (to FFmpeg)
-        Rec->>Rec: Save to Disk (.mp4)
-    end
+### 2. Backend API (`platform-backend`)
+Navigate to the backend directory and start the Spring Boot REST API server:
+```bash
+cd platform-backend
+./mvnw spring-boot:run
 ```
+*(Runs on `http://localhost:8080`)*
+
+### 3. Media Server & SFU (`media-server`)
+Install dependencies and run the Node.js Mediasoup server:
+```bash
+cd media-server
+npm install
+npm start
+```
+*(Runs on `http://localhost:3000`)*
+
+### 4. Frontend Application (`platform-frontend`)
+Since the frontend uses raw HTML/CSS/JS (or React/Vite depending on your feature branch), serve the static files using a simple web server like Live Server (VS Code), Vite, or configure the `media-server` to serve these files statically from port `3000`.
+
+---
+
+## Usage
+
+1. **Company Admin**: Log in as an admin to create job postings, review scheduled interfaces, and invite candidates/interviewers to the platform.
+2. **Candidate**: Apply for jobs through the Candidate portal, view hiring companies, and wait in the lobby when it is time for the scheduled interview.
+3. **Interviewer**: Check the Interviewer dashboard for upcoming daily schedules, view candidate resumes, and admit candidates from the waitlist into the main video interview room.
+4. **Video Call**: Once an interview starts, both parties can communicate via video and audio. Interviewers can ask technical questions while candidates can utilize screen sharing. The server will seamlessly record the session in the background.
+
+---
+
+## Project Structure
+
+```text
+Online-Tech-Hiring-Platform/
+├── platform-frontend/       # Web interfaces, dashboards, and interview screen UI
+├── platform-backend/        # Spring Boot application (REST APIs, Auth, PostgreSQL)
+├── media-server/            # Node.js server for Mediasoup (SFU) & WebRTC recording
+├── init_data.sh             # Script to initialize dummy/seed data
+├── start_local.sh           # Local bootstrapping scripts
+├── .github/workflows/       # CI/CD deployment logic for AWS
+└── README.md                # Project documentation
+```
+
+---
+
+## Configuration / Environment Variables
+
+### Media Server (`media-server/.env`)
+Create a `.env` file in the `media-server` directory with the following variables:
+```env
+PORT=3000
+MEDIASOUP_MIN_PORT=40000
+MEDIASOUP_MAX_PORT=40050
+DETECT_PUBLIC_IP=false           # Set to true when deploying on AWS EC2
+MEDIASOUP_ANNOUNCED_IP=127.0.0.1 # Ensure this matches your local LAN IP
+```
+
+### Backend (`platform-backend/src/main/resources/application.properties`)
+Update the default properties to match your PostgreSQL setup:
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/hiring_platform
+spring.datasource.username=postgres
+spring.datasource.password=your_secure_password
+```
+
+---
+
+## API Endpoints
+
+The `platform-backend` provides RESTful access for user, role, and interview management. Below are sample endpoints:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/login` | Authenticate users (Admin, Interviewer, Candidate). |
+| `GET`  | `/api/users/profile` | Retrieve the authenticated user's profile information. |
+| `POST` | `/api/interviews/schedule` | Schedule a new technical interview instance. |
+| `GET`  | `/api/candidates/queue` | Fetch candidates currently waiting in the video lobby. |
+
+*(Note: Refer to your local Swagger UI at `http://localhost:8080/swagger-ui.html` for complete API documentation, including request payloads and authentication headers).*
+
+---
+
+## 📡 SFU Architecture & Recording (Mediasoup + FFmpeg)
+
+Our platform leverages **Mediasoup** as a WebRTC Selective Forwarding Unit (SFU) rather than a traditional MCU (Multipoint Control Unit) or P2P mesh. 
+
+### Why an SFU?
+In a standard P2P mesh network, every participant must send their video/audio stream to *every other* participant, which destroys device bandwidth and CPU as the room grows. 
+With an **SFU**, a user uploads their media stream exactly **once** to the Mediasoup server. The server acts as a smart router, instantly forwarding that stream to everyone else in the room. This drastically lowers client-side resource consumption.
+
+### How FFmpeg Server-Side Recording Works
+We treat our recording mechanism as just another invisible "participant" in the room:
+1. **Mediasoup DirectTransport**: When an interview starts, the server spins up a `DirectTransport`—a special local transport that receives raw media packets directly within the Node.js process without network latency.
+2. **Consuming RTP Packets**: We instruct Mediasoup to "consume" the video and audio producer streams exactly like a web browser would.
+3. **Piping to FFmpeg**: The server spawns a local FFmpeg child process. We take the raw, unencrypted RTP packets from the `DirectTransport` and pipe them securely via UDP or standard streams directly into FFmpeg.
+4. **Muxing & Encoding**: FFmpeg dynamically decodes the streams, stitches the audio and video together (muxing), and outputs a high-quality `.mp4` or `.webm` file natively to the server's disk `recordings/` directory without needing a headless browser like Puppeteer.
+
+---
+
+## Screenshots
+
+**SFU Architecture Flow**
+![PeerChat SFU Architecture Detailed Pipeline](./sfu_architecture_detailed.png)
+*(Pipeline illustrating how Mediasoup forwards packets and FFmpeg captures the streams for recording).*
+
+*(Note: Add additional UI screenshots of the Candidate Dashboard, Interviewer Dashboard, and active Video Room here to showcase the beautiful frontend).*
+
+---
+
+## Contributing Guidelines
+
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request and provide a detailed description of your changes.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## Contact / Author Info
+
+- **Name** - Suthar Aarya && Vrushti Shah
+- **Email** - [@EMAIL_ADDRESS](acsuthar2006@gmail.com)
+- **LinkedIn** - [@AaryaSuthar](https://www.linkedin.com/in/aarya-suthar-210897376/)
