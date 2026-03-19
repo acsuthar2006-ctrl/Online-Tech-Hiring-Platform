@@ -44,11 +44,20 @@ public class Application {
   @Column(name = "created_at", updatable = false)
   private java.time.LocalDateTime createdAt;
 
+  @Column(name = "updated_at")
+  private java.time.LocalDateTime updatedAt;
+
   @PrePersist
   protected void onCreate() {
     if (applicationDate == null) {
       applicationDate = java.time.LocalDateTime.now();
     }
     createdAt = java.time.LocalDateTime.now();
+    updatedAt = java.time.LocalDateTime.now();
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = java.time.LocalDateTime.now();
   }
 }

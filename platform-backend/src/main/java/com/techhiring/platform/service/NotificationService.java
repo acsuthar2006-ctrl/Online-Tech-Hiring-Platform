@@ -50,6 +50,7 @@ public class NotificationService {
     } else if (user instanceof Interviewer) {
       items.addAll(interviewerNewJobItems((Interviewer) user));
       items.addAll(interviewerApplicationStatusItems((Interviewer) user));
+      items.addAll(interviewerAssignedCandidateItems((Interviewer) user));
     } else if (user instanceof CompanyAdmin) {
       items.addAll(companyAdminNewApplicationItems((CompanyAdmin) user));
       items.addAll(companyAdminCandidateOutcomeItems((CompanyAdmin) user));
@@ -293,6 +294,26 @@ public class NotificationService {
               .createdAt(ia.getCreatedAt())
               .build();
         })
+        .collect(Collectors.toList());
+  }
+
+  private List<NotificationsDto.NotificationItem> interviewerAssignedCandidateItems(Interviewer interviewer) {
+    if (interviewer.getId() == null) return List.of();
+
+    LocalDateTime cutoff = LocalDateTime.now().minusDays(14); // e.g. last 14 days
+
+    List<Application> assignedApps = applicationRepository.findByAssignedInterviewer_Id(interviewer.getId());
+
+    return assignedApps.stream()
+        .filter(a -> a.getUpdatedAt() != null && a.getUpdatedAt().isAfter(cutoff))
+        .map(a -> NotificationsDto.NotificationItem.builder()
+            .id("assigned-" + a.getId())
+            .type("CANDIDATE_ASSIGNED")
+            .title("New Candidate Assigned")
+            .message(safeCandidateName(a) + " has been assigned to you for " + safePositionTitle(a))
+            .actionUrl("/interviewer/hiring-companies.html")
+            .createdAt(a.getUpdatedAt())
+            .build())
         .collect(Collectors.toList());
   }
 

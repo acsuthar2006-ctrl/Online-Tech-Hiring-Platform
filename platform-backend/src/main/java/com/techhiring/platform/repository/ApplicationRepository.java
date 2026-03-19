@@ -15,5 +15,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
   List<Application> findByPosition_CompanyId(Long companyId);
   List<Application> findByPosition_Id(Long positionId);
   List<Application> findByPosition_IdAndAssignedInterviewer_Id(Long positionId, Long interviewerId);
+  List<Application> findByAssignedInterviewer_Id(Long interviewerId);
 }
 
