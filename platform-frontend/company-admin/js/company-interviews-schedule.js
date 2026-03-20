@@ -115,12 +115,12 @@ function renderSchedule(interviews) {
       }
     }
 
-    const recordingBtn = (iv.recordings && iv.recordings.length > 0)
-      ? iv.recordings.map(rec => {
+    const recordingBtn = iv.recordingUrl
+      ? (() => {
           const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
-          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
-        }).join('')
+          const fileUrl = `${mediaBase}/recordings/${iv.recordingUrl}`;
+          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${iv.recordingUrl}">Download Recording</button>`;
+        })()
       : '';
 
     const actionBtns = iv.status === 'COMPLETED'
@@ -190,19 +190,6 @@ async function loadInterviews() {
   if (container) container.innerHTML = '<p class="text-muted" style="padding:32px;">Loading interviews...</p>';
   try {
     allInterviews = await api.getCompanyInterviews(companyId);
-    allInterviews = await Promise.all(allInterviews.map(async (iv) => {
-      if (iv.status === 'COMPLETED') {
-        try {
-          const roomId = iv.meetingLink || String(iv.id);
-          const recordings = await api.getRoomRecordings(roomId);
-          return { ...iv, recordings: recordings || [] };
-        } catch (e) {
-          console.warn(`Failed to fetch recordings for interview ${iv.id}`, e);
-          return iv;
-        }
-      }
-      return iv;
-    }));
     // Sort by scheduled date descending
     allInterviews.sort((a, b) => {
       if (!a.scheduledDate) return 1;

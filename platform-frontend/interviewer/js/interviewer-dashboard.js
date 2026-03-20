@@ -391,22 +391,7 @@ async function renderScheduleList(interviews, type = 'upcoming') {
     return type === 'completed' ? (db - da) : (da - db);
   }).slice(0, 3);
 
-  // Fetch recordings for completed interviews
-  const interviewsWithRecordings = await Promise.all(sortedLimited.map(async (interview) => {
-    if (interview.status === 'COMPLETED') {
-      try {
-        const roomId = interview.meetingLink || String(interview.id);
-        const recordings = await api.getRoomRecordings(roomId);
-        return { ...interview, recordings: recordings || [] };
-      } catch (e) {
-        console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
-        return interview;
-      }
-    }
-    return interview;
-  }));
-
-  return interviewsWithRecordings.map(createScheduleItem).join('');
+  return sortedLimited.map(createScheduleItem).join('');
 }
 
 
@@ -451,12 +436,10 @@ function createActionButtons(interview) {
       buttons += `<span class="badge ${outcomeClass}" style="margin-right:4px;">${interview.candidateOutcome}</span>`;
     }
 
-    if (interview.recordings && interview.recordings.length > 0) {
-      buttons += interview.recordings.map(rec => {
-          const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
-          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
-      }).join('');
+    if (interview.recordingUrl) {
+      const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+      const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
+      buttons += `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
     }
     return buttons;
   }

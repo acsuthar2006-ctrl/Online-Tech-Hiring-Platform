@@ -73,19 +73,7 @@ async function initializeDashboard() {
     // Load upcoming interviews
     const interviewsData = await api.getUpcomingInterviews(candidateProfile.email);
     
-    // Pre-fetch recordings for completed ones
-    upcomingInterviews = await Promise.all(interviewsData.map(async (interview) => {
-      if (interview.status === 'COMPLETED' || interview.status === 'CANCELLED') {
-        try {
-          const roomId = interview.meetingLink || String(interview.id);
-          const recordings = await api.getRoomRecordings(roomId);
-          return { ...interview, recordings: recordings || [] };
-        } catch (e) {
-          return interview;
-        }
-      }
-      return interview;
-    }));
+    upcomingInterviews = interviewsData;
 
     // Render dashboard
     renderDashboard();
@@ -260,12 +248,10 @@ function createInterviewItem(interview, type) {
   let actionBtn = '';
   if (type === 'upcoming') {
       actionBtn = `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>`;
-  } else if (interview.recordings && interview.recordings.length > 0) {
-      actionBtn = interview.recordings.map(rec => {
-          const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
-          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left:5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
-      }).join('');
+  } else if (interview.recordingUrl) {
+      const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+      const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
+      actionBtn = `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left:5px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
   } else {
       actionBtn = `<span class="text-muted" style="font-size: 0.8rem">No Recording</span>`;
   }

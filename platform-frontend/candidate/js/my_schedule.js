@@ -69,20 +69,7 @@ async function loadSchedule() {
     const userInfo = api.getUserInfo();
     let interviews = await api.getUpcomingInterviews(userInfo.email);
 
-    // Fetch recordings for completed interviews
-    allInterviews = await Promise.all(interviews.map(async (interview) => {
-      if (interview.status === 'COMPLETED') {
-        try {
-          const roomId = interview.meetingLink || String(interview.id);
-          const recordings = await api.getRoomRecordings(roomId);
-          return { ...interview, recordings: recordings || [] };
-        } catch (e) {
-          console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
-          return interview;
-        }
-      }
-      return interview;
-    }));
+    allInterviews = interviews;
 
     renderSchedule('all');
   } catch (error) {
@@ -216,12 +203,12 @@ function renderInterviewList(interviews) {
               </div>
               <div class="interview-actions">
                 ${isJoinable ? `<button class="btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join Interview</button>` : ''}
-                ${interview.status === 'COMPLETED' && interview.recordings && interview.recordings.length > 0
-        ? interview.recordings.map(rec => {
+                ${interview.status === 'COMPLETED' && interview.recordingUrl
+        ? (() => {
             const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
-            const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-            return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
-          }).join('')
+            const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
+            return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 5px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
+          })()
         : ''}
               </div>
             </div>
