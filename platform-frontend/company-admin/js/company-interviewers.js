@@ -58,9 +58,7 @@ function renderInterviewers(interviewers) {
     const initials = iv.fullName ? iv.fullName.split(' ').map(p => p[0]).join('').toUpperCase().substring(0, 2) : '??';
     const expertiseTags = (iv.expertises || []).map(e => `<span class="tag">${e}</span>`).join('');
     const viewBtn = `<button class="btn-outline btn-sm btn-full" onclick="openInterviewerDetails(${iv.id})">View</button>`;
-    const assignBtn = (iv.applicationStatus === 'APPROVED' && iv.positionId)
-      ? `<button class="btn-primary btn-sm btn-full" onclick="openAssignCandidates(${iv.id}, ${iv.positionId}, ${JSON.stringify(iv.fullName || 'Interviewer').replace(/\"/g, '&quot;')}, ${JSON.stringify(iv.positionTitle || 'Position').replace(/\"/g, '&quot;')})">Assign Candidates</button>`
-      : '';
+    const assignBtn = '';
     const actionBtns = iv.appliedToCompany
       ? (iv.applicationStatus === 'APPLIED'
         ? `<button class="btn-primary btn-sm btn-full" onclick="approveInterviewer(${iv.applicationId})">Approve</button>
@@ -103,69 +101,7 @@ function renderInterviewers(interviewers) {
   }).join('');
 }
 
-function openAssignModal() {
-  const modal = document.getElementById('assignCandidatesModal');
-  if (!modal) return;
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden', 'false');
-}
 
-function closeAssignModal() {
-  const modal = document.getElementById('assignCandidatesModal');
-  if (!modal) return;
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden', 'true');
-}
-
-window.openAssignCandidates = async function (interviewerId, positionId, interviewerName, positionTitle) {
-  const titleEl = document.getElementById('assignCandidatesTitle');
-  const listEl = document.getElementById('assignCandidatesList');
-  if (titleEl) titleEl.textContent = `Assign Candidates • ${positionTitle} • ${interviewerName}`;
-  if (listEl) listEl.innerHTML = `<div class="modal-item">Loading...</div>`;
-  openAssignModal();
-
-  try {
-    const candidates = await api.getPositionCandidates(positionId);
-    const unassigned = (candidates || []).filter(c => !c.assignedInterviewerId && c.appliedDirectly);
-
-    if (!unassigned || unassigned.length === 0) {
-      if (listEl) listEl.innerHTML = `<div class="modal-item">No unassigned candidates for this position.</div>`;
-      return;
-    }
-
-    if (listEl) {
-      listEl.innerHTML = unassigned.map(c => `
-        <div class="modal-item" data-app-id="${c.applicationId}">
-          <div class="item-title">${c.fullName}</div>
-          <div class="item-meta">${c.email} • ${c.status}</div>
-          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
-            <button class="btn-primary btn-sm" onclick="assignCandidate(${positionId}, ${interviewerId}, ${c.applicationId})">Assign</button>
-          </div>
-        </div>
-      `).join('');
-    }
-  } catch (e) {
-    if (listEl) listEl.innerHTML = `<div class="modal-item" style="color:#dc2626;">Failed to load candidates: ${e.message}</div>`;
-  }
-};
-
-window.assignCandidate = async function (positionId, interviewerId, applicationId) {
-  try {
-    await api.assignCandidateToInterviewer(companyId, applicationId, interviewerId);
-    // remove from list UI
-    const row = document.querySelector(`#assignCandidatesList .modal-item[data-app-id="${applicationId}"]`);
-    if (row) row.remove();
-    const listEl = document.getElementById('assignCandidatesList');
-    if (listEl) {
-      const remaining = listEl.querySelectorAll('.modal-item[data-app-id]').length;
-      if (remaining === 0) {
-        listEl.innerHTML = `<div class="modal-item">All candidates for this position are assigned.</div>`;
-      }
-    }
-  } catch (e) {
-    alert('Failed to assign: ' + e.message);
-  }
-};
 
 // ===== VIEW DETAILS =====
 window.openInterviewerDetails = function (interviewerId) {
@@ -313,14 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const assignClose = document.getElementById('assignCandidatesClose');
-  if (assignClose) assignClose.addEventListener('click', closeAssignModal);
-  const assignModal = document.getElementById('assignCandidatesModal');
-  if (assignModal) {
-    assignModal.addEventListener('click', (e) => {
-      if (e.target === assignModal) closeAssignModal();
-    });
-  }
+
   wireUpPostFilter();
   populatePostFilter();
 

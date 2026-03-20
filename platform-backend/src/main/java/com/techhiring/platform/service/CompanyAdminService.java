@@ -280,7 +280,53 @@ public class CompanyAdminService {
     InterviewerApplication ia = interviewerApplicationRepository.findById(applicationId)
         .orElseThrow(() -> new RuntimeException("Interviewer application not found"));
     ia.setStatus(status);
-    return interviewerApplicationRepository.save(ia);
+    InterviewerApplication saved = interviewerApplicationRepository.save(ia);
+
+    // When a new interviewer is approved, retroactively assign any unassigned candidates
+    // for that position using the least-loaded strategy (catch-up round-robin).
+    if ("APPROVED".equalsIgnoreCase(status) && ia.getPosition() != null) {
+      Long positionId = ia.getPosition().getId();
+
+      // All currently approved interviewers for this position, sorted by IA id (stable tiebreaker)
+      List<InterviewerApplication> approvedIas =
+          interviewerApplicationRepository.findByPositionIdAndStatusOrderByIdAsc(positionId, "APPROVED");
+
+      if (!approvedIas.isEmpty()) {
+        // Unassigned applications for this position, sorted by application id (arrival order)
+        List<Application> unassigned =
+            applicationRepository.findByPosition_IdAndAssignedInterviewerIsNull(positionId)
+                .stream()
+                .sorted(java.util.Comparator.comparingLong(Application::getId))
+                .collect(java.util.stream.Collectors.toList());
+
+        if (!unassigned.isEmpty()) {
+          // Build a mutable count map: interviewerId -> current assignment count
+          java.util.Map<Long, Long> countMap = new java.util.HashMap<>();
+          for (InterviewerApplication approved : approvedIas) {
+            Long ivId = approved.getInterviewer().getId();
+            long count = applicationRepository.findByPosition_IdAndAssignedInterviewer_Id(positionId, ivId).size();
+            countMap.put(ivId, count);
+          }
+
+          // Assign each unassigned application to the least-loaded interviewer
+          for (Application app : unassigned) {
+            InterviewerApplication chosen = approvedIas.stream()
+                .min(java.util.Comparator.comparingLong(
+                    a -> countMap.getOrDefault(a.getInterviewer().getId(), 0L)
+                ))
+                .orElse(null);
+            if (chosen != null) {
+              app.setAssignedInterviewer(chosen.getInterviewer());
+              applicationRepository.save(app);
+              // Increment local count so next iteration picks correctly
+              countMap.merge(chosen.getInterviewer().getId(), 1L, Long::sum);
+            }
+          }
+        }
+      }
+    }
+
+    return saved;
   }
 
   // ==================== INTERVIEWS ====================

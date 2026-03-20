@@ -15,4 +15,6 @@ public interface InterviewerApplicationRepository extends JpaRepository<Intervie
   Optional<InterviewerApplication> findByInterviewerIdAndPositionId(Long interviewerId, Long positionId);
   List<InterviewerApplication> findByStatus(String status);
   List<InterviewerApplication> findByCompanyIdAndStatus(Long companyId, String status);
+  List<InterviewerApplication> findByPositionIdAndStatus(Long positionId, String status);
+  List<InterviewerApplication> findByPositionIdAndStatusOrderByIdAsc(Long positionId, String status);
 }
