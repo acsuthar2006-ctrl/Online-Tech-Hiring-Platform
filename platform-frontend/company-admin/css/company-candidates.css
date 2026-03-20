@@ -45,6 +45,11 @@
 .candidates-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.candidates-table tr.group-end td {
+  border-bottom: 2px solid var(--blue-300);
 }
 
 .candidates-table thead {
