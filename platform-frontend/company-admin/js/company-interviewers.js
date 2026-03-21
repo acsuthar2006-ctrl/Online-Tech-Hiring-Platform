@@ -161,47 +161,77 @@ function renderInterviewers(interviewers) {
 
 
 // ===== VIEW & CHANGE CANDIDATES =====
+let currentViewCandidates = [];
+let currentViewInterviewerId = null;
+let currentViewPositionId = null;
+let currentViewInterviewerName = '';
+let currentViewPositionTitle = '';
+
+function renderViewCandidatesList(query = '') {
+  const listEl = document.getElementById('viewCandidatesList');
+  if (!listEl) return;
+
+  if (!currentViewCandidates || currentViewCandidates.length === 0) {
+    listEl.innerHTML = `<div class="modal-item">No candidates currently assigned.</div>`;
+    return;
+  }
+
+  const q = query.toLowerCase().trim();
+  const filtered = currentViewCandidates.filter(c => 
+    (c.fullName && c.fullName.toLowerCase().includes(q)) || 
+    (c.email && c.email.toLowerCase().includes(q))
+  );
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div class="modal-item" style="color:var(--gray-500); text-align:center;">No candidates match your search.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(c => {
+    const statusUpper = (c.status || '').toUpperCase();
+    let actionHtml = '';
+    if (statusUpper === 'ACCEPTED') {
+      actionHtml = `<span class="badge" style="background:#dcfce7; color:#166534;">Accepted</span>`;
+    } else if (statusUpper === 'REJECTED') {
+      actionHtml = `<span class="badge" style="background:#fee2e2; color:#991b1b;">Rejected</span>`;
+    } else if (statusUpper.includes('SCHEDULED') || c.interviewStatus) { 
+      actionHtml = `<span class="badge" style="background:#dbeafe; color:#1e40af;">Interview Scheduled</span>`;
+    } else {
+      actionHtml = `<button class="btn-primary btn-sm" onclick="openChangeInterviewer(${c.applicationId}, ${currentViewInterviewerId}, ${currentViewPositionId}, '${currentViewInterviewerName.replace(/'/g, "\\'")}', '${currentViewPositionTitle.replace(/'/g, "\\'")}')">Change Interviewer</button>`;
+    }
+
+    return `
+      <div class="modal-item" data-app-id="${c.applicationId}">
+        <div class="item-title">${c.fullName}</div>
+        <div class="item-meta">${c.email} • ${c.status}</div>
+        <div style="margin-top:10px; display:flex; justify-content:flex-end; align-items:center;">
+          ${actionHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 window.openViewCandidates = async function(interviewerId, positionId, interviewerName, positionTitle) {
   const titleEl = document.getElementById('viewCandidatesTitle');
   const listEl = document.getElementById('viewCandidatesList');
+  const searchInput = document.getElementById('viewCandidatesSearch');
+  
   if (titleEl) titleEl.textContent = `Assigned Candidates • ${positionTitle} • ${interviewerName}`;
   if (listEl) listEl.innerHTML = `<div class="modal-item">Loading...</div>`;
+  if (searchInput) searchInput.value = '';
   
   const modal = document.getElementById('viewCandidatesModal');
   if (modal) { modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false'); }
 
   try {
-    const candidates = await api.getCandidatesForPositionAssigned(positionId, interviewerId);
-    if (!candidates || candidates.length === 0) {
-      if (listEl) listEl.innerHTML = `<div class="modal-item">No candidates currently assigned.</div>`;
-      return;
-    }
-
-    if (listEl) {
-      listEl.innerHTML = candidates.map(c => {
-        const statusUpper = (c.status || '').toUpperCase();
-        let actionHtml = '';
-        if (statusUpper === 'ACCEPTED') {
-          actionHtml = `<span class="badge" style="background:#dcfce7; color:#166534;">Accepted</span>`;
-        } else if (statusUpper === 'REJECTED') {
-          actionHtml = `<span class="badge" style="background:#fee2e2; color:#991b1b;">Rejected</span>`;
-        } else if (statusUpper.includes('SCHEDULED') || c.interviewStatus) { 
-          actionHtml = `<span class="badge" style="background:#dbeafe; color:#1e40af;">Interview Scheduled</span>`;
-        } else {
-          actionHtml = `<button class="btn-primary btn-sm" onclick="openChangeInterviewer(${c.applicationId}, ${interviewerId}, ${positionId}, '${interviewerName.replace(/'/g, "\\'")}', '${positionTitle.replace(/'/g, "\\'")}')">Change Interviewer</button>`;
-        }
-
-        return `
-          <div class="modal-item" data-app-id="${c.applicationId}">
-            <div class="item-title">${c.fullName}</div>
-            <div class="item-meta">${c.email} • ${c.status}</div>
-            <div style="margin-top:10px; display:flex; justify-content:flex-end; align-items:center;">
-              ${actionHtml}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
+    currentViewCandidates = await api.getCandidatesForPositionAssigned(positionId, interviewerId);
+    currentViewInterviewerId = interviewerId;
+    currentViewPositionId = positionId;
+    currentViewInterviewerName = interviewerName;
+    currentViewPositionTitle = positionTitle;
+    
+    renderViewCandidatesList('');
   } catch (e) {
     if (listEl) listEl.innerHTML = `<div class="modal-item" style="color:#dc2626;">Failed to load candidates: ${e.message}</div>`;
   }
@@ -438,6 +468,13 @@ document.addEventListener('DOMContentLoaded', () => {
         viewCandidatesModal.classList.remove('show');
         viewCandidatesModal.setAttribute('aria-hidden', 'true');
       }
+    });
+  }
+
+  const viewCandidatesSearch = document.getElementById('viewCandidatesSearch');
+  if (viewCandidatesSearch) {
+    viewCandidatesSearch.addEventListener('input', (e) => {
+      renderViewCandidatesList(e.target.value);
     });
   }
 

@@ -23,18 +23,18 @@ public class EmailService {
   @Async
   public void sendInterviewInvitation(String to, String candidateName, String interviewDate, String interviewTime,
       String meetingLink) {
-    String subject = "Interview Invitation - TechHiring Platform";
+    String subject = "Interview Invitation - TechHiring";
     String content = String.format("""
         <html>
         <body>
             <h2>Hello %s,</h2>
-            <p>You have been scheduled for a technical interview.</p>
+            <p>You have been scheduled for an interview.</p>
             <p><strong>Date:</strong> %s</p>
             <p><strong>Time:</strong> %s</p>
             <p>Please join using the following link at the scheduled time:</p>
             <a href="%s">Join Interview</a>
             <br/><br/>
-            <p>Best regards,<br/>TechHiring Team</p>
+            <p>Best regards,<br/>TechHiring</p>
         </body>
         </html>
         """, candidateName, interviewDate, interviewTime, meetingLink);
@@ -53,7 +53,7 @@ public class EmailService {
             <p>Please be ready to join.</p>
             <a href="%s">Join Waiting Room</a>
             <br/><br/>
-            <p>Best regards,<br/>TechHiring Team</p>
+            <p>Best regards,<br/>TechHiring</p>
         </body>
         </html>
         """, candidateName, meetingLink);
