@@ -328,6 +328,19 @@ window.viewAssignedCandidates = async (positionId, positionTitle, companyName) =
             return;
         }
 
+        // --- Schedule All button ---
+        const pendingCandidates = getPendingCandidates(candidates);
+        const scheduleAllHtml = pendingCandidates.length > 0
+            ? `<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #e5e7eb;">
+                 <button
+                   class="btn btn-primary"
+                   style="width:100%;font-weight:600;"
+                   onclick="window.location.href='${buildScheduleAllUrl(pendingCandidates.map(c => c.email), positionTitle, companyName, null, positionId)}'">
+                   📅 Schedule Interview for all (${pendingCandidates.length} candidate${pendingCandidates.length > 1 ? 's' : ''})
+                 </button>
+               </div>`
+            : '';
+
         const renderCandidateRow = (c) => {
             let actionHTML = '';
 
@@ -365,11 +378,32 @@ window.viewAssignedCandidates = async (positionId, positionTitle, companyName) =
             `;
         };
 
-        list.innerHTML = candidates.map(renderCandidateRow).join('');
+        list.innerHTML = scheduleAllHtml + candidates.map(renderCandidateRow).join('');
     } catch (e) {
         list.innerHTML = `<p style="color:red;">Failed to load candidates: ${e.message}</p>`;
     }
 };
+
+// Returns candidates who still need an interview scheduled
+function getPendingCandidates(candidates) {
+    return candidates.filter(c => {
+        if (c.candidateOutcome && c.candidateOutcome !== 'PENDING') return false;
+        if (c.interviewStatus === 'SCHEDULED' || c.interviewStatus === 'IN_PROGRESS' || c.interviewStatus === 'COMPLETED') return false;
+        return c.status === 'APPLIED' || c.status === 'SHORTLISTED' || c.status === 'PENDING';
+    });
+}
+
+// Builds the URL to open the schedule page with multiple emails pre-filled
+function buildScheduleAllUrl(emails, positionTitle, companyName, companyId, positionId) {
+    const params = new URLSearchParams({
+        email: emails.join(', '),
+        positionTitle,
+        companyName,
+        ...(companyId ? { companyId } : {}),
+        ...(positionId ? { positionId } : {})
+    });
+    return `schedule-an-interview.html?${params.toString()}`;
+}
 
 window.closeCandidatesModal = () => {
     const modal = document.getElementById('candidatesModal');
