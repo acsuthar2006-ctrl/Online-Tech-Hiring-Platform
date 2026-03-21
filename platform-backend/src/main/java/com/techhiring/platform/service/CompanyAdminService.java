@@ -94,17 +94,7 @@ public class CompanyAdminService {
   // company's jobs get their application details overlaid.
 
   public List<CompanyAdminDto.CandidateInfo> getCandidatesForCompany(Long companyId) {
-    // Build a map: candidateId -> best application for this company
     List<Application> applications = applicationRepository.findByPosition_CompanyId(companyId);
-    Map<Long, Application> appliedMap = new LinkedHashMap<>();
-    for (Application app : applications) {
-      Long cid = app.getCandidate().getId();
-      // Keep the most recent application per candidate
-      appliedMap.merge(cid, app, (existing, incoming) ->
-          incoming.getApplicationDate() != null && existing.getApplicationDate() != null &&
-          incoming.getApplicationDate().isAfter(existing.getApplicationDate()) ? incoming : existing);
-    }
-
     List<Candidate> allCandidates = candidateRepository.findAll();
     List<CompanyAdminDto.CandidateInfo> result = new ArrayList<>();
 
@@ -112,47 +102,63 @@ public class CompanyAdminService {
       List<String> skills = candidateSkillRepository.findByCandidateId(c.getId())
           .stream().map(CandidateSkill::getSkillName).collect(Collectors.toList());
 
-      Application app = appliedMap.get(c.getId());
-      boolean applied = app != null;
+      List<Application> candidateApps = applications.stream()
+          .filter(app -> app.getCandidate().getId().equals(c.getId()))
+          .collect(Collectors.toList());
 
-      Long posId = applied ? app.getPosition().getId() : null;
-      String interviewStatus = null;
-      String candidateOutcome = null;
-      Long interviewId = null;
-      if (applied) {
-        List<Interview> candidateInterviews = interviewRepository.findByCandidateId(c.getId());
-        Interview relatedInterview = candidateInterviews.stream()
-            .filter(i -> i.getPosition() != null && i.getPosition().getId().equals(posId))
-            .findFirst()
-            .orElse(null);
-        if (relatedInterview != null) {
-          interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
-          candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
-          interviewId = relatedInterview.getId();
+      if (candidateApps.isEmpty()) {
+        result.add(CompanyAdminDto.CandidateInfo.builder()
+            .id(c.getId())
+            .fullName(c.getFullName())
+            .email(c.getEmail())
+            .applicationId(null)
+            .positionId(null)
+            .positionTitle(null)
+            .applicationDate(null)
+            .status("NOT_APPLIED")
+            .appliedDirectly(false) // just viewing profile
+            .skills(skills)
+            .build());
+      } else {
+        for (Application app : candidateApps) {
+          Long posId = app.getPosition().getId();
+          String interviewStatus = null;
+          String candidateOutcome = null;
+          Long interviewId = null;
+
+          List<Interview> candidateInterviews = interviewRepository.findByCandidateId(c.getId());
+          Interview relatedInterview = candidateInterviews.stream()
+              .filter(i -> i.getPosition() != null && i.getPosition().getId().equals(posId))
+              .findFirst()
+              .orElse(null);
+
+          if (relatedInterview != null) {
+            interviewStatus = relatedInterview.getStatus() != null ? relatedInterview.getStatus().name() : null;
+            candidateOutcome = relatedInterview.getCandidateOutcome() != null ? relatedInterview.getCandidateOutcome().name() : null;
+            interviewId = relatedInterview.getId();
+          }
+
+          result.add(CompanyAdminDto.CandidateInfo.builder()
+              .id(c.getId())
+              .fullName(c.getFullName())
+              .email(c.getEmail())
+              .applicationId(app.getId())
+              .positionId(posId)
+              .positionTitle(app.getPosition().getPositionTitle())
+              .applicationDate(app.getApplicationDate() != null ? app.getApplicationDate().toString() : null)
+              .status(app.getStatus())
+              .interviewStatus(interviewStatus)
+              .candidateOutcome(candidateOutcome)
+              .interviewId(interviewId)
+              .score(null)
+              .skills(skills)
+              .appliedDirectly(true)
+              .assignedInterviewerId(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
+              .assignedInterviewerName(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
+              .build());
         }
       }
-
-      result.add(CompanyAdminDto.CandidateInfo.builder()
-          .id(c.getId())
-          .fullName(c.getFullName())
-          .email(c.getEmail())
-          .applicationId(applied ? app.getId() : null)
-          .positionId(posId)
-          .positionTitle(applied ? app.getPosition().getPositionTitle() : null)
-          .applicationDate(applied && app.getApplicationDate() != null
-              ? app.getApplicationDate().toLocalDate().toString() : null)
-          .status(applied ? app.getStatus() : "NOT_APPLIED")
-          .interviewStatus(interviewStatus)
-          .candidateOutcome(candidateOutcome)
-          .interviewId(interviewId)
-          .score(null)
-          .skills(skills)
-          .appliedDirectly(applied)
-          .assignedInterviewerId(applied && app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
-          .assignedInterviewerName(applied && app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
-          .build());
     }
-
     return result;
   }
 
@@ -280,7 +286,53 @@ public class CompanyAdminService {
     InterviewerApplication ia = interviewerApplicationRepository.findById(applicationId)
         .orElseThrow(() -> new RuntimeException("Interviewer application not found"));
     ia.setStatus(status);
-    return interviewerApplicationRepository.save(ia);
+    InterviewerApplication saved = interviewerApplicationRepository.save(ia);
+
+    // When a new interviewer is approved, retroactively assign any unassigned candidates
+    // for that position using the least-loaded strategy (catch-up round-robin).
+    if ("APPROVED".equalsIgnoreCase(status) && ia.getPosition() != null) {
+      Long positionId = ia.getPosition().getId();
+
+      // All currently approved interviewers for this position, sorted by IA id (stable tiebreaker)
+      List<InterviewerApplication> approvedIas =
+          interviewerApplicationRepository.findByPositionIdAndStatusOrderByIdAsc(positionId, "APPROVED");
+
+      if (!approvedIas.isEmpty()) {
+        // Unassigned applications for this position, sorted by application id (arrival order)
+        List<Application> unassigned =
+            applicationRepository.findByPosition_IdAndAssignedInterviewerIsNull(positionId)
+                .stream()
+                .sorted(java.util.Comparator.comparingLong(Application::getId))
+                .collect(java.util.stream.Collectors.toList());
+
+        if (!unassigned.isEmpty()) {
+          // Build a mutable count map: interviewerId -> current assignment count
+          java.util.Map<Long, Long> countMap = new java.util.HashMap<>();
+          for (InterviewerApplication approved : approvedIas) {
+            Long ivId = approved.getInterviewer().getId();
+            long count = applicationRepository.findByPosition_IdAndAssignedInterviewer_Id(positionId, ivId).size();
+            countMap.put(ivId, count);
+          }
+
+          // Assign each unassigned application to the least-loaded interviewer
+          for (Application app : unassigned) {
+            InterviewerApplication chosen = approvedIas.stream()
+                .min(java.util.Comparator.comparingLong(
+                    a -> countMap.getOrDefault(a.getInterviewer().getId(), 0L)
+                ))
+                .orElse(null);
+            if (chosen != null) {
+              app.setAssignedInterviewer(chosen.getInterviewer());
+              applicationRepository.save(app);
+              // Increment local count so next iteration picks correctly
+              countMap.merge(chosen.getInterviewer().getId(), 1L, Long::sum);
+            }
+          }
+        }
+      }
+    }
+
+    return saved;
   }
 
   // ==================== INTERVIEWS ====================

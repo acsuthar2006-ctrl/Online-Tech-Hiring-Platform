@@ -31,13 +31,10 @@ function statusBadge(status) {
   return `<span class="badge" style="background:${s.bg}; color:${s.color};">${s.label}</span>`;
 }
 
-// ===== RENDER TABLE =====
 function renderTable(candidates) {
   const tbody = document.getElementById('candidatesTableBody');
   const header = document.querySelector('.candidates-table thead');
-  const table = document.querySelector('.candidates-table');
-
-  // Replace static tbody with dynamic one if needed
+  
   if (!tbody) {
     const existingTbody = document.querySelector('.candidates-table tbody');
     if (existingTbody) existingTbody.id = 'candidatesTableBody';
@@ -45,38 +42,109 @@ function renderTable(candidates) {
     return;
   }
 
+  // Count unique candidates for header
+  const candIds = new Set(candidates.map(c => c.id));
   const countEl = document.querySelector('.header-left .text-muted');
-  if (countEl) countEl.textContent = `${candidates.length} total candidates`;
+  if (countEl) countEl.textContent = `${candIds.size} total candidates`;
 
   if (candidates.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--gray-500);">No candidates found.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = candidates.map(c => `
-    <tr>
-      <td><strong>${c.fullName}</strong></td>
-      <td>${c.email}</td>
-      <td>${c.positionTitle || '<em style="color:var(--gray-400)">—</em>'}</td>
-      <td>${c.applicationDate || '—'}</td>
-      <td>${statusBadge(c.status)}</td>
-      <td>${(c.assignedInterviewerName && c.status !== 'NOT_APPLIED') ? c.assignedInterviewerName : '—'}</td>
-      <td>
-        <div class="table-actions">
-          ${!c.appliedDirectly ? '' : `<button class="btn-text" onclick="viewCandidateDetails(${c.id}, ${JSON.stringify(c.fullName || 'Candidate').replace(/\"/g, '&quot;')})">View</button>`}
-          ${c.appliedDirectly && c.status === 'SHORTLISTED'
-            ? (() => {
-                const posTitle = c.positionTitle || 'the position';
-                const comp = companyName || 'the company';
-                const subject = `Selected for ${posTitle} at ${comp} - Offer Letter`;
-                const href = `mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}`;
-                return `<a class="btn-text" href="${href}">Send Offer</a>`;
-              })()
-            : ''}
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  // Group by Candidate ID
+  const grouped = {};
+  candidates.forEach(c => {
+    if (!grouped[c.id]) {
+      grouped[c.id] = { info: c, apps: [] };
+    }
+    if (c.status !== 'NOT_APPLIED' && c.positionId) {
+      if (!grouped[c.id].apps.find(a => a.applicationId === c.applicationId)) {
+        grouped[c.id].apps.push(c);
+      }
+    }
+  });
+
+  tbody.innerHTML = Object.values(grouped).map(g => {
+    const main = g.info;
+    const apps = g.apps;
+
+    if (apps.length === 0) {
+      return `
+        <tr class="group-end">
+          <td style="vertical-align: top; padding: 12px;"><strong>${main.fullName}</strong></td>
+          <td style="vertical-align: top; padding: 12px;">${main.email}</td>
+          <td style="color:var(--gray-400); padding: 12px;">Not Assigned</td>
+          <td style="padding: 12px;">N/A</td>
+          <td style="padding: 12px;">${statusBadge('NOT_APPLIED')}</td>
+          <td style="padding: 12px;">N/A</td>
+          <td style="padding: 12px;">
+            <div class="table-actions">
+               <button class="btn-text" onclick="viewCandidateDetails(${main.id}, ${JSON.stringify(main.fullName || 'Candidate').replace(/\"/g, '&quot;')})">View Profile</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    const rowSpan = apps.length;
+    let html = '';
+
+    apps.forEach((app, idx) => {
+      let displayDate = app.applicationDate || 'N/A';
+      if (displayDate !== 'N/A' && displayDate.includes('T')) {
+         displayDate = displayDate.split('T')[0];
+      }
+
+      let appActions = '';
+      if (app.appliedDirectly && app.status === 'SHORTLISTED') {
+        const comp = companyName || 'the company';
+        const subject = `Selected for ${app.positionTitle || 'the position'} at ${comp} - Offer Letter`;
+        const href = `mailto:${encodeURIComponent(app.email)}?subject=${encodeURIComponent(subject)}`;
+        appActions = `<a class="btn-text" href="${href}">Send Offer</a>`;
+      }
+
+      let actionHtml = appActions;
+      if (idx === 0) {
+         actionHtml = `
+           <button class="btn-text" onclick="viewCandidateDetails(${main.id}, ${JSON.stringify(main.fullName || 'Candidate').replace(/\"/g, '&quot;')})">View Profile</button>
+           ${appActions}
+         `;
+      }
+
+      const isEnd = idx === apps.length - 1 ? ' class="group-end"' : '';
+
+      if (idx === 0) {
+        html += `
+          <tr${isEnd}>
+            <td rowspan="${rowSpan}" style="vertical-align: top; padding-top: 16px;"><strong>${main.fullName}</strong></td>
+            <td rowspan="${rowSpan}" style="vertical-align: top; padding-top: 16px;">${main.email}</td>
+            <td style="vertical-align: top; padding-top: 16px;"><strong>${app.positionTitle || 'Not Assigned'}</strong></td>
+            <td style="vertical-align: top; padding-top: 16px;">${displayDate}</td>
+            <td style="vertical-align: top; padding-top: 16px;">${statusBadge(app.status)}</td>
+            <td style="vertical-align: top; padding-top: 16px;">${app.assignedInterviewerName || 'N/A'}</td>
+            <td style="vertical-align: top; padding-top: 16px;">
+              <div class="table-actions" style="display:flex; gap:8px;">${actionHtml}</div>
+            </td>
+          </tr>
+        `;
+      } else {
+        html += `
+          <tr${isEnd}>
+            <td style="vertical-align: top; padding-top: 16px;"><strong>${app.positionTitle || 'Not Assigned'}</strong></td>
+            <td style="vertical-align: top; padding-top: 16px;">${displayDate}</td>
+            <td style="vertical-align: top; padding-top: 16px;">${statusBadge(app.status)}</td>
+            <td style="vertical-align: top; padding-top: 16px;">${app.assignedInterviewerName || 'N/A'}</td>
+            <td style="vertical-align: top; padding-top: 16px;">
+              <div class="table-actions" style="display:flex; gap:8px;">${actionHtml}</div>
+            </td>
+          </tr>
+        `;
+      }
+    });
+
+    return html;
+  }).join('');
 }
 
 // ===== VIEW CANDIDATE DETAILS =====

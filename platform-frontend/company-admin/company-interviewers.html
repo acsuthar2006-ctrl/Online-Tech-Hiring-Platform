@@ -7,6 +7,7 @@
   <title>Interviewers - TechHiring</title>
   <link rel="stylesheet" href="../common/common.css">
   <link rel="stylesheet" href="css/company-admin.css">
+  <link rel="stylesheet" href="css/company-candidates.css">
   <link rel="stylesheet" href="css/company-interviewers.css">
   <script type="module" src="../common/auth.js"></script>
 </head>
@@ -60,9 +61,26 @@
 
 
 
-    <!-- Interviewers Grid -->
-    <div class="interviewers-grid">
-      <p class="text-muted" style="grid-column:1/-1; padding:32px; text-align:center;">Loading...</p>
+    <!-- Interviewers Table -->
+    <div class="card">
+      <table class="candidates-table" id="interviewersTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Expertise</th>
+            <th>Position</th>
+            <th>Status</th>
+            <th>Stats</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="interviewersTableBody">
+          <tr>
+            <td colspan="7" style="text-align:center; padding:32px; color:var(--gray-500);">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -103,15 +121,32 @@
     </div>
   </div>
 
-  <!-- Assign Candidates Modal -->
-  <div class="modal" id="assignCandidatesModal" aria-hidden="true">
+
+
+  <!-- View Candidates Modal -->
+  <div class="modal" id="viewCandidatesModal" aria-hidden="true">
     <div class="modal-content modal-lg">
       <div class="modal-header">
-        <h2 id="assignCandidatesTitle">Assign Candidates</h2>
-        <button class="modal-close" id="assignCandidatesClose">&times;</button>
+        <h2 id="viewCandidatesTitle">View Candidates</h2>
+        <button class="modal-close" id="viewCandidatesClose">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="assignCandidatesList" class="modal-list">
+        <div id="viewCandidatesList" class="modal-list">
+          <div class="modal-item">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Interviewer Modal -->
+  <div class="modal" id="changeInterviewerModal" aria-hidden="true" style="z-index: 2000;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="changeInterviewerTitle">Change Interviewer</h2>
+        <button class="modal-close" id="changeInterviewerClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="changeInterviewerList" class="modal-list">
           <div class="modal-item">Loading...</div>
         </div>
       </div>
