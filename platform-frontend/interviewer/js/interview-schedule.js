@@ -25,20 +25,7 @@ async function initializeSchedule() {
     const profile = await api.getUserProfile();
     if (profile) {
       profileName.textContent = profile.fullName;
-      let interviews = await api.getUpcomingInterviewsForInterviewer(profile.email);
-      interviews = await Promise.all(interviews.map(async (interview) => {
-        if (interview.status === 'COMPLETED') {
-          try {
-            const roomId = interview.meetingLink || String(interview.id);
-            const recordings = await api.getRoomRecordings(roomId);
-            return { ...interview, recordings: recordings || [] };
-          } catch (e) {
-            console.warn(`Failed to fetch recordings for interview ${interview.id}`, e);
-            return interview;
-          }
-        }
-        return interview;
-      }));
+      const interviews = await api.getUpcomingInterviewsForInterviewer(profile.email);
       renderSchedule(interviews);
       await initNotifications();
     } else {
@@ -171,12 +158,12 @@ function renderTimelineItem(interview, sectionId) {
                 <div class="interview-actions">
                     ${!isCompleted ? `<button class="btn-primary btn-sm" onclick="joinInterview('${interview.meetingLink}')">Join Interview</button>` : ''}
                     ${isCompleted ? completedOutcomeActions : ''}
-                    ${isCompleted && interview.recordings && interview.recordings.length > 0
-                      ? interview.recordings.map(rec => {
+                    ${isCompleted && interview.recordingUrl
+                      ? (() => {
                           const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
-                          const fileUrl = `${mediaBase}/recordings/${rec.filename}`;
-                          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${rec.filename}">Download Recording</button>`;
-                        }).join('')
+                          const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
+                          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
+                        })()
                       : ''}
                 </div>
             </div>
