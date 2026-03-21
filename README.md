@@ -172,12 +172,6 @@ We treat our recording mechanism as just another invisible "participant" in the 
 
 ---
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
 ## Contact / Author Info
 
 - **Name** - Suthar Aarya && Vrushti Shah
