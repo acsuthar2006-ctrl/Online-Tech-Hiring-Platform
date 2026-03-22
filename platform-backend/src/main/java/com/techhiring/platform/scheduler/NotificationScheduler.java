@@ -37,10 +37,14 @@ public class NotificationScheduler {
     for (Interview interview : upcomingInterviews) {
       log.info("Sending reminder for interview: {}", interview.getId());
       try {
+        String companyName = (interview.getCompany() != null) ? interview.getCompany().getCompanyName() : "N/A";
+        String positionTitle = (interview.getPosition() != null) ? interview.getPosition().getPositionTitle() : "N/A";
         emailService.sendInterviewReminder(
             interview.getCandidate().getEmail(),
             interview.getCandidate().getFullName(),
-            "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate");
+            "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate",
+            companyName,
+            positionTitle);
       } catch (Exception e) {
         log.error("Failed to send reminder for interview {}: {}", interview.getId(), e.getMessage());
       }

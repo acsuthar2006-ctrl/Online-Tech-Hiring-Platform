@@ -39,8 +39,42 @@ function backToRoleSelection() {
   if (roleSpecificFields) roleSpecificFields.innerHTML = ""
 }
 
+function createErrorElement() {
+  const form = document.getElementById('signupForm')
+  const div = document.createElement('div')
+  div.id = 'error-message'
+  div.style.color = 'red'
+  div.style.display = 'none'
+  form.appendChild(div)
+  return div
+}
+
+function clearError() {
+  const errorMessage = document.getElementById('error-message')
+  if (errorMessage) {
+    errorMessage.style.display = 'none'
+    errorMessage.textContent = ''
+  }
+}
+
+function showError(message) {
+  let errorMessage = document.getElementById('error-message') || createErrorElement()
+  errorMessage.textContent = message
+  errorMessage.style.display = 'block'
+  errorMessage.style.color = '#dc2626'
+  errorMessage.style.backgroundColor = '#fee2e2'
+  errorMessage.style.padding = '10px'
+  errorMessage.style.borderRadius = '6px'
+  errorMessage.style.marginTop = '16px'
+  errorMessage.style.fontSize = '14px'
+  errorMessage.style.border = '1px solid #fecaca'
+  errorMessage.style.textAlign = 'center'
+}
+
 async function handleSignup(event) {
   event.preventDefault()
+
+  clearError()
 
   const fullName = document.getElementById("fullname").value
   const email = document.getElementById("email").value
@@ -49,26 +83,24 @@ async function handleSignup(event) {
   const signupButton = event.target.querySelector('button[type="submit"]')
 
   if (password !== confirmPassword) {
-    alert("Passwords do not match. Please try again.")
+    showError("Passwords do not match. Please try again.")
     return
   }
 
   if (password.length < 6) {
-    alert("Password must be at least 6 characters long.")
+    showError("Password must be at least 6 characters long.")
     return
   }
 
-  // Validate company name for company admin
   let companyName = null
   if (selectedRole === 'company_admin') {
     companyName = document.getElementById("companyName").value
     if (!companyName || !companyName.trim()) {
-      alert("Please enter your company name.")
+      showError("Please enter your company name.")
       return
     }
   }
 
-  // Show loading state
   const originalText = signupButton.textContent
   signupButton.disabled = true
   signupButton.textContent = "Creating account..."
@@ -80,13 +112,24 @@ async function handleSignup(event) {
     alert("Account created successfully! Please login to continue.")
     window.location.href = "./login.html"
   } catch (error) {
-    alert(`Signup failed: ${error.message}`)
+    showError(error.message || "Signup failed")
+  } finally {
     signupButton.disabled = false
     signupButton.textContent = originalText
   }
 }
 
-// Expose functions to global scope for onclick handlers
+document.addEventListener('DOMContentLoaded', () => {
+  const signupForm = document.getElementById('signupForm')
+  if (signupForm) {
+    signupForm.addEventListener('submit', handleSignup)
+
+    const inputs = signupForm.querySelectorAll('input')
+    inputs.forEach(input => {
+      input.addEventListener('input', clearError)
+    })
+  }
+})
+
 window.selectRole = selectRole
 window.backToRoleSelection = backToRoleSelection
-window.handleSignup = handleSignup

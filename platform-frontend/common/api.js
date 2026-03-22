@@ -68,16 +68,28 @@ class ApiService {
         if (contentType && contentType.includes('application/json')) {
           try {
             const error = await response.json();
-            errorMessage = error.message || error || errorMessage;
+            errorMessage = error.message || (typeof error === 'string' ? error : errorMessage);
           } catch (e) {
-            // Failed to parse JSON, use generic message
+            // Failed to parse JSON, try text
+            try {
+              const text = await response.text();
+              if (text) errorMessage = text;
+            } catch (e2) {}
           }
+        } else {
+          // Parse plain text responses
+           try {
+              const text = await response.text();
+              if (text) errorMessage = text;
+           } catch (e) {}
         }
 
         // 401 Unauthorized - redirect to login
         if (response.status === 401) {
           this.clearToken();
-          window.location.href = '/login/login.html';
+          if (!endpoint.startsWith('/auth/')) {
+            window.location.href = '/login/login.html';
+          }
         }
 
         throw new Error(errorMessage);

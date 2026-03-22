@@ -33,7 +33,9 @@ public class AuthController {
           new AuthDto.JwtResponse(null, "User registered successfully!", user.getId(), user.getRole(),
               user.getFullName(), companyId));
     } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
+      java.util.Map<String, String> errorResponse = new java.util.HashMap<>();
+      errorResponse.put("message", e.getMessage());
+      return ResponseEntity.badRequest().body(errorResponse);
     }
   }
 
@@ -53,7 +55,10 @@ public class AuthController {
 
       Long companyId = null;
       if (user instanceof CompanyAdmin) {
-        companyId = ((CompanyAdmin) user).getCompany().getId();
+        CompanyAdmin admin = (CompanyAdmin) user;
+        if (admin.getCompany() != null) {
+            companyId = admin.getCompany().getId();
+        }
       }
 
       return ResponseEntity.ok(new AuthDto.JwtResponse(
@@ -64,7 +69,9 @@ public class AuthController {
           user.getFullName(),
           companyId));
     } catch (org.springframework.security.core.AuthenticationException e) {
-      return ResponseEntity.status(401).body("Error: Invalid email or password");
+      java.util.Map<String, String> errorResponse = new java.util.HashMap<>();
+      errorResponse.put("message", "Incorrect email or password. Please try again.");
+      return ResponseEntity.status(401).body(errorResponse);
     }
   }
 }

@@ -90,10 +90,14 @@ public class InterviewController {
   @PostMapping("/{id}/remind")
   public ResponseEntity<String> sendManualReminder(@PathVariable Long id) {
     Interview interview = interviewService.getInterview(id);
+    String companyName   = (interview.getCompany()   != null) ? interview.getCompany().getCompanyName()          : "N/A";
+    String positionTitle = (interview.getPosition()  != null) ? interview.getPosition().getPositionTitle()      : "N/A";
     emailService.sendManualNudge(
         interview.getCandidate().getEmail(),
         interview.getCandidate().getFullName(),
-        "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail());
+        "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail(),
+        companyName,
+        positionTitle);
     return ResponseEntity.ok("Reminder sent");
   }
 

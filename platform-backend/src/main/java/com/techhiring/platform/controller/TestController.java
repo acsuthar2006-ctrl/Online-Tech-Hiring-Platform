@@ -20,7 +20,9 @@ public class TestController {
           "Test User",
           "2026-12-31",
           "10:00 AM",
-          "http://localhost:5173/?room=test-room&role=candidate"
+          "http://localhost:5173/?room=test-room&role=candidate",
+          "Test Company",
+          "Test Position"
       );
       return ResponseEntity.ok("Test email sent to: " + email);
     } catch (Exception e) {

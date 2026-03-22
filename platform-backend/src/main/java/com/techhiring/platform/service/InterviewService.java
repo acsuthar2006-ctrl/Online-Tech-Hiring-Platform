@@ -83,6 +83,14 @@ public class InterviewService {
     java.time.LocalTime schedTime = scheduledTime.toLocalTime();
 
     // === ROOM AVAILABILITY CHECK ===
+    Company company = null;
+    if (companyId != null) {
+      company = companyRepository.findById(companyId).orElse(null);
+    }
+    Position position = null;
+    if (positionId != null) {
+      position = positionRepository.findById(positionId).orElse(null);
+    }
     // If interviewer has supplied a custom room ID, verify it isn't already
     // booked by a different session (different interviewer, company, or position)
     // on the same date. Allow only if ALL three match (same session, more candidates).
@@ -136,14 +144,7 @@ public class InterviewService {
       meetingLink = UUID.randomUUID().toString(); // Simple ID for room
     }
 
-    Company company = null;
-    if (companyId != null) {
-      company = companyRepository.findById(companyId).orElse(null);
-    }
-    Position position = null;
-    if (positionId != null) {
-      position = positionRepository.findById(positionId).orElse(null);
-    }
+
 
     Interview interview = Interview.builder()
         .title(title)
@@ -163,14 +164,17 @@ public class InterviewService {
     Interview saved = interviewRepository.save(interview);
 
     // Send Email
-    // Send Email
     try {
+      String companyName  = (company  != null) ? company.getCompanyName()   : "N/A";
+      String positionTitle = (position != null) ? position.getPositionTitle() : "N/A";
       emailService.sendInterviewInvitation(
           candidateEmail,
           candidateName,
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_DATE),
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-          "http://localhost:5173/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail // Frontend URL
+          "http://localhost:5173/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail,
+          companyName,
+          positionTitle
       );
     } catch (Exception e) {
       System.err.println("Failed to send email: " + e.getMessage());
