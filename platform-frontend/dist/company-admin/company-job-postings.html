@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Postings - TechHiring</title>
+  <script type="module" crossorigin src="/assets/company-job-postings-Bi-uF71K.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-BDkOtMsK.js">
+  <link rel="modulepreload" crossorigin href="/assets/auth-DKe50Cpr.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-DCH5sCN5.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-init-AG13z0We.js">
+  <link rel="stylesheet" crossorigin href="/assets/company-job-postings-D9Yy6dpW.css">
+  <link rel="stylesheet" crossorigin href="/assets/common-BQpXi-CY.css">
+  <link rel="stylesheet" crossorigin href="/assets/company-admin-hHL8lN8I.css">
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>Job Postings</h1>
+        <p class="text-muted">Manage and monitor all your job openings</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-primary" onclick="openPostJobModal()">Post New Job</button>
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge" style="display:none;">0</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-avatar"
+            style="background: linear-gradient(135deg, var(--blue-600), var(--blue-400)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+            A</div>
+          <div>
+            <p class="profile-name" id="adminName">Admin</p>
+            <p class="profile-role">Company Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Postings Grid -->
+    <div class="jobs-container" id="jobsContainer">
+      <!-- Jobs will be dynamically loaded here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M20 6h-2.18c.11-.6.18-1.24.18-1.9C18 2.43 15.57 0 12.5 0S7 2.43 7 5.1c0 .66.07 1.3.18 1.9H5c-2.8 0-5 2.2-5 5v11c0 2.8 2.2 5 5 5h14c2.8 0 5-2.2 5-5V11c0-2.8-2.2-5-5-5zm-6-2c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 16H5v-11h14v11z"
+          fill="currentColor" opacity="0.3" />
+      </svg>
+      <h3>No Job Postings Yet</h3>
+    </div>
+  </div>
+
+  <!-- Post Job Modal -->
+  <div id="postJobModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Post New Job</h2>
+        <button class="modal-close" onclick="closePostJobModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Position Title</label>
+          <input type="text" id="positionTitle" class="form-input" placeholder="e.g., Senior Software Engineer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Description</label>
+          <textarea id="jobDescription" class="form-input" rows="5"
+            placeholder="Describe the job role, responsibilities, and requirements..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Salary Range (Min)</label>
+            <input type="number" id="salaryMin" class="form-input" placeholder="50000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salary Range (Max)</label>
+            <input type="number" id="salaryMax" class="form-input" placeholder="120000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Required Skills (comma-separated)</label>
+          <input type="text" id="requiredSkills" class="form-input" placeholder="JavaScript, React, Node.js">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" id="jobLocation" class="form-input" placeholder="e.g., San Francisco, CA or Remote">
+        </div>
+        <div class="button-group">
+          <button class="btn btn-primary" onclick="postJob()">Post Job</button>
+          <button class="btn btn-secondary" onclick="closePostJobModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Details Modal -->
+  <div id="jobDetailsModal" class="modal" style="display: none;">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h2 id="jobTitle">Job Details</h2>
+        <button class="modal-close" onclick="closeJobDetailsModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="tabs-container">
+          <button class="tab-btn active" onclick="switchJobTab('overview')">Overview</button>
+          <button class="tab-btn" onclick="switchJobTab('candidates')">Candidates</button>
+          <button class="tab-btn" onclick="switchJobTab('interviewers')">Interviewers</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overviewTab" class="tab-content active">
+          <div class="job-detail-section">
+            <h3>Position Details</h3>
+            <div class="detail-item">
+              <span class="detail-label">Title:</span>
+              <span class="detail-value" id="detailTitle"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Status:</span>
+              <span class="detail-value detail-status" id="detailStatus"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Salary Range:</span>
+              <span class="detail-value" id="detailSalary"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Location:</span>
+              <span class="detail-value" id="detailLocation"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Required Skills:</span>
+              <span class="detail-value" id="detailSkills"></span>
+            </div>
+            <div class="detail-item full-width">
+              <span class="detail-label">Description:</span>
+              <p id="detailDescription" style="color: var(--gray-600); margin-top: 8px;"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Candidates Tab -->
+        <div id="candidatesTab" class="tab-content">
+          <div class="applicants-list" id="candidatesList">
+            <!-- Candidates will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Interviewers Tab -->
+        <div id="interviewersTab" class="tab-content">
+          <div class="applicants-list" id="interviewersList">
+            <!-- Interviewers will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../common/admin-sidebar.js"></script>
+</body>
+
+</html>

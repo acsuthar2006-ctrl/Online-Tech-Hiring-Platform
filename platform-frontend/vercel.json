@@ -19,14 +19,6 @@
     {
       "source": "/ws",
       "destination": "http://34.201.100.68:3000/ws"
-    },
-    {
-      "source": "/(.*\\.html)",
-      "destination": "/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }

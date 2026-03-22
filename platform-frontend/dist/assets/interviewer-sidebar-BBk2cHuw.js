@@ -1,0 +1,1 @@
+fetch("/common/interviewer-sidebar.html").then(e=>e.text()).then(e=>{document.getElementById("sidebar-container").innerHTML=e;const n=window.location.pathname.split("/").pop();document.querySelectorAll(".nav-item").forEach(t=>{t.getAttribute("href")===n&&t.classList.add("active")})}).catch(e=>console.error("Sidebar load failed",e));

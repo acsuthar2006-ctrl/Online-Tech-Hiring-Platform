@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule - TechHiring</title>
+  <script type="module" crossorigin src="/assets/my_schedule-B3KQuBN-.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-BDkOtMsK.js">
+  <link rel="modulepreload" crossorigin href="/assets/auth-DKe50Cpr.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-DCH5sCN5.js">
+  <link rel="modulepreload" crossorigin href="/assets/dashboard-DQEKwGMY.js">
+  <link rel="modulepreload" crossorigin href="/assets/sidebar-ckr4qzLM.js">
+  <link rel="stylesheet" crossorigin href="/assets/my_schedule-C_35CIWk.css">
+  <link rel="stylesheet" crossorigin href="/assets/common-BQpXi-CY.css">
+</head>
+
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <h1>My Schedule</h1>
+        <p class="text-muted">View all your scheduled interviews and technical rounds</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge" style="display:none;">0</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">User</div>
+            <div class="profile-role">Candidate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule filter tabs for upcoming, past, and all interviews -->
+    <div class="schedule-filters">
+      <button class="filter-btn active" data-filter="all">All Interviews</button>
+      <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+    </div>
+
+    <div class="schedule-container">
+      <!-- Upcoming Interviews section -->
+      <div class="schedule-section" id="upcomingSection">
+        <div class="section-header">
+          <h2>Upcoming Interviews</h2>
+          <span class="interview-count" id="upcomingCount">0</span>
+        </div>
+        <div class="interview-timeline" id="upcomingInterviewList">
+             <div class="loading-state">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Completed interviews section -->
+      <div class="schedule-section" id="completedSection">
+        <div class="section-header">
+          <h2>Completed Interviews</h2>
+          <span class="interview-count" id="completedCount">0</span>
+        </div>
+        <div class="interview-timeline" id="completedInterviewList">
+             <div class="loading-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

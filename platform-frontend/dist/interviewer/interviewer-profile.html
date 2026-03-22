@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - TechHiring</title>  
+
+  <script src="../common/auth.js"></script>
+  <script type="module" crossorigin src="/assets/interviewer-profile-CSHeB8bS.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-BDkOtMsK.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-DCH5sCN5.js">
+  <link rel="modulepreload" crossorigin href="/assets/dashboard-DQEKwGMY.js">
+  <link rel="modulepreload" crossorigin href="/assets/interviewer-sidebar-BBk2cHuw.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-init-AG13z0We.js">
+  <link rel="stylesheet" crossorigin href="/assets/interviewer-profile-DNxGV3gm.css">
+  <link rel="stylesheet" crossorigin href="/assets/common-BQpXi-CY.css">
+</head>
+
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <h1>My Profile</h1>
+        <p class="text-muted">Manage your professional information</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="notificationBtn">
+          <span class="notification-badge" style="display:none;">0</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="profile-menu">
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">Interviewer</div>
+            <div class="profile-role">Interviewer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-container">
+      <div class="profile-header">
+        <div class="profile-avatar"></div>
+        <div class="profile-basic-info">
+          <h2 id="profileUsername"></h2>
+          <p class="text-muted">Interviewer</p>
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <span class="profile-stat-number" id="statInterviews">--</span>
+              <span class="profile-stat-label">Interviews</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-sections">
+        <div class="profile-section">
+          <h3 class="section-title">Personal Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" value="" id="firstName">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" value="" id="lastName">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" value="" disabled>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="phone" value="">
+          </div>
+          <div class="form-group">
+            <label>Bio</label>
+            <textarea id="bio"></textarea>
+          </div>
+          <button class="btn-primary" id="savePersonalBtn">Save Changes</button>
+        </div>
+
+        <div class="profile-section">
+          <h3 class="section-title">Interview Expertise</h3>
+          <div class="form-group">
+            <label>Expertise</label>
+            <div class="expertise-list" id="expertiseList"></div>
+          </div>
+          <button class="btn-primary" id="editExpertiseBtn">Add Expertise</button>
+        </div>
+
+        <div class="profile-section">
+          <h3 class="section-title">Professional Details</h3>
+          <div class="form-group">
+            <label>Years of Experience</label>
+            <input type="number" id="yearsExperience" value="" min="0" max="50">
+          </div>
+          <div class="form-group">
+            <label>Availability</label>
+            <select id="availabilityStatus">
+              <option value="AVAILABLE">Available</option>
+              <option value="BUSY">Busy</option>
+              <option value="OFFLINE">Offline</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="saveProfessionalBtn">Update Details</button>
+        </div>
+
+        <div class="profile-section">
+          <h3 class="section-title">Interview Statistics</h3>
+          <div class="form-row">
+            <div class="profile-stat">
+              <span class="profile-stat-number" id="statTotalInterviews">--</span>
+              <span class="profile-stat-label">Total Interviews</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
