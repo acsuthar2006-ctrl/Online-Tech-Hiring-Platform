@@ -79,17 +79,47 @@ public class InterviewService {
       // TODO: Email the candidate their temp credentials? For now, we just schedule.
     }
 
-    // Check if there is already an existing session (meeting link) for this
-    // interviewer around this time
-    // Simple logic: reuse link if interview is within 2 hours of this new one
-    String meetingLink = null;
-    List<Interview> existing = interviewRepository.findByInterviewerId(interviewer.getId());
     java.time.LocalDate schedDate = scheduledTime.toLocalDate();
     java.time.LocalTime schedTime = scheduledTime.toLocalTime();
 
+    // === ROOM AVAILABILITY CHECK ===
+    // If interviewer has supplied a custom room ID, verify it isn't already
+    // booked by a different session (different interviewer, company, or position)
+    // on the same date. Allow only if ALL three match (same session, more candidates).
+    if (customMeetingLink != null && !customMeetingLink.isEmpty()) {
+      List<Interview> roomConflicts = interviewRepository
+          .findByMeetingLinkAndScheduledDate(customMeetingLink, schedDate);
+
+      if (!roomConflicts.isEmpty()) {
+        Interview baseline = roomConflicts.get(0);
+
+        boolean sameInterviewer = baseline.getInterviewer().getId().equals(interviewer.getId());
+
+        boolean sameCompany = (company != null
+            && baseline.getCompany() != null
+            && baseline.getCompany().getId().equals(company.getId()))
+            || (company == null && baseline.getCompany() == null);
+
+        boolean samePosition = (position != null
+            && baseline.getPosition() != null
+            && baseline.getPosition().getId().equals(position.getId()))
+            || (position == null && baseline.getPosition() == null);
+
+        if (!(sameInterviewer && sameCompany && samePosition)) {
+          throw new RuntimeException(
+              "Room ID '" + customMeetingLink + "' is currently not available for " + schedDate
+              + ". It is already booked for a different session.");
+        }
+      }
+    }
+
+    // Check if there is already an existing session (meeting link) for this
+    // interviewer around this time. Reuse link if interview is within 4 hours.
+    String meetingLink = null;
+    List<Interview> existing = interviewRepository.findByInterviewerId(interviewer.getId());
+
     for (Interview i : existing) {
       if (i.getScheduledDate() != null && i.getScheduledDate().isEqual(schedDate)) {
-        // Check if times are within 4 hours
         if (i.getScheduledTime() != null) {
           long hoursDiff = Math.abs(java.time.Duration.between(i.getScheduledTime(), schedTime).toHours());
           if (hoursDiff < 4) {

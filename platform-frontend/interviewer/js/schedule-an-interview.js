@@ -144,7 +144,15 @@ async function scheduleInterview(event) {
 
   } catch (error) {
     console.error('Failed to schedule interview:', error);
-    alert('Failed to schedule interview: ' + error.message);
+    const msg = (error.message || '').toLowerCase();
+    if (msg.includes('not available') || msg.includes('already booked')) {
+      // Show inline error on the Room ID field
+      const roomIdInput = document.getElementById('roomId');
+      showError(roomIdInput, '⚠️ This Room ID is not available for the selected date. It is already booked for a different session.');
+      roomIdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      alert('Failed to schedule interview: ' + error.message);
+    }
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = originalText;

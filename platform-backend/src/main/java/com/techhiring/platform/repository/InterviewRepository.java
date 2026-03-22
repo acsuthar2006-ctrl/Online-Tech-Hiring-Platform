@@ -30,5 +30,13 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
   long countByCompanyIdAndInterviewerIdAndStatus(Long companyId, Long interviewerId, Interview.InterviewStatus status);
 
   long countByCompanyIdAndInterviewerIdAndStatusIn(Long companyId, Long interviewerId, Collection<Interview.InterviewStatus> statuses);
+
+  @org.springframework.data.jpa.repository.Query(
+    "SELECT i FROM Interview i WHERE i.meetingLink = :roomId AND i.scheduledDate = :date AND i.status <> com.techhiring.platform.entity.Interview.InterviewStatus.CANCELLED"
+  )
+  List<Interview> findByMeetingLinkAndScheduledDate(
+    @org.springframework.data.repository.query.Param("roomId") String roomId,
+    @org.springframework.data.repository.query.Param("date") java.time.LocalDate date
+  );
 }
 
