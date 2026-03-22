@@ -83,7 +83,7 @@ function updateEmailPreview() {
             <p><strong>Date:</strong> ${interviewDate}</p>
             <p><strong>Time:</strong> ${interviewTime}</p>
             <p><strong>Meeting Link:</strong> <a href="#">${roomId}</a></p>
-            <p>Best regards,<br>Technical Recruitment Team</p>
+            <p>Best regards,<br>Techhiring</p>
         </div>
     `;
 }
@@ -115,25 +115,24 @@ async function scheduleInterview(event) {
 
     const profile = await api.getUserProfile();
 
-    // The backend expects a single candidate per request based on ScheduleRequest DTO
-    // We'll loop if multiple are provided, or just take the first for simplicity in this MVP
-    const email = emails[0];
+    // Send one scheduling request per candidate email
+    for (const email of emails) {
+      const payload = {
+        interviewerEmail: profile.email,
+        candidateEmail: email,
+        candidateName: email.split('@')[0], // Derive name from email
+        scheduledTime: `${interviewDate}T${interviewTime}:00`,
+        title: `${positionTitle} - ${interviewType}`,
+        meetingLink: roomId,
+        description: additionalNotes || `Interview at ${companyName}`,
+        durationMinutes: parseInt(duration, 10),
+        interviewType: interviewType.toUpperCase(),
+        companyId: currentCompanyId ? parseInt(currentCompanyId, 10) : null,
+        positionId: currentPositionId ? parseInt(currentPositionId, 10) : null
+      };
 
-    const payload = {
-      interviewerEmail: profile.email,
-      candidateEmail: email,
-      candidateName: email.split('@')[0], // Mock name from email
-      scheduledTime: `${interviewDate}T${interviewTime}:00`,
-      title: `${positionTitle} - ${interviewType}`,
-      meetingLink: roomId,
-      description: additionalNotes || `Interview at ${companyName}`,
-      durationMinutes: parseInt(duration, 10),
-      interviewType: interviewType.toUpperCase(),
-      companyId: currentCompanyId ? parseInt(currentCompanyId, 10) : null,
-      positionId: currentPositionId ? parseInt(currentPositionId, 10) : null
-    };
-
-    await api.scheduleInterview(payload);
+      await api.scheduleInterview(payload);
+    }
 
     // Success feedback
     alert('Interview scheduled successfully!');

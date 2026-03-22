@@ -497,9 +497,6 @@ public class CompanyAdminService {
     if (!app.getPosition().getCompany().getId().equals(companyId)) {
       throw new RuntimeException("Application does not belong to this company");
     }
-    if (app.getAssignedInterviewer() != null) {
-      throw new RuntimeException("Candidate already assigned");
-    }
 
     Interviewer interviewer = interviewerRepository.findById(interviewerId)
         .orElseThrow(() -> new RuntimeException("Interviewer not found"));
