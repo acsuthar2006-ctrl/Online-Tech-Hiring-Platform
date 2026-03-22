@@ -1,0 +1,32 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://34.201.100.68:8080/api/:path*"
+    },
+    {
+      "source": "/check-room",
+      "destination": "http://34.201.100.68:3000/check-room"
+    },
+    {
+      "source": "/recordings/:path*",
+      "destination": "http://34.201.100.68:3000/recordings/:path*"
+    },
+    {
+      "source": "/upload-recording",
+      "destination": "http://34.201.100.68:3000/upload-recording"
+    },
+    {
+      "source": "/ws",
+      "destination": "http://34.201.100.68:3000/ws"
+    },
+    {
+      "source": "/(.*\\.html)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
