@@ -209,7 +209,7 @@ function renderCompanyGrid(companies, positionsByCompany, applicationByPosition)
                 const actions = st === 'APPROVED'
                   ? `<div style="display:flex; gap:6px; align-items:center;">
                       <span class="badge ${cls}" style="padding:4px 8px;">${st}</span>
-                      <button class="btn-outline btn-sm" onclick="viewAssignedCandidates(${p.id}, ${JSON.stringify(p.positionTitle || 'Position').replace(/\"/g, '&quot;')}, ${JSON.stringify(company.companyName || 'Company').replace(/\"/g, '&quot;')})">View Candidates</button>
+                      <button class="btn-outline btn-sm" onclick="viewAssignedCandidates(${p.id}, ${JSON.stringify(p.positionTitle || 'Position').replace(/\"/g, '&quot;')}, ${JSON.stringify(company.companyName || 'Company').replace(/\"/g, '&quot;')}, ${company.id})">View Candidates</button>
                     </div>`
                   : `<span class="badge ${cls}" style="padding:4px 8px;">${st}</span>`;
                 return `<div class="req-tag" style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;">
@@ -311,7 +311,7 @@ window.applyToPosition = async (event, positionId) => {
     }
 };
 
-window.viewAssignedCandidates = async (positionId, positionTitle, companyName) => {
+window.viewAssignedCandidates = async (positionId, positionTitle, companyName, companyId) => {
     const modal = document.getElementById('candidatesModal');
     const title = document.getElementById('modalTitle');
     const list = document.getElementById('candidatesList');
@@ -335,7 +335,7 @@ window.viewAssignedCandidates = async (positionId, positionTitle, companyName) =
                  <button
                    class="btn btn-primary"
                    style="width:100%;font-weight:600;"
-                   onclick="window.location.href='${buildScheduleAllUrl(pendingCandidates.map(c => c.email), positionTitle, companyName, null, positionId)}'">
+                   onclick="window.location.href='${buildScheduleAllUrl(pendingCandidates.map(c => c.email), positionTitle, companyName, companyId, positionId)}'">
                    📅 Schedule Interview for all (${pendingCandidates.length} candidate${pendingCandidates.length > 1 ? 's' : ''})
                  </button>
                </div>`
@@ -361,7 +361,7 @@ window.viewAssignedCandidates = async (positionId, positionTitle, companyName) =
                 const label = c.interviewStatus === 'IN_PROGRESS' ? '🔴 In Progress' : '📅 Scheduled';
                 actionHTML = `<span class="badge badge-blue" style="font-size:12px;font-weight:500;padding:6px 10px;">${label}</span>`;
             } else if (c.status === 'APPLIED' || c.status === 'SHORTLISTED' || c.status === 'PENDING') {
-                actionHTML = `<button class="btn btn-primary btn-sm" onclick="openSchedulePage('${c.email}', '${(c.fullName || 'Candidate').replace(/'/g, "\\'")}', '${String(positionTitle).replace(/'/g, "\\'")}', '${String(companyName).replace(/'/g, "\\'")}', ${positionId})">Schedule Interview</button>`;
+                actionHTML = `<button class="btn btn-primary btn-sm" onclick="openSchedulePage('${c.email}', '${(c.fullName || 'Candidate').replace(/'/g, "\\'")}', '${String(positionTitle).replace(/'/g, "\\'")}', '${String(companyName).replace(/'/g, "\\'")}', ${positionId}, ${companyId || 'null'})">Schedule Interview</button>`;
             } else {
                 const badgeClass = c.status === 'REJECTED' ? 'badge-red' : (c.status === 'OFFERED' || c.status === 'ACCEPTED' ? 'badge-green' : 'badge-blue');
                 actionHTML = `<span class="badge ${badgeClass}" style="font-size:12px;font-weight:500;">${String(c.status || '').replace('_', ' ')}</span>`;
@@ -410,13 +410,14 @@ window.closeCandidatesModal = () => {
     if (modal) modal.style.display = 'none';
 };
 
-window.openSchedulePage = (email, name, positionTitle, companyName, positionId) => {
+window.openSchedulePage = (email, name, positionTitle, companyName, positionId, companyId) => {
     const params = new URLSearchParams({
         email,
         name,
         positionTitle,
         companyName,
-        positionId
+        positionId,
+        ...(companyId ? { companyId } : {})
     });
     window.location.href = `schedule-an-interview.html?${params.toString()}`;
 };
