@@ -20,7 +20,7 @@ updateCallButtonState(false);
 // Validate room ID
 if (!state.roomId) {
   alert("No room ID found. Redirecting to lobby...");
-  window.location.href = "/lobby.html";
+  window.location.href = "/interview-screen/lobby.html";
 }
 
 
@@ -235,7 +235,7 @@ async function init() {
     }
 
     alert(errorMessage);
-    window.location.href = "/lobby.html";
+    window.location.href = "/interview-screen/lobby.html";
   }
 }
 
@@ -307,7 +307,7 @@ init().then(() => {
                 exitCall();
               } else {
                 alert("The interview has ended.");
-                window.location.href = "/lobby.html";
+                window.location.href = "/interview-screen/lobby.html";
               }
             }
           } else {

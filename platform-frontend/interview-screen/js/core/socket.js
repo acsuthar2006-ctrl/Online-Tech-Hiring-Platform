@@ -105,7 +105,7 @@ export function initSocket() {
 
     if (!state.isLeaving) {
       alert("Lost connection to server");
-      window.location.href = "/lobby.html";
+      window.location.href = "/interview-screen/lobby.html";
     }
   };
 }

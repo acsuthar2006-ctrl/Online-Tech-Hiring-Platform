@@ -53,7 +53,7 @@ export async function exitCall() {
       } else if (state.role === 'candidate') {
         window.location.href = "/candidate/my_schedule.html";
       } else {
-        window.location.href = "/lobby.html";
+        window.location.href = "/interview-screen/lobby.html";
       }
     }, 50);
   }
