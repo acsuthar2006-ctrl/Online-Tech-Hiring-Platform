@@ -6,15 +6,15 @@
     },
     {
       "source": "/check-room",
-      "destination": "https://barnes-slow-wma-dvds.trycloudflare.com/check-room"
+      "destination": "https://https://merit-fisher-jesse-ing.trycloudflare.com /check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://barnes-slow-wma-dvds.trycloudflare.com/recordings/:path*"
+      "destination": "https://https://merit-fisher-jesse-ing.trycloudflare.com /recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://barnes-slow-wma-dvds.trycloudflare.com/upload-recording"
+      "destination": "https://https://merit-fisher-jesse-ing.trycloudflare.com /upload-recording"
     }
   ]
 }

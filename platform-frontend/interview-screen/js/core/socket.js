@@ -13,7 +13,7 @@ import {
 
 export function initSocket() {
   // Connect directly to the secure Cloudflare tunnel to bypass Vercel's WebSocket block!
-  const wsUrl = "wss://barnes-slow-wma-dvds.trycloudflare.com/ws";
+  const wsUrl = "wss://https://merit-fisher-jesse-ing.trycloudflare.com /ws";
 
   console.log(`[Socket] Connecting to ${wsUrl}`);
 
