@@ -117,7 +117,13 @@ function renderSchedule(interviews) {
 
     const recordingBtn = iv.recordingUrl
       ? (() => {
-          const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
+          // --- MEDIA SERVER CONFIGURATION ---
+          // For Local Testing
+          const mediaBase = "http://localhost:3000";
+
+          // For Deployment (Cloudflare Tunnel)
+          // const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
+          // ----------------------------------
           const fileUrl = `${mediaBase}/recordings/${iv.recordingUrl}`;
           return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${iv.recordingUrl}">Download Recording</button>`;
         })()

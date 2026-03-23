@@ -160,7 +160,13 @@ function renderTimelineItem(interview, sectionId) {
                     ${isCompleted ? completedOutcomeActions : ''}
                     ${isCompleted && interview.recordingUrl
                       ? (() => {
-                          const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
+                          // --- MEDIA SERVER CONFIGURATION ---
+                          // For Local Testing
+                          const mediaBase = "http://localhost:3000";
+
+                          // For Deployment (Cloudflare Tunnel)
+                          // const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
+                          // ----------------------------------
                           const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
                           return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
                         })()

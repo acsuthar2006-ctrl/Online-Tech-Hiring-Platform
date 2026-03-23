@@ -12,12 +12,13 @@ import {
 } from "../features/mediasoup-client.js";
 
 export function initSocket() {
-  /*
+  // Resolve WebSocket endpoint dynamically.
+  // Local dev runs the media server on port 3000 (see media-server/.env).
+  // In production we assume the same host is proxied to /ws.
   const protocol = location.protocol === "https:" ? "wss" : "ws";
-  const wsUrl = `${protocol}://${location.host}/ws`; 
-   */
-  // Connect directly to the secure Cloudflare tunnel to bypass Vercel's WebSocket block!
-  const wsUrl = "wss://merit-fisher-jesse-ing.trycloudflare.com/ws";
+  const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+  const host = isLocal ? `${location.hostname}:3000` : location.host;
+  const wsUrl = `${protocol}://${host}/ws`;
 
   console.log(`[Socket] Connecting to ${wsUrl}`);
 

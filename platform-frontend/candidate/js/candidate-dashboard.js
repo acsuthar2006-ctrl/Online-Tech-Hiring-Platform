@@ -249,7 +249,13 @@ function createInterviewItem(interview, type) {
   if (type === 'upcoming') {
       actionBtn = `<button class="btn btn-primary btn-sm" onclick="joinInterview(${interview.id}, '${interview.meetingLink}')">Join</button>`;
   } else if (interview.recordingUrl) {
-      const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
+      // --- MEDIA SERVER CONFIGURATION ---
+      // For Local Testing
+      const mediaBase = "http://localhost:3000";
+
+      // For Deployment (Cloudflare Tunnel)
+      // const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
+      // ----------------------------------
       const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
       actionBtn = `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left:5px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
   } else {
