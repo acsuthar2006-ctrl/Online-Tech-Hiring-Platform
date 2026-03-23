@@ -6,19 +6,15 @@
     },
     {
       "source": "/check-room",
-      "destination": "http://54.158.229.21:3000/check-room"
+      "destination": "https://barnes-slow-wma-dvds.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "http://54.158.229.21:3000/recordings/:path*"
+      "destination": "https://barnes-slow-wma-dvds.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "http://54.158.229.21:3000/upload-recording"
-    },
-    {
-      "source": "/ws",
-      "destination": "http://54.158.229.21:3000/ws"
+      "destination": "https://barnes-slow-wma-dvds.trycloudflare.com/upload-recording"
     }
   ]
 }

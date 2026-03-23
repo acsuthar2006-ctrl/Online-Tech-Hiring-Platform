@@ -12,9 +12,8 @@ import {
 } from "../features/mediasoup-client.js";
 
 export function initSocket() {
-  // Connect to the same host (Vite proxy in dev, direct in prod)
-  const protocol = location.protocol === "https:" ? "wss" : "ws";
-  const wsUrl = `${protocol}://${location.host}/ws`;
+  // Connect directly to the secure Cloudflare tunnel to bypass Vercel's WebSocket block!
+  const wsUrl = "wss://barnes-slow-wma-dvds.trycloudflare.com/ws";
 
   console.log(`[Socket] Connecting to ${wsUrl}`);
 
