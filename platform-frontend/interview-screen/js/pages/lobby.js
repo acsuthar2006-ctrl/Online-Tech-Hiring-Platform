@@ -131,7 +131,7 @@ if (downloadBtn) {
     showLoading(true);
 
     // When running on Vite dev server (port 5173), the media server is on port 3000
-    const mediaBase = window.location.port === '5173' ? 'http://localhost:3000' : window.location.origin;
+    const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
 
     try {
       const res = await fetch(`${mediaBase}/api/recordings/${roomId}`);

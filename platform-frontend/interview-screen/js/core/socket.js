@@ -12,6 +12,10 @@ import {
 } from "../features/mediasoup-client.js";
 
 export function initSocket() {
+  /*
+  const protocol = location.protocol === "https:" ? "wss" : "ws";
+  const wsUrl = `${protocol}://${location.host}/ws`; 
+   */
   // Connect directly to the secure Cloudflare tunnel to bypass Vercel's WebSocket block!
   const wsUrl = "wss://merit-fisher-jesse-ing.trycloudflare.com/ws";
 
