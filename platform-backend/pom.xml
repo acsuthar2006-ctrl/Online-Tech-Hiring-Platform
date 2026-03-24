@@ -95,6 +95,13 @@
 			<artifactId>spring-dotenv</artifactId>
 			<version>4.0.0</version>
 		</dependency>
+
+		<!-- Dummy Data Generation -->
+		<dependency>
+			<groupId>net.datafaker</groupId>
+			<artifactId>datafaker</artifactId>
+			<version>2.1.0</version>
+		</dependency>
     </dependencies>
 
 	<build>
