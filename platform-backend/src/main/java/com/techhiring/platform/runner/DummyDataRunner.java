@@ -2,6 +2,7 @@ package com.techhiring.platform.runner;
 
 import com.techhiring.platform.entity.Company;
 import com.techhiring.platform.runner.seeder.CandidateSeeder;
+import com.techhiring.platform.runner.seeder.CompanyAdminSeeder;
 import com.techhiring.platform.runner.seeder.CompanySeeder;
 import com.techhiring.platform.runner.seeder.InterviewerSeeder;
 import com.techhiring.platform.runner.seeder.PositionSeeder;
@@ -24,6 +25,7 @@ public class DummyDataRunner implements CommandLineRunner {
     private final InterviewerSeeder interviewerSeeder;
     private final CandidateSeeder candidateSeeder;
     private final PositionSeeder positionSeeder;
+    private final CompanyAdminSeeder companyAdminSeeder;
 
     @Value("${app.dummy-data.enabled:false}")
     private boolean enabled;
@@ -42,6 +44,9 @@ public class DummyDataRunner implements CommandLineRunner {
 
         // 1. Seed Companies
         List<Company> companies = companySeeder.seed(10);
+
+        // 1.5 Seed Company Admins (1 per company)
+        companyAdminSeeder.seed(companies, commonPassword);
 
         // 2. Seed Interviewers
         interviewerSeeder.seed(50, commonPassword);
