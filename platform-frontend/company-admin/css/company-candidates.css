@@ -70,6 +70,9 @@
   border-bottom: 1px solid var(--blue-200);
   font-size: 14px;
   color: var(--gray-800);
+  /* Allow long strings (like emails) to wrap within their cells */
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .candidates-table tbody tr:hover {
