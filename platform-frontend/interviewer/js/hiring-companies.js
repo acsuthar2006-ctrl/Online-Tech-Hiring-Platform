@@ -196,31 +196,50 @@ function renderCompanyGrid(companies, positionsByCompany, applicationByPosition)
     const grid = document.getElementById('companyGrid');
     grid.innerHTML = '';
 
-    companies.forEach(company => {
+    companies.forEach((company, index) => {
         const positions = positionsByCompany[company.id] || [];
-
         const card = document.createElement('div');
         card.className = 'company-card';
 
+        // Cycle through some background colors for logos
+        const colors = ['blue-bg', 'green-bg', 'purple-bg', 'orange-bg'];
+        const colorClass = colors[index % colors.length];
+
         let positionsHtml = positions.map(p => {
             const st = applicationByPosition[p.id];
-            if (st) {
-                const cls = st === 'APPROVED' ? 'badge-green' : (st === 'REJECTED' ? 'badge-red' : 'badge-blue');
-                const actions = st === 'APPROVED'
-                  ? `<div style="display:flex; gap:6px; align-items:center;">
-                      <span class="badge ${cls}" style="padding:4px 8px;">${st}</span>
-                      <button class="btn-outline btn-sm" onclick="viewAssignedCandidates(${p.id}, ${JSON.stringify(p.positionTitle || 'Position').replace(/\"/g, '&quot;')}, ${JSON.stringify(company.companyName || 'Company').replace(/\"/g, '&quot;')}, ${company.id})">View Candidates</button>
-                    </div>`
-                  : `<span class="badge ${cls}" style="padding:4px 8px;">${st}</span>`;
-                return `<div class="req-tag" style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;">
-                  <span>${p.positionTitle}${p.location ? ' (' + p.location + ')' : ''}</span>
-                  ${actions}
-                </div>`;
+            let actionHtml = '';
+
+            if (st === 'APPROVED') {
+                actionHtml = `
+                    <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                        <button class="btn-primary btn-sm" onclick="viewAssignedCandidates(${p.id}, ${JSON.stringify(p.positionTitle || 'Position').replace(/\"/g, '&quot;')}, ${JSON.stringify(company.companyName || 'Company').replace(/\"/g, '&quot;')}, ${company.id})">View Candidates</button>
+                    </div>`;
+            } else if (st === 'REJECTED') {
+                actionHtml = `<span class="badge badge-error" style="padding:4px 8px;font-weight:600;background:#fee2e2;color:#991b1b;">✕ Rejected</span>`;
+            } else if (st) {
+                actionHtml = `<span class="badge badge-green" style="padding:4px 8px;">Applied (${st})</span>`;
+            } else {
+                actionHtml = `<button class="btn-primary btn-sm" onclick="applyToPosition(event, ${p.id})">Apply</button>`;
             }
-            return `<div class="req-tag" style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;">
-              <span>${p.positionTitle}${p.location ? ' (' + p.location + ')' : ''}</span>
-              <button class="btn-primary btn-sm" onclick="applyToPosition(event, ${p.id})">Apply</button>
-            </div>`;
+
+            return `
+                    <div class="position-item" style="align-items: flex-start;">
+                        <div class="position-info" style="flex: 1; padding-right: 16px;">
+                            <h4 style="margin-bottom: 6px;">${p.positionTitle}</h4>
+                            <div class="position-tags" style="margin-bottom: 8px;">
+                                <span class="badge badge-blue">Full-time</span>
+                                ${p.location ? `<span class="badge badge-purple" style="margin-left: 4px;">${p.location}</span>` : ''}
+                            </div>
+                            ${p.jobDescription ? `<p style="font-size: 13px; color: #4b5563; margin: 8px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">${p.jobDescription}</p>` : ''}
+                            ${p.requiredExpertise ? `
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;">
+                                ${p.requiredExpertise.split(',').map(skill => `<span style="font-size: 11px; background: #f3f4f6; color: #4b5563; padding: 2px 6px; border-radius: 4px; border: 1px solid #e5e7eb;">${skill.trim()}</span>`).join('')}
+                            </div>` : ''}
+                        </div>
+                        <div style="flex-shrink: 0; padding-top: 2px;">
+                            ${actionHtml}
+                        </div>
+                    </div>`;
         }).join('');
 
         // Find all unique required expertises across positions for this company
@@ -230,33 +249,50 @@ function renderCompanyGrid(companies, positionsByCompany, applicationByPosition)
                 p.requiredExpertise.split(',').forEach(e => allExpertise.add(e.trim()));
             }
         });
-        let expertiseHtml = Array.from(allExpertise).map(e => `<span class="req-tag" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0">${e}</span>`).join('');
-
-        const actionHtml = ``;
+        let expertiseHtml = Array.from(allExpertise).map(e => `<span class="badge badge-success" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0">${e}</span>`).join('');
 
         card.innerHTML = `
-            <div class="company-status status-open">${positions.length} Open Position${positions.length > 1 ? 's' : ''}</div>
             <div class="company-header">
-                <div class="company-logo">${(company.companyName || 'C').charAt(0)}</div>
-                <div class="company-basic">
-                    <h3>${company.companyName || 'Unknown Company'}</h3>
-                    <p>${company.industry || 'Tech'} · ${company.location || 'Remote'}</p>
+                <div class="company-logo-wrapper ${colorClass}">
+                    <span style="font-size: 28px; font-weight: bold;">${(company.companyName || 'C').charAt(0)}</span>
                 </div>
+                <button class="btn-icon-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </button>
             </div>
-            <div class="company-details">
-                <div class="detail-row">
-                    <span class="detail-label">Positions:</span>
-                    <span class="detail-value" style="display:flex;flex-direction:column;flex-wrap:nowrap;gap:8px;margin-top:4px;color:inherit;">${positionsHtml}</span>
-                </div>
+            <h3>${company.companyName}</h3>
+            <p class="company-description">${company.industry || 'Tech'} · ${company.location || 'Remote'}</p>
+            <div class="company-meta">
+                <span class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    ${company.location || 'Remote'}
+                </span>
+                <span class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    ${positions.length} open position${positions.length > 1 ? 's' : ''}
+                </span>
             </div>
-            <div class="job-requirements">
-                <div class="req-title">Required Expertise</div>
-                <div class="req-list" style="margin-top:8px;">
+            <div class="job-requirements" style="margin-bottom: 16px;">
+                <div style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 8px;">Required Expertise</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                     ${expertiseHtml}
                 </div>
             </div>
-            <div class="company-actions" style="margin-top:16px;">
-                ${actionHtml}
+            <div class="positions-list" style="margin-bottom: 0;">
+                <div style="font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px;">Positions:</div>
+                <div class="positions-list" style="margin-bottom: 0;">
+                    ${positionsHtml}
+                </div>
             </div>
         `;
         grid.appendChild(card);

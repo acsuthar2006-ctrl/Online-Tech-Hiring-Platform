@@ -3,9 +3,11 @@ import { initNotifications } from '../../common/notifications.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
     const userInfo = api.getUserInfo();
-    if (!userInfo || !userInfo.companyId) {
-        console.error("No company ID found for the current user.");
-        return;
+    if (userInfo) {
+        const usernameEl = document.getElementById('adminUsername');
+        const nameEl = document.getElementById('adminName');
+        if (usernameEl) usernameEl.textContent = userInfo.fullName || 'Admin';
+        if (nameEl) nameEl.textContent = userInfo.fullName || 'Admin';
     }
 
     try {

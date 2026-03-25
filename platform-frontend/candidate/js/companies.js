@@ -262,16 +262,23 @@ function renderCompanies(companies, companyPositions, myApplications, interviewO
             }
 
             return `
-                    <div class="position-item">
-                        <div class="position-info">
-                            <h4>${pos.positionTitle}</h4>
-                            <div class="position-tags">
+                    <div class="position-item" style="align-items: flex-start;">
+                        <div class="position-info" style="flex: 1; padding-right: 16px;">
+                            <h4 style="margin-bottom: 6px;">${pos.positionTitle}</h4>
+                            <div class="position-tags" style="margin-bottom: 8px;">
                                 <span class="badge badge-blue">Full-time</span>
                                 <span class="badge badge-green">${pos.salaryRange || 'Competitive'}</span>
                                 ${pos.location ? `<span class="badge badge-purple" style="margin-left: 4px;">${pos.location}</span>` : ''}
                             </div>
+                            ${pos.jobDescription ? `<p style="font-size: 13px; color: #4b5563; margin: 8px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">${pos.jobDescription}</p>` : ''}
+                            ${pos.requiredExpertise ? `
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;">
+                                ${pos.requiredExpertise.split(',').map(skill => `<span style="font-size: 11px; background: #f3f4f6; color: #4b5563; padding: 2px 6px; border-radius: 4px; border: 1px solid #e5e7eb;">${skill.trim()}</span>`).join('')}
+                            </div>` : ''}
                         </div>
-                        ${actionHtml}
+                        <div style="flex-shrink: 0; padding-top: 2px;">
+                            ${actionHtml}
+                        </div>
                     </div>
                 `}).join('')}
             </div>

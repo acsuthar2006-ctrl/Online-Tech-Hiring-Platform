@@ -128,7 +128,10 @@
     <div class="modal-content modal-lg">
       <div class="modal-header">
         <h2 id="viewCandidatesTitle">View Candidates</h2>
-        <button class="modal-close" id="viewCandidatesClose">&times;</button>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <button id="viewCandidatesAssignSelectedBtn" class="btn-primary btn-sm" style="display:none;" onclick="openChangeInterviewerMultiple()">Assign To (0)</button>
+          <button class="modal-close" id="viewCandidatesClose">&times;</button>
+        </div>
       </div>
       <div class="modal-body">
         <div class="search-bar" style="margin-bottom: 16px;">
