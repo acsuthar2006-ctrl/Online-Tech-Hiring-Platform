@@ -45,6 +45,7 @@ export class Recorder extends EventEmitter {
     this.process = null;
     this.recordingChunks = []; // Track chunks
     this.manifestPath = null; // Track current session manifest
+    this.sdpPaths = []; // Track SDP files
   }
 
   // New start method accepts an array of producer configs: [{ producerId: '...', kind: 'audio|video' }, ...]
@@ -108,12 +109,15 @@ export class Recorder extends EventEmitter {
     // Use the custom filename provided by the frontend if available, else fallback
     const outputFilename = this.recordingName ? `${this.recordingName}.mp4` : `${this.roomId}-${timestamp}.mp4`;
     const filepath  = path.join(RECORD_DIR, outputFilename);
+    const sdpPath = path.join(RECORD_DIR, `${this.roomId}-${timestamp}.sdp`);
     this.recordingChunks.push(filepath);
+    this.sdpPaths.push(sdpPath);
 
     if (!this.manifestPath) {
       this.manifestPath = path.join(RECORD_DIR, `${this.roomId}-${timestamp}-manifest.txt`);
     }
-    fs.appendFileSync(this.manifestPath, `file '${path.resolve(filepath)}'\n`);
+    fs.appendFileSync(this.manifestPath, `file '${path.resolve(filepath).replace(/\\/g, '/')}'\n`);
+    fs.writeFileSync(sdpPath, sdp);
 
     // DYNAMIC FFMPEG LAYOUT
     let audioInputs = [];
@@ -190,7 +194,7 @@ export class Recorder extends EventEmitter {
       "-probesize",          "30M",
       "-thread_queue_size",  "4096",
       "-f",  "sdp",
-      "-i",  "pipe:0",
+      "-i",  sdpPath,
       "-filter_complex", filterComplex,
       "-map", "[vout]",
       "-map", "[aout]",
@@ -207,9 +211,6 @@ export class Recorder extends EventEmitter {
     // transports (which start pushing RTP immediately on connect).
     console.log(`[Recorder] Process command: ffmpeg ${args.join(" ")}`);
     this.process = child_process.spawn(ffmpegPath, args);
-
-    this.process.stdin.write(sdp);
-    this.process.stdin.end();
 
     this.process.stderr.on("data", (data) => {
       console.log("[FFmpeg Log]", data.toString());
@@ -276,7 +277,15 @@ export class Recorder extends EventEmitter {
           });
           
           // Send SIGINT to allow FFmpeg to write trailer (MOOV atom)
-          proc.kill("SIGINT");
+          if (process.platform === "win32") {
+              try {
+                  proc.stdin.write("q\n");
+              } catch (e) {
+                  proc.kill("SIGKILL");
+              }
+          } else {
+              proc.kill("SIGINT");
+          }
       });
     }
 
@@ -360,9 +369,13 @@ export class Recorder extends EventEmitter {
                 try { fs.unlinkSync(chunkPath); } catch(e) {}
             }
         }
+        for (const sdp of this.sdpPaths) {
+            try { fs.unlinkSync(sdp); } catch(e) {}
+        }
         
         // Reset state
         this.recordingChunks = [];
+        this.sdpPaths = [];
         this.manifestPath = null;
 
     } catch (e) {
