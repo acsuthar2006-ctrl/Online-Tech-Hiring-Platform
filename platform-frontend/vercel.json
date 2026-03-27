@@ -1,4 +1,4 @@
-{
+﻿{
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -6,15 +6,15 @@
     },
     {
       "source": "/check-room",
-      "destination": "https://merit-fisher-jesse-ing.trycloudflare.com/check-room"
+      "destination": "https://highland-designing-smallest-gba.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://merit-fisher-jesse-ing.trycloudflare.com/recordings/:path*"
+      "destination": "https://highland-designing-smallest-gba.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://merit-fisher-jesse-ing.trycloudflare.com/upload-recording"
+      "destination": "https://highland-designing-smallest-gba.trycloudflare.com/upload-recording"
     }
   ]
 }

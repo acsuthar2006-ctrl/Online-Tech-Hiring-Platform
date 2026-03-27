@@ -20,6 +20,9 @@ public class InterviewController {
   private final InterviewService interviewService;
   private final EmailService emailService;
 
+  @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:5173}")
+  private String frontendUrl;
+
   @PostMapping("/schedule")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
   public ResponseEntity<Interview> scheduleInterview(@RequestBody ScheduleRequest request) {
@@ -95,7 +98,7 @@ public class InterviewController {
     emailService.sendManualNudge(
         interview.getCandidate().getEmail(),
         interview.getCandidate().getFullName(),
-        "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail(),
+        frontendUrl + "/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail(),
         companyName,
         positionTitle);
     return ResponseEntity.ok("Reminder sent");

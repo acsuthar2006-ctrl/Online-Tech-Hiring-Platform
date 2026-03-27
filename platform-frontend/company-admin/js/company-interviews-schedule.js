@@ -1,4 +1,5 @@
 import { api } from '../../common/api.js';
+import { getMediaBase } from '../../common/media-config.js';
 
 const companyId = sessionStorage.getItem('companyId');
 let allInterviews = [];
@@ -117,13 +118,7 @@ function renderSchedule(interviews) {
 
     const recordingBtn = iv.recordingUrl
       ? (() => {
-          // --- MEDIA SERVER CONFIGURATION ---
-          // For Local Testing
-          const mediaBase = "http://localhost:3000";
-
-          // For Deployment (Cloudflare Tunnel)
-          // const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
-          // ----------------------------------
+          const mediaBase = getMediaBase();
           const fileUrl = `${mediaBase}/recordings/${iv.recordingUrl}`;
           return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${iv.recordingUrl}">Download Recording</button>`;
         })()

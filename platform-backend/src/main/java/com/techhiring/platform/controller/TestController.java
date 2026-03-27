@@ -12,6 +12,9 @@ public class TestController {
 
   private final EmailService emailService;
 
+  @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:5173}")
+  private String frontendUrl;
+
   @PostMapping("/send-email")
   public ResponseEntity<String> testEmail(@RequestParam String email) {
     try {
@@ -20,7 +23,7 @@ public class TestController {
           "Test User",
           "2026-12-31",
           "10:00 AM",
-          "http://localhost:5173/?room=test-room&role=candidate",
+          frontendUrl + "/?room=test-room&role=candidate",
           "Test Company",
           "Test Position"
       );

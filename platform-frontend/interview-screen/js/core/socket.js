@@ -10,15 +10,11 @@ import {
   consumeProducer,
   removeConsumer,
 } from "../features/mediasoup-client.js";
+import { getMediaBase } from "../../../common/media-config.js";
 
 export function initSocket() {
-  // Resolve WebSocket endpoint dynamically.
-  // Local dev runs the media server on port 3000 (see media-server/.env).
-  // In production we assume the same host is proxied to /ws.
-  const protocol = location.protocol === "https:" ? "wss" : "ws";
-  const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
-  const host = isLocal ? `${location.hostname}:3000` : location.host;
-  const wsUrl = `${protocol}://${host}/ws`;
+  const mediaBase = getMediaBase();
+  const wsUrl = mediaBase.replace(/^http/, "ws") + "/ws";
 
   console.log(`[Socket] Connecting to ${wsUrl}`);
 

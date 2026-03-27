@@ -1,4 +1,5 @@
 import { showToast, showLoading } from "../common/ui-utils.js";
+import { getMediaBase } from "../../../common/media-config.js";
 
 const BASE_URL = window.location.origin;
 
@@ -130,14 +131,7 @@ if (downloadBtn) {
     console.log(`[Lobby] Checking recordings for room: ${roomId}`);
     showLoading(true);
 
-    // When running on Vite dev server (port 5173), the media server is on port 3000
-    // --- MEDIA SERVER CONFIGURATION ---
-    // For Local Testing
-    const mediaBase = "http://localhost:3000";
-
-    // For Deployment (Cloudflare Tunnel)
-    // const mediaBase = "https://merit-fisher-jesse-ing.trycloudflare.com";
-    // ----------------------------------
+    const mediaBase = getMediaBase();
 
     try {
       const res = await fetch(`${mediaBase}/api/recordings/${roomId}`);
@@ -223,9 +217,7 @@ if (downloadBtn) {
 // Check if room exists
 async function roomExists(room) {
   try {
-    // For Local: http://localhost:3000/check-room
-    // For Deployment: https://merit-fisher-jesse-ing.trycloudflare.com/check-room
-    const res = await fetch(`http://localhost:3000/check-room?room=${encodeURIComponent(room)}`);
+    const res = await fetch(`${getMediaBase()}/check-room?room=${encodeURIComponent(room)}`);
 
     if (!res.ok) {
       console.error(`[Lobby] Server returned ${res.status}`);
@@ -315,9 +307,7 @@ window.deleteRecording = async (filename) => {
   // 3. Send Delete Request
   showLoading(true);
   try {
-    // For Local: http://localhost:3000/api/recordings/
-    // For Deployment: https://merit-fisher-jesse-ing.trycloudflare.com/api/recordings/
-    const res = await fetch(`http://localhost:3000/api/recordings/${filename}`, {
+    const res = await fetch(`${getMediaBase()}/api/recordings/${filename}`, {
       method: "DELETE",
     });
 

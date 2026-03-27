@@ -39,6 +39,9 @@ public class InterviewService {
   private final CompanyRepository companyRepository;
   private final PositionRepository positionRepository;
 
+  @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:5173}")
+  private String frontendUrl;
+
   // Track candidate lobby presence (interviewId -> lastPingTime)
   private final Map<Long, LocalDateTime> candidatePresence = new ConcurrentHashMap<>();
 
@@ -172,7 +175,7 @@ public class InterviewService {
           candidateName,
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_DATE),
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-          "http://localhost:5173/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail,
+          frontendUrl + "/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail,
           companyName,
           positionTitle
       );

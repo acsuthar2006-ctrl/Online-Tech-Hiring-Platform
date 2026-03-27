@@ -19,6 +19,9 @@ public class NotificationScheduler {
   private final InterviewRepository interviewRepository;
   private final EmailService emailService;
 
+  @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:5173}")
+  private String frontendUrl;
+
   // Run every 1 minute for easier testing (production could be 5 mins)
   @Scheduled(cron = "0 */1 * * * *")
   public void sendInterviewReminders() {
@@ -42,7 +45,7 @@ public class NotificationScheduler {
         emailService.sendInterviewReminder(
             interview.getCandidate().getEmail(),
             interview.getCandidate().getFullName(),
-            "http://localhost:5173/?room=" + interview.getMeetingLink() + "&role=candidate",
+            frontendUrl + "/?room=" + interview.getMeetingLink() + "&role=candidate",
             companyName,
             positionTitle);
       } catch (Exception e) {

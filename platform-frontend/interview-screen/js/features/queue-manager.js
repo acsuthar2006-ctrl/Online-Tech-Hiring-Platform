@@ -1,4 +1,3 @@
-
 // Queue Manager — Interviewer Modal + Sidebar Refresh
 
 // ─── Sidebar refresh helper ──────────────────────────────────────────────────
@@ -123,6 +122,10 @@ async function _fetchModalQueue() {
         } else if (item.status === 'IN_PROGRESS') {
           statusColor = 'green';
           actionBtn = `<button onclick="completeCandidate(${item.id})" style="padding: 5px 10px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Complete</button>`;
+          
+          if (typeof window.updateCandidateLabel === 'function') {
+            window.updateCandidateLabel(item.candidate.fullName);
+          }
         } else if (item.status === 'COMPLETED') {
           statusColor = 'blue';
         }
@@ -200,7 +203,7 @@ window.completeCandidate = async function (id) {
 
       try {
         const filename = await new Promise((resolve) => {
-          const timeout = setTimeout(() => resolve(null), 3000); // 3s timeout
+          const timeout = setTimeout(() => resolve(null), 10000); // 10s timeout
 
           const activeListener = (event) => {
             const msg = JSON.parse(event.data);

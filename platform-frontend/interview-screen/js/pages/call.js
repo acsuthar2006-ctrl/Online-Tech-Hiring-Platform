@@ -353,6 +353,21 @@ window.joinCall = joinCall;
 window.exitCall = exitCall;
 window.getMediaSocket = () => state.socket;
 
+// Function to dynamically update the candidate name label
+window.updateCandidateLabel = (newName) => {
+  if (state.role === 'interviewer') {
+    const remoteLabel = document.querySelector(".remote-card .user-label");
+    if (remoteLabel) {
+      remoteLabel.innerHTML = `<i class="fas fa-user"></i> ${newName}`;
+    }
+  } else {
+    const localLabel = document.querySelector(".local-card .user-label");
+    if (localLabel) {
+      localLabel.innerHTML = `<i class="fas fa-user"></i> ${newName}`;
+    }
+  }
+};
+
 // 🎤 Mic toggle
 micBtn.addEventListener("click", () => {
   if (!state.localStream) {
