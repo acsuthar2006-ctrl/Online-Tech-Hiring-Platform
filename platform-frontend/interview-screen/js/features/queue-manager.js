@@ -196,61 +196,25 @@ window.completeCandidate = async function (id) {
 
   let recordingUrl = null;
 
-  // Attempt to stop recording and get filename
+  // Attempt to stop recording
   if (window.getMediaSocket) {
     const socket = window.getMediaSocket();
     if (socket && socket.readyState === 1) { // OPEN
-      console.log("Stopping recording for candidate " + id);
-
       try {
-        const filename = await new Promise((resolve) => {
-          const timeout = setTimeout(() => resolve(null), 10000); // 10s timeout
+        const params = new URLSearchParams(window.location.search);
+        const roomParam = params.get('room');
 
-          const activeListener = (event) => {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'recordingSaved') {
-              clearTimeout(timeout);
-              socket.removeEventListener('message', activeListener); // clean up (tricky with wrapper, but generic logic)
-              // Actually, we can't easily remove specific listeners if they are wrapped.
-              // But we can just use a one-time handler logic if we had a proper event emitter.
-              // Since we are using raw socket (or wrapper?), let's assume raw WebSocket for now based on `state.socket`.
-              // `state.socket` is a WebSocket instance.
-              resolve(msg.filename);
-            }
-          };
-          socket.addEventListener('message', activeListener);
-          const params = new URLSearchParams(window.location.search);
-          const roomParam = params.get('room');
-          
-          // Try to get candidate name from the DOM (relies on the list structure from _fetchModalQueue)
-          // We can find the button that was clicked and traverse up, but we know the 'id'
-          // A safer way is to fetch the queue again, or rely on global state. Given we're inside a function, let's fetch.
-          fetch(`/api/interviews/session/${roomParam}/queue`)
-            .then(res => res.json())
-            .then(data => {
-              const item = data.timeline.find(i => i.id === id);
-              const candidateName = item && item.candidate ? item.candidate.fullName.replace(/[^a-zA-Z0-9]/g, '_') : 'Candidate';
-              const secureId = crypto.randomUUID();
-              
-              const recordingName = `${roomParam}-${candidateName}-${secureId}`;
-              
-              socket.send(JSON.stringify({
-                type: 'stopRecording',
-                recordingName: recordingName
-              }));
-            })
-            .catch(err => {
-              console.error("Failed to fetch candidate name for recording:", err);
-              const fallbackName = `${roomParam}-Interview-${id}-${crypto.randomUUID()}`;
-              socket.send(JSON.stringify({
-                type: 'stopRecording',
-                recordingName: fallbackName
-              }));
-            });
-        });
+        const queueData = await fetch(`/api/interviews/session/${roomParam}/queue`).then(r => r.json());
+        const item = queueData.timeline.find(i => i.id === id);
+        const candidateName = item && item.candidate
+          ? item.candidate.fullName.replace(/[^a-zA-Z0-9]/g, '_')
+          : 'Candidate';
+        const recordingName = `${roomParam}-${candidateName}-${crypto.randomUUID()}`;
 
-        if (filename) recordingUrl = filename;
+        socket.send(JSON.stringify({ type: 'stopRecording', recordingName }));
 
+        // Use the name we constructed — this is exactly what the server saves
+        recordingUrl = recordingName;
       } catch (e) {
         console.warn("Failed to stop recording cleanly:", e);
       }
