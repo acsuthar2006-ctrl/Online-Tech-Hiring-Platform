@@ -6,15 +6,15 @@
     },
     {
       "source": "/check-room",
-      "destination": "https://widespread-reg-hawaii-crafts.trycloudflare.com/check-room"
+      "destination": "https://vids-nissan-signal-identify.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://widespread-reg-hawaii-crafts.trycloudflare.com/recordings/:path*"
+      "destination": "https://vids-nissan-signal-identify.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://widespread-reg-hawaii-crafts.trycloudflare.com/upload-recording"
+      "destination": "https://vids-nissan-signal-identify.trycloudflare.com/upload-recording"
     }
   ]
 }
