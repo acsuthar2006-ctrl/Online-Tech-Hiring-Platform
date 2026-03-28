@@ -126,7 +126,7 @@ async function scheduleInterview(event) {
         meetingLink: roomId,
         description: additionalNotes || `Interview at ${companyName}`,
         durationMinutes: parseInt(duration, 10),
-        interviewType: interviewType.toUpperCase(),
+        interviewType: interviewType ? interviewType.toUpperCase() : null,
         companyId: currentCompanyId ? parseInt(currentCompanyId, 10) : null,
         positionId: currentPositionId ? parseInt(currentPositionId, 10) : null
       };

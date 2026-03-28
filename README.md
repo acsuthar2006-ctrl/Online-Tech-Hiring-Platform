@@ -15,8 +15,7 @@ A comprehensive real-time video interviewing and technical hiring platform built
 8. [API Endpoints](#api-endpoints)
 9. [Screenshots](#screenshots)
 10. [Contributing Guidelines](#contributing-guidelines)
-11. [License](#license)
-12. [Contact / Author Info](#contact--author-info)
+11. [Contact / Author Info](#contact--author-info)
 
 ---
 
