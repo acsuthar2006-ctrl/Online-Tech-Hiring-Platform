@@ -160,11 +160,7 @@ function renderTimelineItem(interview, sectionId) {
                     ${!isCompleted ? `<button class="btn-primary btn-sm" onclick="joinInterview('${interview.meetingLink}')">Join Interview</button>` : ''}
                     ${isCompleted ? completedOutcomeActions : ''}
                     ${isCompleted && interview.recordingUrl
-                      ? (() => {
-                          const mediaBase = getMediaBase();
-                          const fileUrl = `${mediaBase}/recordings/${interview.recordingUrl}`;
-                          return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`;
-                        })()
+                      ? `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="/recordings/${interview.recordingUrl}" data-filename="${interview.recordingUrl}">Download Recording</button>`
                       : ''}
                 </div>
             </div>

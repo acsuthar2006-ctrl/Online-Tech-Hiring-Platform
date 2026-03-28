@@ -209,7 +209,7 @@ window.completeCandidate = async function (id) {
         const candidateName = item && item.candidate
           ? item.candidate.fullName.replace(/[^a-zA-Z0-9]/g, '_')
           : 'Candidate';
-        const recordingName = `${roomParam}-${candidateName}-${crypto.randomUUID()}`;
+        const recordingName = `${roomParam}-${candidateName}-${crypto.randomUUID()}.webm`;
 
         socket.send(JSON.stringify({ type: 'stopRecording', recordingName }));
 
