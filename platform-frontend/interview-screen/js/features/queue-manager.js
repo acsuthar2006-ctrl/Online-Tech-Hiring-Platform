@@ -209,12 +209,12 @@ window.completeCandidate = async function (id) {
         const candidateName = item && item.candidate
           ? item.candidate.fullName.replace(/[^a-zA-Z0-9]/g, '_')
           : 'Candidate';
-        const recordingName = `${roomParam}-${candidateName}-${crypto.randomUUID()}.webm`;
+        const recordingName = `${roomParam}-${candidateName}-${crypto.randomUUID()}`;
 
         socket.send(JSON.stringify({ type: 'stopRecording', recordingName }));
 
-        // Use the name we constructed — this is exactly what the server saves
-        recordingUrl = recordingName;
+        // Server saves as recordingName.mp4 — store with .mp4 so downloads work
+        recordingUrl = `${recordingName}.mp4`;
       } catch (e) {
         console.warn("Failed to stop recording cleanly:", e);
       }
