@@ -1,20 +1,20 @@
-﻿{
+{
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://54.158.229.21:8080/api/:path*"
+      "destination": "http://100.53.232.184:8080/api/:path*"
     },
     {
       "source": "/check-room",
-      "destination": "https://highland-designing-smallest-gba.trycloudflare.com/check-room"
+      "destination": "https://priority-trails-admission-compression.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://highland-designing-smallest-gba.trycloudflare.com/recordings/:path*"
+      "destination": "https://priority-trails-admission-compression.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://highland-designing-smallest-gba.trycloudflare.com/upload-recording"
+      "destination": "https://priority-trails-admission-compression.trycloudflare.com/upload-recording"
     }
   ]
 }
