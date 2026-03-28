@@ -116,12 +116,46 @@ function renderPanel(panel, items, onItemClick) {
   });
 }
 
+// Keep a singleton state to avoid double-binding click handlers on pages that call initNotifications twice.
+const __notifState = (() => {
+  if (!window.__thNotifState) {
+    window.__thNotifState = { initialized: false, panel: null };
+  }
+  return window.__thNotifState;
+})();
+
 export async function initNotifications() {
   const notificationBtn = document.getElementById('notificationBtn');
   if (!notificationBtn) return;
 
   const badge = notificationBtn.querySelector('.notification-badge');
   if (badge) hide(badge);
+
+  // Create the panel immediately so the bell is clickable even if fetch fails.
+  let panel = __notifState.panel || ensurePanel(notificationBtn);
+  __notifState.panel = panel;
+
+  const togglePanel = () => {
+    if (!panel) {
+      panel = ensurePanel(notificationBtn);
+      __notifState.panel = panel;
+    }
+    // Reposition before showing in case of scroll/resize
+    const r = notificationBtn.getBoundingClientRect();
+    panel.style.top = `${Math.round(r.bottom + 8)}px`;
+    panel.style.right = `${Math.round(window.innerWidth - r.right)}px`;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  };
+
+  // Bind click only once
+  if (!__notifState.initialized) {
+    notificationBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      togglePanel();
+    });
+    __notifState.initialized = true;
+  }
 
   const userInfo = api.getUserInfo();
   const role = userInfo?.role || null;
@@ -131,8 +165,15 @@ export async function initNotifications() {
   try {
     data = await api.getNotifications();
   } catch (e) {
-    // If notifications fail, keep UI quiet.
     console.warn('Failed to load notifications', e);
+    // Show a lightweight error state instead of leaving the bell dead.
+    renderPanel(panel, [{
+      id: 'error',
+      title: 'Notifications unavailable',
+      message: 'Could not load notifications right now.',
+      actionUrl: ''
+    }], () => {});
+
     return;
   }
 
@@ -147,8 +188,6 @@ export async function initNotifications() {
     if (count > 0) show(badge);
     else hide(badge);
   }
-
-  const panel = ensurePanel(notificationBtn);
 
   const onItemClick = (id) => {
     dismissedIds.add(id);
@@ -171,13 +210,5 @@ export async function initNotifications() {
   }
 
   renderPanel(panel, visibleItems, onItemClick);
-
-  // Toggle panel on bell click.
-  notificationBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!panel) return;
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  });
+  // Panel already toggles via click handler defined above.
 }
-

@@ -22,7 +22,8 @@ export function toggleQueueModal() {
 window.toggleQueueModal = toggleQueueModal;
 
 // ─── Fetch & render the interviewer modal queue list ──────────────────────────
-const _todayStr = () => new Date().toISOString().slice(0, 10);
+// Use local calendar date (not UTC) so late-night sessions don't disappear.
+const _todayStr = () => new Date().toLocaleDateString('en-CA');
 
 function _normalizeDate(item) {
   const raw = item?.scheduledDate || item?.date || null;
