@@ -10,7 +10,7 @@ function _refreshSidebar() {
 }
 
 // ─── Interviewer Modal Toggle ─────────────────────────────────────────────────
-window.toggleQueueModal = function () {
+export function toggleQueueModal() {
   const modal = document.getElementById('queue-modal');
   if (modal.style.display === 'none') {
     modal.style.display = 'block';
@@ -19,6 +19,7 @@ window.toggleQueueModal = function () {
     modal.style.display = 'none';
   }
 }
+window.toggleQueueModal = toggleQueueModal;
 
 // ─── Fetch & render the interviewer modal queue list ──────────────────────────
 const _todayStr = () => new Date().toISOString().slice(0, 10);
