@@ -31,19 +31,6 @@ export function updateCallButtonState(isConnected) {
   }
 }
 
-export function setJoinButtonDisabled(disabled) {
-  if (joinCallBtn) {
-    joinCallBtn.disabled = disabled;
-    joinCallBtn.style.opacity = disabled ? "0.5" : "1";
-    joinCallBtn.style.cursor = disabled ? "not-allowed" : "pointer";
-    
-    const span = joinCallBtn.querySelector("span");
-    if (span) {
-      span.innerText = disabled ? "Connecting..." : "Connect to Session";
-    }
-  }
-}
-
 // Get the existing tempDiv from HTML or create it
 export const tempDiv = document.getElementById("temp-div") || createTempDiv();
 
