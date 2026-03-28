@@ -7,9 +7,19 @@ import {
   tempDiv,
   hideWaitingOverlay,
   updateCallButtonState,
+  setJoinButtonDisabled,
 } from "./call-ui.js";
 
 export async function startCall() {
+  if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+    console.error("[Call] Socket not ready. Wait for connection.");
+    setStatus("Wait for connection...");
+    return;
+  }
+
+  // Disable button while connecting
+  setJoinButtonDisabled(true);
+
   console.log("[Call] Starting/Joining call...");
   setStatus("Connecting to room...");
 

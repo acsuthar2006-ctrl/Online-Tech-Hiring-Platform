@@ -4,6 +4,7 @@ import {
   setStatus,
   resetRemoteVideoUI,
   updateCallButtonState,
+  setJoinButtonDisabled,
 } from "../modules/call-ui.js";
 import { acceptCall, endCall, startCall } from "../modules/callControls.js";
 import {
@@ -17,12 +18,16 @@ export function initSocket() {
   const wsUrl = mediaBase.replace(/^http/, "ws") + "/ws";
 
   console.log(`[Socket] Connecting to ${wsUrl}`);
+  
+  // Disable join button until connection is open
+  setJoinButtonDisabled(true);
 
   state.socket = new WebSocket(wsUrl);
 
   state.socket.onopen = () => {
     console.log("[Socket] Connected");
     setStatus("Connected to server");
+    setJoinButtonDisabled(false); // Enable the join button
     sendSignal("join");
   };
 
