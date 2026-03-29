@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://54.91.71.117:8080/api/:path*"
+      "destination": "http://18.215.162.99:8080/api/:path*"
     },
     {
       "source": "/check-room",
-      "destination": "https://vids-nissan-signal-identify.trycloudflare.com/check-room"
+      "destination": "https://viii-olympus-exists-simulation.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://vids-nissan-signal-identify.trycloudflare.com/recordings/:path*"
+      "destination": "https://viii-olympus-exists-simulation.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://vids-nissan-signal-identify.trycloudflare.com/upload-recording"
+      "destination": "https://viii-olympus-exists-simulation.trycloudflare.com/upload-recording"
     }
   ]
 }
