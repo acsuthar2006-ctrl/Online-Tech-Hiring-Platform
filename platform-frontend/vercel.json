@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://18.215.162.99:8080/api/:path*"
+      "destination": "http://18.207.123.128:8080/api/:path*"
     },
     {
       "source": "/check-room",
-      "destination": "https://viii-olympus-exists-simulation.trycloudflare.com/check-room"
+      "destination": "https://divorce-fewer-monster-drives.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://viii-olympus-exists-simulation.trycloudflare.com/recordings/:path*"
+      "destination": "https://divorce-fewer-monster-drives.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://viii-olympus-exists-simulation.trycloudflare.com/upload-recording"
+      "destination": "https://divorce-fewer-monster-drives.trycloudflare.com/upload-recording"
     }
   ]
 }

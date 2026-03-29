@@ -8,5 +8,5 @@ export const getMediaBase = () => {
     }
     
     // In production (Vercel), we also use a Cloudflare tunnel URL, but this could be a static domain later
-    return "https://viii-olympus-exists-simulation.trycloudflare.com";
+    return "https://divorce-fewer-monster-drives.trycloudflare.com";
 };
