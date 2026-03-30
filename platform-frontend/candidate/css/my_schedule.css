@@ -7,6 +7,23 @@
   flex-wrap: wrap;
 }
 
+.filter-select {
+  padding: 10px 14px;
+  border: 1px solid var(--blue-400);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--gray-700);
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 40px;
+}
+
+.filter-select:hover {
+  border-color: var(--blue-600);
+  background: var(--blue-50);
+}
+
 .filter-btn {
   padding: 10px 20px;
   border: 2px solid var(--blue-300);

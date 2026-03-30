@@ -4,11 +4,13 @@ import com.techhiring.platform.dto.UserProfileDTO;
 import com.techhiring.platform.entity.Candidate;
 import com.techhiring.platform.entity.Interviewer;
 import com.techhiring.platform.entity.User;
+import com.techhiring.platform.repository.ResumeRepository;
 import com.techhiring.platform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,8 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserRepository userRepository;
+  private final ResumeRepository resumeRepository;
 
   @GetMapping("/profile")
+  @Transactional(readOnly = true)
   public ResponseEntity<UserProfileDTO> getUserProfile() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String currentEmail = authentication.getName();
@@ -33,6 +37,7 @@ public class UserController {
         .email(user.getEmail())
         .fullName(user.getFullName())
         .role(user.getRole())
+        .hasResume(resumeRepository.existsByUserId(user.getId()))
         .createdAt(user.getCreatedAt());
 
     if (user instanceof Candidate) {

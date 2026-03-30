@@ -81,7 +81,7 @@ function ensurePanel(notificationBtn) {
   return panel;
 }
 
-function renderPanel(panel, items, onItemClick) {
+function renderPanel(panel, items, onItemClick, onClearAllClick) {
   if (!panel) return;
 
   if (!items || items.length === 0) {
@@ -93,7 +93,10 @@ function renderPanel(panel, items, onItemClick) {
   }
 
   panel.innerHTML = `<div class="notification-panel-inner">
-    <div class="notification-title">Notifications</div>
+    <div class="notification-title" style="display: flex; justify-content: space-between; align-items: center;">
+      Notifications
+      <button class="btn-text btn-sm clear-all-btn" style="font-size: 0.8em; padding: 0;">Clear All</button>
+    </div>
     <div class="notification-items">
       ${items.map((it) => `
         <button class="notification-item" data-id="${escapeHtml(it.id || '')}" data-action-url="${escapeHtml(it.actionUrl || '')}">
@@ -103,6 +106,14 @@ function renderPanel(panel, items, onItemClick) {
       `).join('')}
     </div>
   </div>`;
+
+  const clearBtn = panel.querySelector('.clear-all-btn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (typeof onClearAllClick === 'function') onClearAllClick();
+    });
+  }
 
   panel.querySelectorAll('button.notification-item').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -172,7 +183,7 @@ export async function initNotifications() {
       title: 'Notifications unavailable',
       message: 'Could not load notifications right now.',
       actionUrl: ''
-    }], () => {});
+    }], () => {}, () => {});
 
     return;
   }
@@ -190,9 +201,11 @@ export async function initNotifications() {
   }
 
   const onItemClick = (id) => {
-    dismissedIds.add(id);
-    saveDismissedIds(dismissedIds);
-    visibleItems = visibleItems.filter((it) => it.id !== id);
+    if (id !== 'profile') {
+      dismissedIds.add(id);
+      saveDismissedIds(dismissedIds);
+      visibleItems = visibleItems.filter((it) => it.id !== id);
+    }
 
     const newCount = visibleItems.length;
     if (badge) {
@@ -201,7 +214,24 @@ export async function initNotifications() {
       else hide(badge);
     }
 
-    renderPanel(panel, visibleItems, onItemClick);
+    renderPanel(panel, visibleItems, onItemClick, onClearAllClick);
+  };
+
+  const onClearAllClick = () => {
+    visibleItems.forEach(it => {
+      if (it.id !== 'profile') dismissedIds.add(it.id);
+    });
+    saveDismissedIds(dismissedIds);
+    visibleItems = visibleItems.filter((it) => it.id === 'profile');
+
+    const newCount = visibleItems.length;
+    if (badge) {
+      badge.textContent = String(newCount);
+      if (newCount > 0) show(badge);
+      else hide(badge);
+    }
+
+    renderPanel(panel, visibleItems, onItemClick, onClearAllClick);
   };
 
   // Single profile notification should still respect profile URL
@@ -209,6 +239,6 @@ export async function initNotifications() {
     allItems[0].actionUrl = profileUrl;
   }
 
-  renderPanel(panel, visibleItems, onItemClick);
+  renderPanel(panel, visibleItems, onItemClick, onClearAllClick);
   // Panel already toggles via click handler defined above.
 }

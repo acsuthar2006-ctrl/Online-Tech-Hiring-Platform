@@ -80,6 +80,13 @@
             <label>Bio</label>
             <textarea id="bio"></textarea>
           </div>
+          <div class="form-group">
+            <label>Resume (PDF only)</label>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <input type="file" id="resumeUpload" accept=".pdf" style="flex:1;">
+              <button class="btn-outline btn-sm" id="viewResumeBtn" style="display:none;white-space:nowrap;">View Resume</button>
+            </div>
+          </div>
           <button class="btn-primary" id="savePersonalBtn">Save Changes</button>
         </div>
 

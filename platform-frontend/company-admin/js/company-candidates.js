@@ -249,6 +249,18 @@ window.viewCandidateDetails = async function (candidateId, candidateName) {
     renderSkills(profile.skills || []);
     renderExperience(profile.experience || []);
     renderEducation(profile.education || []);
+
+    // Show/hide resume
+    let resumeBtn = document.getElementById('candidateResumeBtn');
+    if (resumeBtn) {
+      if (profile.resumeUrl) {
+        resumeBtn.style.display = 'inline-block';
+        resumeBtn.href = profile.resumeUrl;
+        resumeBtn.target = '_blank';
+      } else {
+        resumeBtn.style.display = 'none';
+      }
+    }
   } catch (err) {
     console.error('Failed to load candidate profile:', err);
     const bioEl = document.getElementById('candidateBio');

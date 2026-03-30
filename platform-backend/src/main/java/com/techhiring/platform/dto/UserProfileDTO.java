@@ -21,6 +21,7 @@ public class UserProfileDTO {
   private String bio;
   private String profilePhotoUrl;
   private String location; // Candidate-specific
+  private boolean hasResume;
 
   // Interviewer specific
   private String companyName;

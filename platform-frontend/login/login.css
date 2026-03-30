@@ -133,6 +133,30 @@ body {
 
 .form-group {
   margin-bottom: 24px;
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.password-toggle:hover {
+  color: var(--blue-600);
+}
+
+.form-group input[type="password"],
+.form-group input.password-visible {
+  padding-right: 44px;
 }
 
 .form-group label {

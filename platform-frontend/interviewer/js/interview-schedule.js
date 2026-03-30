@@ -3,6 +3,9 @@ import { getMediaBase } from '../../common/media-config.js';
 import { createErrorState, createEmptyState, formatDate, formatTime } from '../../common/dashboard-utils.js';
 import { initNotifications } from '../../common/notifications.js';
 
+let allInterviewsData = [];
+let currentPositionFilter = 'all';
+
 document.addEventListener('DOMContentLoaded', () => {
   initializeSchedule();
 });
@@ -27,7 +30,21 @@ async function initializeSchedule() {
     if (profile) {
       profileName.textContent = profile.fullName;
       const interviews = await api.getUpcomingInterviewsForInterviewer(profile.email);
-      renderSchedule(interviews);
+      allInterviewsData = interviews || [];
+
+      // Populate position filter
+      const positionFilter = document.getElementById('positionFilter');
+      if (positionFilter) {
+        const titles = [...new Set(allInterviewsData.map(i => i.positionTitle || i.title).filter(Boolean))];
+        positionFilter.innerHTML = `<option value="all">All Positions</option>` +
+          titles.map(t => `<option value="${t}">${t}</option>`).join('');
+        positionFilter.addEventListener('change', () => {
+          currentPositionFilter = positionFilter.value || 'all';
+          applyAndRender();
+        });
+      }
+
+      applyAndRender();
       await initNotifications();
     } else {
       throw new Error('Profile not found');
@@ -36,6 +53,14 @@ async function initializeSchedule() {
     console.error('Failed to load schedule:', error);
     container.innerHTML = createErrorState('Failed to load your schedule. Please try again later.');
   }
+}
+
+function applyAndRender() {
+  let filtered = allInterviewsData;
+  if (currentPositionFilter !== 'all') {
+    filtered = filtered.filter(i => (i.positionTitle || i.title) === currentPositionFilter);
+  }
+  renderSchedule(filtered);
 }
 
 function renderSchedule(interviews) {
@@ -176,9 +201,31 @@ function setupFilters() {
       btn.classList.add('active');
       const filter = btn.dataset.filter;
 
-      document.getElementById('todaySection').style.display = (filter === 'all' || filter === 'upcoming') && document.getElementById('todayCount').textContent !== '0' ? 'block' : 'none';
-      document.getElementById('weekSection').style.display = (filter === 'all' || filter === 'upcoming') && document.getElementById('weekCount').textContent !== '0' ? 'block' : 'none';
-      document.getElementById('completedSection').style.display = (filter === 'all' || filter === 'completed') && document.getElementById('completedCount').textContent !== '0' ? 'block' : 'none';
+      // Re-apply with position filter
+      let filtered = allInterviewsData;
+      if (currentPositionFilter !== 'all') {
+        filtered = filtered.filter(i => (i.positionTitle || i.title) === currentPositionFilter);
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayList = filtered.filter(i => {
+        if (i.status !== 'SCHEDULED' && i.status !== 'IN_PROGRESS') return false;
+        const d = new Date(`${i.scheduledDate}T${i.scheduledTime}`);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() === today.getTime();
+      });
+      const weekList = filtered.filter(i => {
+        if (i.status !== 'SCHEDULED' && i.status !== 'IN_PROGRESS') return false;
+        const d = new Date(`${i.scheduledDate}T${i.scheduledTime}`);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() > today.getTime();
+      });
+      const completedList = filtered.filter(i => i.status === 'COMPLETED');
+
+      document.getElementById('todaySection').style.display = (filter === 'all' || filter === 'upcoming') && todayList.length > 0 ? 'block' : 'none';
+      document.getElementById('weekSection').style.display = (filter === 'all' || filter === 'upcoming') && weekList.length > 0 ? 'block' : 'none';
+      document.getElementById('completedSection').style.display = (filter === 'all' || filter === 'completed') && completedList.length > 0 ? 'block' : 'none';
     };
   });
 }

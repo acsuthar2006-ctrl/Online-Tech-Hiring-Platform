@@ -1,4 +1,4 @@
-﻿import { api } from '../../common/api.js';
+import { api } from '../../common/api.js';
 import { initNotifications } from '../../common/notifications.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -66,6 +66,16 @@ function populatePersonalInfo(profile) {
   if (profile.phone) document.getElementById('phone').value = profile.phone;
   if (profile.bio) document.getElementById('bio').value = profile.bio;
   if (profile.location) document.getElementById('location').value = profile.location;
+
+  const viewResumeBtn = document.getElementById('viewResumeBtn');
+  if (viewResumeBtn) {
+    if (profile.hasResume) {
+      viewResumeBtn.style.display = 'block';
+      viewResumeBtn.onclick = () => window.open(`/api/users/${profile.id}/resume`, '_blank');
+    } else {
+      viewResumeBtn.style.display = 'none';
+    }
+  }
 }
 
 async function loadCandidateSections(profile) {
@@ -198,6 +208,41 @@ function setupActions() {
         if (headerName) headerName.textContent = data.fullName;
       } catch (error) {
         alert('Failed to update profile: ' + error.message);
+      }
+    });
+  }
+
+  const resumeUpload = document.getElementById('resumeUpload');
+  if (resumeUpload) {
+    resumeUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.type !== 'application/pdf') {
+        alert('Only PDF files are allowed');
+        resumeUpload.value = '';
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const token = sessionStorage.getItem('jwt_token');
+        const res = await fetch('/api/users/resume', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }, // Do NOT set Content-Type header so the browser sets the multipart boundary automatically
+          body: formData
+        });
+        
+        if (!res.ok) throw new Error(await res.text());
+        alert('Resume uploaded successfully!');
+        
+        const profile = await api.getUserProfile();
+        populatePersonalInfo(profile);
+      } catch (err) {
+        alert('Upload failed: ' + err.message);
+      } finally {
+        resumeUpload.value = '';
       }
     });
   }

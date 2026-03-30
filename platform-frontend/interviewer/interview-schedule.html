@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -39,10 +39,15 @@
       </div>
     </div>
 
-    <div class="schedule-filters">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="upcoming">Upcoming</button>
-      <button class="filter-btn" data-filter="completed">Completed</button>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+      <div class="schedule-filters" style="margin-bottom:0;">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+      <select id="positionFilter" class="filter-select" style="min-width:260px;" title="Filter by position">
+        <option value="all">All Positions</option>
+      </select>
     </div>
 
     <div class="schedule-container" id="scheduleContainer">

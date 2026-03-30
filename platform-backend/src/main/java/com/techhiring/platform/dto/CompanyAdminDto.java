@@ -46,6 +46,7 @@ public class CompanyAdminDto {
     private boolean appliedDirectly;
     private Long assignedInterviewerId;
     private String assignedInterviewerName;
+    private String resumeUrl;
   }
 
   @Data
@@ -62,6 +63,7 @@ public class CompanyAdminDto {
     private List<String> skills;
     private List<CandidateExperience> experience;
     private List<CandidateEducation> education;
+    private String resumeUrl;
   }
 
   @Data
@@ -86,6 +88,7 @@ public class CompanyAdminDto {
     private long upcomingScheduled;
     private long upcomingInterviews;  // upcoming interviews for this company
     private long completedInterviews; // completed interviews for this company
+    private String resumeUrl;
   }
 
   @Data
@@ -116,6 +119,7 @@ public class CompanyAdminDto {
     private String feedback;
     private Integer durationMinutes;
     private String meetingLink;
+    private String recordingUrl;
   }
 
   @Data

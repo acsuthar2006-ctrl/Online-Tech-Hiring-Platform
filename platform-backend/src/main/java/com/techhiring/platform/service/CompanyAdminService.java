@@ -27,7 +27,15 @@ public class CompanyAdminService {
   private final InterviewerRepository interviewerRepository;
   private final UserRepository userRepository;
   private final CompanyAdminRepository companyAdminRepository;
+  private final ResumeRepository resumeRepository;
 
+
+  private String getResumeUrl(Long userId) {
+    if (userId == null) return null;
+    return resumeRepository.existsByUserId(userId)
+        ? "/api/users/" + userId + "/resume"
+        : null;
+  }
 
   // ==================== DASHBOARD ====================
 
@@ -115,9 +123,9 @@ public class CompanyAdminService {
             .positionId(null)
             .positionTitle(null)
             .applicationDate(null)
-            .status("NOT_APPLIED")
             .appliedDirectly(false) // just viewing profile
             .skills(skills)
+            .resumeUrl(getResumeUrl(c.getId()))
             .build());
       } else {
         for (Application app : candidateApps) {
@@ -151,10 +159,10 @@ public class CompanyAdminService {
               .candidateOutcome(candidateOutcome)
               .interviewId(interviewId)
               .score(null)
-              .skills(skills)
               .appliedDirectly(true)
               .assignedInterviewerId(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
               .assignedInterviewerName(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
+              .resumeUrl(getResumeUrl(c.getId()))
               .build());
         }
       }
@@ -179,6 +187,7 @@ public class CompanyAdminService {
         .skills(skills)
         .experience(candidateExperienceRepository.findByCandidateId(candidateId))
         .education(candidateEducationRepository.findByCandidateId(candidateId))
+        .resumeUrl(getResumeUrl(candidate.getId()))
         .build();
   }
 
@@ -228,10 +237,10 @@ public class CompanyAdminService {
           .applicationStatus(ia.getStatus())
           .appliedToCompany(true)
           .positionId(ia.getPosition() != null ? ia.getPosition().getId() : null)
-          .positionTitle(ia.getPosition() != null ? ia.getPosition().getPositionTitle() : null)
           .upcomingScheduled(upcoming)
           .upcomingInterviews(upcoming)
           .completedInterviews(completed)
+          .resumeUrl(getResumeUrl(iv.getId()))
           .build());
     }
 
@@ -271,10 +280,10 @@ public class CompanyAdminService {
           .applicationStatus(null)
           .appliedToCompany(false)
           .positionId(null)
-          .positionTitle(null)
           .upcomingScheduled(upcoming)
           .upcomingInterviews(upcoming)
           .completedInterviews(completed)
+          .resumeUrl(getResumeUrl(iv.getId()))
           .build());
     }
 
@@ -368,6 +377,7 @@ public class CompanyAdminService {
         .feedback(iv.getFeedback())
         .durationMinutes(iv.getDurationMinutes())
         .meetingLink(iv.getMeetingLink())
+        .recordingUrl(iv.getRecordingUrl())
         .build();
   }
 
@@ -408,8 +418,10 @@ public class CompanyAdminService {
               .interviewId(interviewId)
               .skills(skills)
               .appliedDirectly(true)
+              .appliedDirectly(true)
               .assignedInterviewerId(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
               .assignedInterviewerName(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
+              .resumeUrl(getResumeUrl(c.getId()))
               .build();
         }).collect(Collectors.toList());
   }
@@ -453,6 +465,7 @@ public class CompanyAdminService {
               .appliedDirectly(true)
               .assignedInterviewerId(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getId() : null)
               .assignedInterviewerName(app.getAssignedInterviewer() != null ? app.getAssignedInterviewer().getFullName() : null)
+              .resumeUrl(getResumeUrl(c.getId()))
               .build();
         }).collect(Collectors.toList());
   }

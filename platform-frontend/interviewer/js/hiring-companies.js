@@ -403,13 +403,17 @@ window.viewAssignedCandidates = async (positionId, positionTitle, companyName, c
                 actionHTML = `<span class="badge ${badgeClass}" style="font-size:12px;font-weight:500;">${String(c.status || '').replace('_', ' ')}</span>`;
             }
 
+            const resumeLinkHtml = c.resumeUrl ? 
+                `<div style="margin-top:6px;"><a href="${c.resumeUrl}" target="_blank" style="font-size:12px;color:var(--blue-600);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>View Resume</a></div>` : '';
+
             return `
-              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;">
                 <div>
                   <h4 style="margin:0 0 4px 0">${c.fullName}</h4>
                   <p style="margin:0;font-size:13px;color:#6b7280;">${c.email} | Status: ${c.status}</p>
+                  ${resumeLinkHtml}
                 </div>
-                <div class="candidate-action">${actionHTML}</div>
+                <div class="candidate-action" style="padding-top:2px;">${actionHTML}</div>
               </div>
             `;
         };

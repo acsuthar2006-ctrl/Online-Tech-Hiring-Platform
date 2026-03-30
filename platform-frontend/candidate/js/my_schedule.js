@@ -5,6 +5,7 @@ import { createErrorState, createEmptyState, formatDateTime } from '../../common
 import { initNotifications } from '../../common/notifications.js';
 
 let allInterviews = [];
+let currentPositionFilter = 'all';
 
 function formatTimeLabelFromTimeString(timeStr) {
   try {
@@ -72,6 +73,14 @@ async function loadSchedule() {
 
     allInterviews = interviews;
 
+    // Populate position filter
+    const positionFilter = document.getElementById('positionFilter');
+    if (positionFilter) {
+      const titles = [...new Set((interviews || []).map(i => i.positionTitle).filter(Boolean))];
+      positionFilter.innerHTML = `<option value="all">All Positions</option>` +
+        titles.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
     renderSchedule('all');
   } catch (error) {
     console.error("Failed to load schedule", error);
@@ -88,6 +97,15 @@ function setupFilters() {
       renderSchedule(filterType);
     });
   });
+
+  const positionFilter = document.getElementById('positionFilter');
+  if (positionFilter) {
+    positionFilter.addEventListener('change', () => {
+      currentPositionFilter = positionFilter.value || 'all';
+      const activeBtn = document.querySelector('.filter-btn.active');
+      renderSchedule(activeBtn?.getAttribute('data-filter') || 'all');
+    });
+  }
 }
 
 function renderSchedule(filterType) {
@@ -99,8 +117,14 @@ function renderSchedule(filterType) {
   const completedCount = document.getElementById('completedCount');
 
   // Filter Logic
-  const completed = allInterviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
-  const upcoming = allInterviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
+  let completed = allInterviews.filter(i => ['COMPLETED', 'CANCELLED'].includes(i.status));
+  let upcoming = allInterviews.filter(i => ['SCHEDULED', 'IN_PROGRESS'].includes(i.status));
+
+  // Apply position filter
+  if (currentPositionFilter !== 'all') {
+    completed = completed.filter(i => i.positionTitle === currentPositionFilter);
+    upcoming = upcoming.filter(i => i.positionTitle === currentPositionFilter);
+  }
 
   // Render Lists
   if (upcomingList) upcomingList.innerHTML = renderInterviewList(upcoming);

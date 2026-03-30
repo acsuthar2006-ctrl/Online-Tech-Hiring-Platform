@@ -452,6 +452,7 @@ window.openInterviewerDetails = function (interviewerId) {
   const availabilityEl = document.getElementById('interviewerDetailsAvailability');
   const totalInterviewsEl = document.getElementById('interviewerDetailsTotalInterviews');
   const upcomingEl = document.getElementById('interviewerDetailsUpcoming');
+  const resumeBtn = document.getElementById('interviewerDetailsResumeBtn');
 
   if (titleEl) titleEl.textContent = interviewer.fullName || 'Interviewer Details';
   if (bioEl) bioEl.textContent = interviewer.bio || 'No bio provided.';
@@ -464,6 +465,16 @@ window.openInterviewerDetails = function (interviewerId) {
   if (availabilityEl) availabilityEl.textContent = interviewer.availabilityStatus || 'N/A';
   if (totalInterviewsEl) totalInterviewsEl.textContent = String(interviewer.totalInterviewsConducted || 0);
   if (upcomingEl) upcomingEl.textContent = String(interviewer.upcomingScheduled || 0);
+
+  if (resumeBtn) {
+    if (interviewer.resumeUrl) {
+      resumeBtn.style.display = 'block';
+      resumeBtn.onclick = () => window.open(interviewer.resumeUrl, '_blank');
+    } else {
+      resumeBtn.style.display = 'none';
+      resumeBtn.onclick = null;
+    }
+  }
 
   modal.classList.add('show');
   modal.setAttribute('aria-hidden', 'false');

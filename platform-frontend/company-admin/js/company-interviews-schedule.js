@@ -4,6 +4,7 @@ import { getMediaBase } from '../../common/media-config.js';
 const companyId = sessionStorage.getItem('companyId');
 let allInterviews = [];
 let currentFilter = 'all';
+let currentPositionFilter = 'all';
 
 // ===== SET ADMIN NAME =====
 function setAdminName() {
@@ -171,13 +172,39 @@ window.filterSchedule = function (filter) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   const btn = [...document.querySelectorAll('.filter-btn')].find(b => b.getAttribute('onclick')?.includes(`'${filter}'`));
   if (btn) btn.classList.add('active');
-
-  let filtered = allInterviews;
-  if (filter === 'upcoming') filtered = allInterviews.filter(iv => iv.status === 'SCHEDULED' || iv.status === 'IN_PROGRESS');
-  else if (filter === 'completed') filtered = allInterviews.filter(iv => iv.status === 'COMPLETED');
-  else if (filter === 'cancelled') filtered = allInterviews.filter(iv => iv.status === 'CANCELLED');
-  renderSchedule(filtered);
+  applyFilters();
 };
+
+function applyFilters() {
+  let filtered = allInterviews;
+  if (currentFilter === 'upcoming') filtered = filtered.filter(iv => iv.status === 'SCHEDULED' || iv.status === 'IN_PROGRESS');
+  else if (currentFilter === 'completed') filtered = filtered.filter(iv => iv.status === 'COMPLETED');
+  else if (currentFilter === 'cancelled') filtered = filtered.filter(iv => iv.status === 'CANCELLED');
+
+  if (currentPositionFilter !== 'all') {
+    filtered = filtered.filter(iv => iv.positionTitle === currentPositionFilter);
+  }
+  renderSchedule(filtered);
+}
+
+function wireUpPositionFilter() {
+  const el = document.getElementById('positionFilter');
+  if (!el) return;
+  el.addEventListener('change', () => {
+    currentPositionFilter = el.value || 'all';
+    applyFilters();
+  });
+}
+
+async function populatePositionFilter() {
+  const el = document.getElementById('positionFilter');
+  if (!el) return;
+  try {
+    const positions = await api.getCompanyPositions(companyId);
+    el.innerHTML = `<option value="all">All Positions</option>` +
+      (positions || []).map(p => `<option value="${p.positionTitle}">${p.positionTitle}</option>`).join('');
+  } catch (e) { /* fallback */ }
+}
 
 // ===== LOAD =====
 async function loadInterviews() {
@@ -206,6 +233,7 @@ async function loadInterviews() {
     if (completedEl) completedEl.textContent = String(completed);
 
     renderSchedule(allInterviews);
+    applyFilters();
   } catch (err) {
     console.error('Error loading interviews:', err);
     if (container) container.innerHTML = '<p style="padding:32px;color:#dc2626;">Failed to load interviews.</p>';
@@ -254,5 +282,7 @@ document.addEventListener("click", async (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   setAdminName();
+  wireUpPositionFilter();
+  if (companyId) populatePositionFilter();
   loadInterviews();
 });

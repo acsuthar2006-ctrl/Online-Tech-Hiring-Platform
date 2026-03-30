@@ -62,6 +62,7 @@ public class SecurityConfig {
             // Public read-only endpoints for browsing
             .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/positions/**").permitAll()
             .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/companies/**").permitAll()
+            .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/users/*/resume").permitAll()
             
             // Company admin endpoints (authenticated)
             .requestMatchers("/api/company-admin/**").authenticated()

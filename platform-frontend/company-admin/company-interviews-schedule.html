@@ -45,10 +45,15 @@
     </div>
 
     <!-- Filter Buttons -->
-    <div class="filter-buttons">
-      <button class="filter-btn active" onclick="filterSchedule('all')">All Interviews</button>
-      <button class="filter-btn" onclick="filterSchedule('upcoming')">Upcoming <span class="badge badge-blue" id="upcomingCount" style="margin-left:6px;">0</span></button>
-      <button class="filter-btn" onclick="filterSchedule('completed')">Completed <span class="badge badge-green" id="completedCount" style="margin-left:6px;">0</span></button>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+      <div class="filter-buttons" style="margin-bottom:0;">
+        <button class="filter-btn active" onclick="filterSchedule('all')">All Interviews</button>
+        <button class="filter-btn" onclick="filterSchedule('upcoming')">Upcoming <span class="badge badge-blue" id="upcomingCount" style="margin-left:6px;">0</span></button>
+        <button class="filter-btn" onclick="filterSchedule('completed')">Completed <span class="badge badge-green" id="completedCount" style="margin-left:6px;">0</span></button>
+      </div>
+      <select id="positionFilter" class="form-input" style="max-width:260px;" title="Filter by position">
+        <option value="all">All Positions</option>
+      </select>
     </div>
 
     <!-- Schedule Timeline -->
