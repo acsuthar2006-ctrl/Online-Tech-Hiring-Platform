@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://18.207.123.128:8080/api/:path*"
+      "destination": "http://54.243.8.130:8080/api/:path*"
     },
     {
       "source": "/check-room",
-      "destination": "https://divorce-fewer-monster-drives.trycloudflare.com/check-room"
+      "destination": "https://for-insured-cap-poly.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://divorce-fewer-monster-drives.trycloudflare.com/recordings/:path*"
+      "destination": "https://for-insured-cap-poly.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://divorce-fewer-monster-drives.trycloudflare.com/upload-recording"
+      "destination": "https://for-insured-cap-poly.trycloudflare.com/upload-recording"
     }
   ]
 }
