@@ -13,6 +13,14 @@ export async function startCall() {
   console.log("[Call] Starting/Joining call...");
   setStatus("Connecting to room...");
 
+  // Wait for socket to be open if still connecting (race condition fix)
+  if (state.socket && state.socket.readyState === WebSocket.CONNECTING) {
+    await new Promise((resolve, reject) => {
+      state.socket.addEventListener('open', resolve, { once: true });
+      state.socket.addEventListener('error', reject, { once: true });
+    });
+  }
+
   // Reuse createPeerConnection which now handles Mediasoup device load & produce
   await createPeerConnection(sendSignal);
 

@@ -5,16 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Interviewers - TechHiring</title>
-  <script type="module" crossorigin src="/assets/company-interviewers-Dqddhbqt.js"></script>
+  <script type="module" crossorigin src="/assets/company-interviewers-CBGnCySr.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/admin-sidebar-ChFlPb6K.js">
   <link rel="modulepreload" crossorigin href="/assets/api-BDkOtMsK.js">
-  <link rel="modulepreload" crossorigin href="/assets/notifications-k8PWt7_S.js">
-  <link rel="modulepreload" crossorigin href="/assets/notifications-init-DH89eo6N.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-CyUZvoHu.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-init-qGyMXC9B.js">
   <link rel="stylesheet" crossorigin href="/assets/admin-sidebar-hHL8lN8I.css">
   <link rel="stylesheet" crossorigin href="/assets/company-interviewers-D0ULXIf8.css">
   <link rel="stylesheet" crossorigin href="/assets/common-BQpXi-CY.css">
-  <link rel="stylesheet" crossorigin href="/assets/company-candidates-1TemV7KR.css">
+  <link rel="stylesheet" crossorigin href="/assets/company-candidates-BpPpBkhC.css">
 </head>
 
 <body>
@@ -133,7 +133,10 @@
     <div class="modal-content modal-lg">
       <div class="modal-header">
         <h2 id="viewCandidatesTitle">View Candidates</h2>
-        <button class="modal-close" id="viewCandidatesClose">&times;</button>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <button id="viewCandidatesAssignSelectedBtn" class="btn-primary btn-sm" style="display:none;" onclick="openChangeInterviewerMultiple()">Assign To (0)</button>
+          <button class="modal-close" id="viewCandidatesClose">&times;</button>
+        </div>
       </div>
       <div class="modal-body">
         <div class="search-bar" style="margin-bottom: 16px;">

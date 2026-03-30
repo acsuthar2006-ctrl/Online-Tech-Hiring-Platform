@@ -38,7 +38,8 @@ let _roomId = null;
 let _userEmail = null;
 let _userRole = null;
 let _pollTimer = null;
-const _todayStr = () => new Date().toISOString().slice(0, 10);
+// Use local calendar date (not UTC) so late-night sessions don't get filtered out
+const _todayStr = () => new Date().toLocaleDateString('en-CA');
 
 function _normalizeDate(item) {
   const raw = item?.scheduledDate || item?.date || null;

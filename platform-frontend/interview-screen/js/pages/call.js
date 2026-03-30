@@ -3,6 +3,7 @@ import { state } from "../core/state.js";
 import { initSocket } from "../core/socket.js";
 import { startCall, joinCall, exitCall } from "../modules/callControls.js";
 import { initQueueSidebar } from "../../queue/queue-sidebar.js";
+import "../features/queue-manager.js"; // Bundle queue manager
 import {
   micBtn,
   cameraBtn,

@@ -6,14 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Companies - TechHiring</title>
 
-  <script type="module" crossorigin src="/assets/hiring-companies-CiEk_Ktu.js"></script>
+  <script type="module" crossorigin src="/assets/hiring-companies-Dni5EoNP.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/api-BDkOtMsK.js">
-  <link rel="modulepreload" crossorigin href="/assets/notifications-k8PWt7_S.js">
-  <link rel="modulepreload" crossorigin href="/assets/dashboard-Ddi9wLvF.js">
+  <link rel="modulepreload" crossorigin href="/assets/notifications-CyUZvoHu.js">
+  <link rel="modulepreload" crossorigin href="/assets/dashboard-BJbQFGYd.js">
   <link rel="modulepreload" crossorigin href="/assets/interviewer-sidebar-BBk2cHuw.js">
   <link rel="modulepreload" crossorigin href="/assets/dashboard-utils-BOnXSnva.js">
-  <link rel="stylesheet" crossorigin href="/assets/hiring-companies-C3pZIxtH.css">
+  <link rel="stylesheet" crossorigin href="/assets/companies-JxOtyRpE.css">
   <link rel="stylesheet" crossorigin href="/assets/common-BQpXi-CY.css">
 </head>
 
@@ -46,10 +46,13 @@
       </div>
     </div>
 
-    <div class="companies-container">
-      <div class="filter-bar">
-        <input type="text" class="filter-input" id="searchInput" placeholder="Search companies or posts...">
-        <select class="filter-input" id="postFilter" style="flex: 0 1 260px;">
+    <!-- Search and Filters -->
+    <div class="search-section">
+      <div class="search-row">
+        <div class="search-bar" style="margin-bottom:0;">
+          <input type="text" placeholder="Search companies or posts..." id="searchInput">
+        </div>
+        <select class="filter-select" id="postFilter" style="flex: 0 1 320px;">
           <option value="all">All Posts</option>
         </select>
       </div>
@@ -59,12 +62,13 @@
         <button class="status-filter-btn" type="button" data-status="accepted">Accepted</button>
         <button class="status-filter-btn" type="button" data-status="rejected">Rejected</button>
       </div>
+    </div>
 
-      <div class="search-results">Showing 8 companies actively hiring interviewers</div>
+    <div class="search-results" style="margin-bottom: 16px; color: var(--gray-600); font-size: 14px;">Showing 8 companies actively hiring interviewers</div>
 
-      <div class="company-grid" id="companyGrid">
-        <!-- Content will be injected by js/hiring-companies.js -->
-        <div class="loading-state">
+    <div class="companies-grid" id="companyGrid">
+      <!-- Content will be injected by js/hiring-companies.js -->
+      <div class="loading-state">
           <div class="spinner"></div>
           <p>Loading hiring companies...</p>
         </div>

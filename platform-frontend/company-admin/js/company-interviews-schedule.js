@@ -118,8 +118,7 @@ function renderSchedule(interviews) {
 
     const recordingBtn = iv.recordingUrl
       ? (() => {
-          const mediaBase = getMediaBase();
-          const fileUrl = `${mediaBase}/recordings/${iv.recordingUrl}`;
+          const fileUrl = `/recordings/${iv.recordingUrl}`;
           return `<button class="btn btn-primary btn-sm force-download-btn" style="margin-left: 6px;" data-url="${fileUrl}" data-filename="${iv.recordingUrl}">Download Recording</button>`;
         })()
       : '';
