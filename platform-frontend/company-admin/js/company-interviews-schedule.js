@@ -184,6 +184,24 @@ function applyFilters() {
   if (currentPositionFilter !== 'all') {
     filtered = filtered.filter(iv => iv.positionTitle === currentPositionFilter);
   }
+  
+  // Calculate specific counts based on the current position filter
+  let baseFiltered = allInterviews;
+  if (currentPositionFilter !== 'all') {
+      baseFiltered = baseFiltered.filter(iv => iv.positionTitle === currentPositionFilter);
+  }
+  
+  const upcomingCount = baseFiltered.filter(iv => iv.status === 'SCHEDULED' || iv.status === 'IN_PROGRESS').length;
+  const completedCount = baseFiltered.filter(iv => iv.status === 'COMPLETED').length;
+  
+  const allBtn = document.querySelector('.schedule-filters button[onclick*="all"]');
+  const upcomingBtn = document.querySelector('.schedule-filters button[onclick*="upcoming"]');
+  const completedBtn = document.querySelector('.schedule-filters button[onclick*="completed"]');
+  
+  if (allBtn) allBtn.innerText = `All Interviews (${baseFiltered.length})`;
+  if (upcomingBtn) upcomingBtn.innerText = `Upcoming (${upcomingCount})`;
+  if (completedBtn) completedBtn.innerText = `Completed (${completedCount})`;
+
   renderSchedule(filtered);
 }
 

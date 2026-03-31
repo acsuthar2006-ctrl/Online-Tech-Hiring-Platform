@@ -105,7 +105,16 @@ function renderSchedule(interviews) {
   updateSection('week', weekInterviews);
   updateSection('completed', completedInterviews);
 
-
+  const upcomingCount = todayInterviews.length + weekInterviews.length;
+  const completedCount = completedInterviews.length;
+  
+  const allBtn = document.querySelector('.schedule-filters button[data-filter="all"]');
+  const upcomingBtn = document.querySelector('.schedule-filters button[data-filter="upcoming"]');
+  const completedBtn = document.querySelector('.schedule-filters button[data-filter="completed"]');
+  
+  if (allBtn) allBtn.innerText = `All Interviews (${upcomingCount + completedCount})`;
+  if (upcomingBtn) upcomingBtn.innerText = `Upcoming (${upcomingCount})`;
+  if (completedBtn) completedBtn.innerText = `Completed (${completedCount})`;
 
   setupFilters();
 }

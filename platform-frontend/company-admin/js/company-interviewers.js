@@ -4,6 +4,7 @@ const companyId = sessionStorage.getItem('companyId');
 let allInterviewers = [];
 let currentStatusFilter = 'all';
 let currentPostFilter = 'all'; // all | positionId
+let companyPositionsData = [];
 
 // ===== SET ADMIN NAME =====
 function setAdminName() {
@@ -133,7 +134,7 @@ function renderInterviewers(interviewers) {
             <td rowspan="${rowSpan}" style="vertical-align: top; padding-top: 16px;"><strong>${main.fullName}</strong><div style="margin-top:4px;">${availBadge(main.availabilityStatus)}</div></td>
             <td rowspan="${rowSpan}" style="vertical-align: top; padding-top: 16px; font-size: 13px;">${main.email}</td>
             <td rowspan="${rowSpan}" style="vertical-align: top; padding-top: 16px; max-width: 250px;">${expertiseCol}</td>
-            <td style="vertical-align: top; padding-top: 16px;"><strong>${escapeHtml(iv.positionTitle || 'Not Assigned')}</strong></td>
+            <td style="vertical-align: top; padding-top: 16px;"><strong>${escapeHtml(iv.positionId ? (companyPositionsData.find(p => String(p.id) === String(iv.positionId))?.positionTitle || iv.positionTitle || 'Not Assigned') : (iv.positionTitle || 'Not Assigned'))}</strong></td>
             <td style="vertical-align: top; padding-top: 16px;">${appStatusBadge(iv.applicationStatus)}</td>
             <td style="vertical-align: top; padding-top: 16px;">${statsCol}</td>
             <td style="vertical-align: top; padding-top: 16px;">
@@ -144,7 +145,7 @@ function renderInterviewers(interviewers) {
       } else {
         html += `
           <tr${isEnd}>
-            <td style="vertical-align: top; padding-top: 16px;"><strong>${escapeHtml(iv.positionTitle || 'Not Assigned')}</strong></td>
+            <td style="vertical-align: top; padding-top: 16px;"><strong>${escapeHtml(iv.positionId ? (companyPositionsData.find(p => String(p.id) === String(iv.positionId))?.positionTitle || iv.positionTitle || 'Not Assigned') : (iv.positionTitle || 'Not Assigned'))}</strong></td>
             <td style="vertical-align: top; padding-top: 16px;">${appStatusBadge(iv.applicationStatus)}</td>
             <td style="vertical-align: top; padding-top: 16px;">${statsCol}</td>
             <td style="vertical-align: top; padding-top: 16px;">
@@ -210,7 +211,7 @@ function renderViewCandidatesList(query = '') {
 
     return `
       <div class="modal-item" data-app-id="${c.applicationId}" style="display:flex; align-items:center; gap:12px;">
-        ${showCheckbox ? `<input type="checkbox" class="candidate-checkbox" data-index="${idx}" data-app-id="${c.applicationId}" onchange="handleCandidateCheckboxChange(event, ${idx}, ${c.applicationId})" style="width:16px;height:16px;cursor:pointer;">` : `<div style="width:16px;"></div>`}
+        ${showCheckbox ? `<input type="checkbox" class="candidate-checkbox" data-index="${idx}" data-app-id="${c.applicationId}" onclick="handleCandidateCheckboxChange(event, ${idx}, ${c.applicationId})" style="width:16px;height:16px;cursor:pointer;">` : `<div style="width:16px;"></div>`}
         <div style="flex:1;">
           <div class="item-title">${c.fullName}</div>
           <div class="item-meta">${c.email} • ${c.status}</div>
@@ -552,6 +553,7 @@ async function populatePostFilter() {
   if (!el) return;
   try {
     const positions = await api.getCompanyPositions(companyId);
+    companyPositionsData = positions || [];
     const open = (positions || []).filter(p => p.status === 'OPEN');
     el.innerHTML = `<option value="all">All Posts</option>` + open
       .map(p => `<option value="${p.id}">${p.positionTitle}</option>`)

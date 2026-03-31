@@ -53,7 +53,7 @@ public class InterviewService {
   public Interview scheduleInterview(String interviewerEmail, String candidateEmail, String candidateName,
       LocalDateTime scheduledTime, String title, String customMeetingLink, String description,
       Integer durationMinutes, com.techhiring.platform.entity.InterviewType type,
-      Long companyId, Long positionId) {
+      Long companyId, Long positionId, String origin) {
     Interviewer interviewer;
 
     // Try to find by email first, if that fails, try to parse as ID
@@ -175,7 +175,7 @@ public class InterviewService {
           candidateName,
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_DATE),
           scheduledTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-          frontendUrl + "/?room=" + meetingLink + "&role=candidate&email=" + candidateEmail,
+          origin + "/interview-screen/video-interview.html?room=" + meetingLink + "&role=candidate&email=" + candidateEmail,
           companyName,
           positionTitle
       );

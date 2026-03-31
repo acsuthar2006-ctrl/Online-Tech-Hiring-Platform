@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/interviews")
@@ -25,13 +26,18 @@ public class InterviewController {
 
   @PostMapping("/schedule")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('INTERVIEWER')")
-  public ResponseEntity<Interview> scheduleInterview(@RequestBody ScheduleRequest request) {
+  public ResponseEntity<Interview> scheduleInterview(@RequestBody ScheduleRequest request, HttpServletRequest httpRequest) {
     // If scheduledTime is null/empty, parse from string if needed, or assume
     // Jackson handles ISO8601
     String interviewerIdentifier = request.getInterviewerId() != null 
         ? request.getInterviewerId().toString() 
         : request.getInterviewerEmail();
     
+    String origin = httpRequest.getHeader("Origin");
+    if (origin == null || origin.isEmpty()) {
+       origin = frontendUrl;
+    }
+
     Interview interview = interviewService.scheduleInterview(
         interviewerIdentifier,
         request.getCandidateEmail(),
@@ -43,7 +49,8 @@ public class InterviewController {
         request.getDurationMinutes(),
         request.getInterviewType(),
         request.getCompanyId(),
-        request.getPositionId());
+        request.getPositionId(),
+        origin);
     return ResponseEntity.ok(interview);
   }
 
@@ -91,14 +98,20 @@ public class InterviewController {
   }
 
   @PostMapping("/{id}/remind")
-  public ResponseEntity<String> sendManualReminder(@PathVariable Long id) {
+  public ResponseEntity<String> sendManualReminder(@PathVariable Long id, HttpServletRequest httpRequest) {
     Interview interview = interviewService.getInterview(id);
     String companyName   = (interview.getCompany()   != null) ? interview.getCompany().getCompanyName()          : "N/A";
     String positionTitle = (interview.getPosition()  != null) ? interview.getPosition().getPositionTitle()      : "N/A";
+    
+    String origin = httpRequest.getHeader("Origin");
+    if (origin == null || origin.isEmpty()) {
+        origin = frontendUrl;
+    }
+
     emailService.sendManualNudge(
         interview.getCandidate().getEmail(),
         interview.getCandidate().getFullName(),
-        frontendUrl + "/?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail(),
+        origin + "/interview-screen/video-interview.html?room=" + interview.getMeetingLink() + "&role=candidate&email=" + interview.getCandidate().getEmail(),
         companyName,
         positionTitle);
     return ResponseEntity.ok("Reminder sent");
