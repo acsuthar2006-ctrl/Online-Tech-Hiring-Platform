@@ -86,6 +86,7 @@ function renderWithFilters() {
     const filteredCompanyPositions = {};
     Object.keys(positionsByCompanyCache || {}).forEach(companyId => {
         const list = positionsByCompanyCache[companyId] || [];
+        const companyName = (activeCompaniesCache.find(x => String(x.id) === String(companyId))?.companyName || '').toLowerCase();
         const filtered = list.filter(p => {
             const state = normalizeInterviewerAppStatus(applicationByPositionCache[p.id]);
             if (currentStatusFilter === 'all') return true;
@@ -99,8 +100,8 @@ function renderWithFilters() {
             // Post dropdown filter: match by title only (across all companies)
             if (currentPostFilter !== 'all' && title !== String(currentPostFilter || '').toLowerCase()) return false;
 
-            // Search: match by title only (not company name)
-            if (currentSearchQuery && !title.includes(currentSearchQuery)) return false;
+            // Search: match by title or company name
+            if (currentSearchQuery && !title.includes(currentSearchQuery) && !companyName.includes(currentSearchQuery)) return false;
 
             return true;
         });

@@ -76,7 +76,7 @@ async function loadSchedule() {
     // Populate position filter
     const positionFilter = document.getElementById('positionFilter');
     if (positionFilter) {
-      const titles = [...new Set((interviews || []).map(i => i.positionTitle).filter(Boolean))];
+      const titles = [...new Set((interviews || []).map(i => i.position?.positionTitle || i.title).filter(Boolean))];
       positionFilter.innerHTML = `<option value="all">All Positions</option>` +
         titles.map(t => `<option value="${t}">${t}</option>`).join('');
     }
@@ -122,17 +122,26 @@ function renderSchedule(filterType) {
 
   // Apply position filter
   if (currentPositionFilter !== 'all') {
-    completed = completed.filter(i => i.positionTitle === currentPositionFilter);
-    upcoming = upcoming.filter(i => i.positionTitle === currentPositionFilter);
+    completed = completed.filter(i => (i.position?.positionTitle || i.title) === currentPositionFilter);
+    upcoming = upcoming.filter(i => (i.position?.positionTitle || i.title) === currentPositionFilter);
   }
 
   // Render Lists
   if (upcomingList) upcomingList.innerHTML = renderInterviewList(upcoming);
   if (completedList) completedList.innerHTML = renderInterviewList(completed);
 
-  // Update Counts
+  // Update section counts
   if (upcomingCount) upcomingCount.innerText = upcoming.length;
   if (completedCount) completedCount.innerText = completed.length;
+
+  // Update tabs
+  const allBtn = document.querySelector('.schedule-filters button[data-filter="all"]');
+  const upcomingBtn = document.querySelector('.schedule-filters button[data-filter="upcoming"]');
+  const completedBtn = document.querySelector('.schedule-filters button[data-filter="completed"]');
+  
+  if (allBtn) allBtn.innerText = `All Interviews (${completed.length + upcoming.length})`;
+  if (upcomingBtn) upcomingBtn.innerText = `Upcoming (${upcoming.length})`;
+  if (completedBtn) completedBtn.innerText = `Completed (${completed.length})`;
 
   // Handle Section Visibility
   const upcomingSection = document.getElementById('upcomingSection');

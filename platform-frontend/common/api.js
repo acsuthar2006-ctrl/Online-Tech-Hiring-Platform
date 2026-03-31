@@ -104,6 +104,15 @@ class ApiService {
       return text ? JSON.parse(text) : null;
     } catch (error) {
       console.error(`API Error [${endpoint}]:`, error);
+      
+      // Detect network errors when backend is unreachable
+      if (error instanceof TypeError && 
+          (error.message === 'Failed to fetch' || 
+           error.message.includes('NetworkError') || 
+           error.message.includes('fetch'))) {
+          alert("The server is currently unreachable or down. Please try again later.");
+      }
+      
       throw error;
     }
   }
