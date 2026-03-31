@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://18.213.4.136:8080/api/:path*"
+      "destination": "http://98.84.136.155:8080/api/:path*"
     },
     {
       "source": "/check-room",
-      "destination": "https://chubby-peer-lynn-teddy.trycloudflare.com/check-room"
+      "destination": "https://responding-correctly-acknowledged-sheet.trycloudflare.com/check-room"
     },
     {
       "source": "/recordings/:path*",
-      "destination": "https://chubby-peer-lynn-teddy.trycloudflare.com/recordings/:path*"
+      "destination": "https://responding-correctly-acknowledged-sheet.trycloudflare.com/recordings/:path*"
     },
     {
       "source": "/upload-recording",
-      "destination": "https://chubby-peer-lynn-teddy.trycloudflare.com/upload-recording"
+      "destination": "https://responding-correctly-acknowledged-sheet.trycloudflare.com/upload-recording"
     }
   ]
 }
