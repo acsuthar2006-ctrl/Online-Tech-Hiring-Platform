@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: aarya_suthar
+      POSTGRES_PASSWORD: aarya_suthar
+      POSTGRES_DB: tech_hiring_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  platform-backend:
+    build:
+      context: ./platform-backend
+    container_name: platform-backend
+    depends_on:
+      - postgres
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/tech_hiring_db
+      - DB_USERNAME=aarya_suthar
+      - DB_PASSWORD=aarya_suthar
+      - FRONTEND_URL=http://localhost
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  media-server:
+    build:
+      context: ./media-server
+    container_name: media-server
+    environment:
+      - ENABLE_RECORDING=true
+      - PORT=3000
+      - HOST=0.0.0.0
+      - RECORDING_DIR=/app/recordings
+      - MEDIASOUP_MIN_PORT=40000
+      - MEDIASOUP_MAX_PORT=40050
+      - RECORDER_MIN_PORT=50000
+      - RECORDER_MAX_PORT=50050
+      - MEDIASOUP_LISTEN_IP=0.0.0.0
+      # IMPORTANT: If deploying to a cloud server VM, uncomment the line below and set to its public IP.
+      # - MEDIASOUP_ANNOUNCED_IP=127.0.0.1
+    ports:
+      - "3000:3000"
+      - "40000-40050:40000-40050/udp"
+    volumes:
+      - media_recordings:/app/recordings
+    restart: unless-stopped
+
+  platform-frontend:
+    build:
+      context: ./platform-frontend
+    container_name: platform-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - platform-backend
+      - media-server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  media_recordings:
