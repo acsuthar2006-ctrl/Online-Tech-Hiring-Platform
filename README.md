@@ -33,8 +33,8 @@ A comprehensive real-time video interviewing and technical hiring platform built
 ## Demo
 
 *(Add a link to your live demo, video walkthrough, or staging environment here once deployed)*
-- **Live Demo Site**: [https://your-demo-link.com](https://your-demo-link.com)
-- **Video Walkthrough**: [YouTube Link](https://youtube.com)
+- **Live Demo Site**: [https://tech-hiring-system.vercel.app/](https://tech-hiring-system.vercel.app/)
+- **Video Walkthrough**: [https://drive.google.com/file/d/1BKIzTFAGCVkXZe1h7aEdM4ECBprc8Yoj/view?usp=sharing](https://drive.google.com/file/d/1BKIzTFAGCVkXZe1h7aEdM4ECBprc8Yoj/view?usp=sharing)
 
 ---
 
@@ -174,5 +174,5 @@ We treat our recording mechanism as just another invisible "participant" in the 
 ## Contact / Author Info
 
 - **Name** - Suthar Aarya && Vrushti Shah
-- **Email** - [@EMAIL_ADDRESS](acsuthar2006@gmail.com)
-- **LinkedIn** - [@AaryaSuthar](https://www.linkedin.com/in/aarya-suthar-210897376/)
+- **Email** - [@EMAIL_ADDRESS](acsuthar2006@gmail.com) [@EMAIL_ADDRESS](shahvru.27@gmail.com@gmail.com)
+- **LinkedIn** - [@AaryaSuthar](https://www.linkedin.com/in/aarya-suthar-210897376/) [@VrushtiShah](https://www.linkedin.com/in/vrushti-shah-85b674319/)
