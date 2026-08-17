@@ -31,9 +31,9 @@ services:
       - DB_USERNAME=${POSTGRES_USER:-aarya_suthar}
       - DB_PASSWORD=${POSTGRES_PASSWORD:-aarya_suthar}
       - FRONTEND_URL=http://localhost
-      - JWT_SECRET=${JWT_SECRET:-dGhpc2lzYXNlY3JldGtleWZvcmp3dGdlbmVyYXRpb253aGljaGlzbG9uZ2Vub3VnaA==}
-      - EMAIL_USERNAME=${EMAIL_USERNAME:-dummy_email}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-dummy_password}
+      - JWT_SECRET=${JWT_SECRET}
+      - EMAIL_USERNAME=${EMAIL_USERNAME}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
     ports:
       - "8080:8080"
     restart: unless-stopped

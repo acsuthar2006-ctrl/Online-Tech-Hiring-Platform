@@ -38,9 +38,31 @@ A comprehensive real-time video interviewing and technical hiring platform built
 
 ---
 
-## Installation
+### Quickstart with Docker Compose (Recommended)
 
-Follow these step-by-step instructions to set up the monolithic environment locally.
+The easiest way to run the entire stack (Database, Backend, Frontend, and Media Server) is via Docker Compose.
+
+1. **Configure Environment Variables**:
+   Copy the example environment file and fill in your secrets.
+   ```bash
+   cp .env.example .env
+   ```
+   *Note: Never commit your `.env` file to version control. The `.env.example` serves as a template.*
+
+2. **Start the Stack**:
+   ```bash
+   docker compose up -d
+   ```
+   This will build the images (if not cached) and start all services.
+   - **Frontend**: `http://localhost` (or `http://localhost:80`)
+   - **Backend API**: `http://localhost:8080`
+   - **Media Server**: `http://localhost:3000`
+
+---
+
+## Manual Installation
+
+Follow these step-by-step instructions to set up the monolithic environment locally without Docker.
 
 ### Prerequisites
 - Node.js (v18+)
