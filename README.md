@@ -38,25 +38,42 @@ A comprehensive real-time video interviewing and technical hiring platform built
 
 ---
 
-### Quickstart with Docker Compose (Recommended)
+## 🐳 Docker Guide (Recommended)
 
-The easiest way to run the entire stack (Database, Backend, Frontend, and Media Server) is via Docker Compose.
+The easiest and most reliable way to run the entire stack—Database, Backend, Frontend, and Media Server—is via Docker Compose.
 
-1. **Configure Environment Variables**:
-   Copy the example environment file and fill in your secrets.
-   ```bash
-   cp .env.example .env
-   ```
-   *Note: Never commit your `.env` file to version control. The `.env.example` serves as a template.*
+### 1. Configure Environment Variables
+You must provide configuration secrets (like database passwords and JWT keys) before starting the stack. 
+Copy the template file:
+```bash
+cp .env.example .env
+```
+Open `.env` and fill in the values. **Never commit your `.env` file to version control.**
+*Important: The `JWT_SECRET` must be a valid Base64 encoded string that is at least 32 bytes long.*
 
-2. **Start the Stack**:
-   ```bash
-   docker compose up -d
-   ```
-   This will build the images (if not cached) and start all services.
-   - **Frontend**: `http://localhost` (or `http://localhost:80`)
-   - **Backend API**: `http://localhost:8080`
-   - **Media Server**: `http://localhost:3000`
+### 2. Start the Stack
+Run the following command to build the images (if not cached) and start all containers in the background:
+```bash
+docker compose up -d
+```
+
+### 3. Accessing the Services
+Once started, the services will be available at:
+- **Frontend UI**: `http://localhost` (or `http://localhost:80`)
+- **Backend REST API**: `http://localhost:8080` (Swagger: `http://localhost:8080/swagger-ui.html`)
+- **Media Server (SFU)**: `http://localhost:3000`
+- **PostgreSQL Database**: `localhost:5432`
+
+### Useful Docker Commands
+- **View all logs**: `docker compose logs -f`
+- **View logs for a specific service**: `docker compose logs -f platform-backend`
+- **Stop the stack**: `docker compose stop`
+- **Tear down the stack (removes containers)**: `docker compose down`
+- **Tear down and wipe the database volume**: `docker compose down -v`
+
+### Common Troubleshooting
+- **`Illegal base64 character: '_'`**: If the backend crashes with this error, your `JWT_SECRET` in the `.env` file contains invalid characters. Ensure it is a valid Base64 string.
+- **`password authentication failed`**: If the backend fails to connect to PostgreSQL, you likely changed the `POSTGRES_PASSWORD` in your `.env` after the database volume was already initialized. You must either revert the password to the original one or wipe the volume using `docker compose down -v` (this will delete all data!).
 
 ---
 
