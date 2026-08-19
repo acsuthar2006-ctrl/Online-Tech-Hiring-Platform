@@ -1,7 +1,6 @@
 import os from "os";
 
 // Helper to get Local LAN IP
-// Helper to get Local LAN IP
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
   const priority = ["en0", "en1", "eth0", "wlan0", "wi-fi"];
