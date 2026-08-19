@@ -25,6 +25,8 @@ WORKDIR /app
 # Copy the pre-built node_modules and app code from builder stage, setting correct ownership
 COPY --from=builder --chown=node:node /app /app
 
+RUN mkdir -p /app/recordings && chown -R node:node /app/recordings
+
 USER node
 
 EXPOSE 3000

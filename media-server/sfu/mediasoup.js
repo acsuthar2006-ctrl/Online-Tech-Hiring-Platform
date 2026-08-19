@@ -56,11 +56,18 @@ export async function createWebRtcTransport(router) {
 
   const transport = await router.createWebRtcTransport({
     listenIps,
-    enableUdp: true,
+    enableUdp: false, // FORCE TCP
     enableTcp: true,
-    preferUdp: true,
+    preferUdp: false,
     initialAvailableOutgoingBitrate,
-    enableSctp: false, // Disable SCTP for now as we don't use DataChannels
+    enableSctp: false,
+  });
+
+  transport.on("icestatechange", (iceState) => {
+    console.log(`[WebRtcTransport:${transport.id}] ICE state changed to: ${iceState}`);
+  });
+  transport.on("dtlsstatechange", (dtlsState) => {
+    console.log(`[WebRtcTransport:${transport.id}] DTLS state changed to: ${dtlsState}`);
   });
 
   /*
